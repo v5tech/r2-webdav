@@ -235,7 +235,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ### 先问 (Ask First)
 - 新增 npm 依赖.
 - 新增环境变量或 binding (含 D1/KV — 当前明确不引入).
-- 新增 `/api/*` 端点 (目前只 3 个, 多了要重评估是否上 Hono).
+- 新增 `/api/*` 端点 (默认保持裸 Pages Functions; 仅当端点数 > 5 时重评估是否引入 Hono, 默认答案是不引入. 见 ADR-0002 已废止决策与 ADR-0003 §决策第 5 条).
 - 修改 WebDAV 协议层语义.
 - 接入第三方服务.
 - 引入 GitHub Actions CI.
@@ -254,16 +254,20 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
 ### 部署与鉴权
 - **S1**: 全新部署后, 访问任意非 `/login` 路径自动跳 `/login`.
-- **S2**: `/login` 表单输入正确 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 后, 重定向到 `/`, 浏览器持有 `fd_session` HttpOnly cookie.
-- **S3**: 在 Cloudflare 仪表盘修改 `WEBDAV_PASSWORD` 并重新部署后, 持原 cookie 的浏览器下次请求被踢回 `/login` (JWT 签名验证失败).
+- **S2**: `/login` 表单输入正确 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 后, 重定向到 `/`, 浏览器持有 `fd_session` HttpOnly cookie. cookie 内 JWT payload 含 `sub=owner` + `iss=<origin>` + `iat` + `exp`.
+- **S3**: 在 Cloudflare 仪表盘修改 `WEBDAV_PASSWORD` 并重新部署后, 持原 cookie 的浏览器下次请求被踢回 `/login` (JWT 签名验证失败, **不回退 Basic**).
 - **S4**: `curl -u user:pass https://.../webdav/` 仍可成功 (Basic auth 协议层未受影响).
 - **S5**: Basic auth 比较用常量时间, 不再有原 `===` 字符串等值的时序差异.
+- **S25**: 请求同时携带**有效 cookie** + **错误 Basic header** → 响应 200 (cookie 优先生效).
+- **S26**: 请求携带**过期/无效 cookie** + **无 Basic header** → 响应 401, 不回退到 Basic 鉴权 (不下发 `WWW-Authenticate: Basic`), 浏览器应跳 `/login`.
+- **S27**: 改 `WEBDAV_PASSWORD` env var 重新部署后, 第三方 WebDAV 客户端**只需在其配置中把密码字段换为新值**即可继续工作, 无需重装/重配其它任何参数.
 
 ### 协议正确性
 - **S6**: PROPFIND 响应中含 `<>&"'` 等特殊字符的文件名经 XML parser 解析后等于原始字符串.
 - **S7**: 不同子域 (`a.example.com` / `b.example.com`) 访问命中同一 R2 桶 (driveid 后门已移除).
 - **S8**: 浏览器 Network 面板看不到 cdnjs 请求, PDF 缩略图/预览仍工作.
 - **S9**: README 中文件大小阈值与代码 `SIZE_LIMIT` 一致 (100 MB).
+- **S24**: rclone v1.65+ 将端点配置为 `webdav` remote 后, `rclone copy local.txt remote:/` 与 `rclone ls remote:/` 双向成功; 同样对 BD File Manager (Android) 或 Cx File Explorer 任选其一手测一次通过.
 
 ### 文件 UI
 - **S10**: 上传 1MB / 99MB / 200MB 文件成功 (multipart 在 100MB 阈值切换).
@@ -273,22 +277,21 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.
 
 ### 多端与体验
-- **S15**: 视口 375 × 667 至 1920 × 1080 之间, 主视图无横向滚动、文字不溢出、按钮可触.
 - **S16**: 暗色模式开关切换后立即生效, 刷新后保留. 系统级 `prefers-color-scheme` 在用户未显式设定时遵守.
 - **S17**: 语言切换 (中/英) 后所有可见文本立即更换, 无遗漏硬编码英文.
-- **S18**: TextPad 入口存在, 可创建/编辑/保存 .txt / .md 文件 (体验不弱于现有版本).
+- **S18**: TextPad 分别新建 `.md` 与 `.txt` 文件各一份, 内容含中英文混排 + 特殊字符 (`<`, `>`, `&`, `'`, `"`, `\t`, 换行); 保存上传 → 关闭浏览器 → 重新打开预览; 内容与原输入字符级一致.
 
 ### 代码质量
 - **S19**: Vite 构建初始 bundle ≤ 500 KB (gzipped).
 - **S20**: `npm run typecheck` / `lint` / `test` 全绿.
-- **S21**: `npm run test:e2e` 核心闭环全绿.
+- **S21**: `npm run test:e2e` 核心闭环全绿 — Playwright 在 viewport `375 × 667` / `768 × 1024` / `1280 × 800` 三种尺寸下分别跑同一冒烟脚本均通过 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销); 三尺寸下均无横向滚动、无元素溢出.
 - **S22**: 根目录 `Main.tsx` / `TextPadDrawer.tsx` / `utils/s3.ts` 已删, `grep -rn '@mui\|react-scripts' .` 仅命中 `package-lock.json` 历史.
 - **S23**: Lighthouse (生产部署, 桌面 viewport) Performance ≥ 90, Accessibility ≥ 90.
 
 ## 9. Open Questions
 
-- **OQ-1 — JWT 库选型**: `hono/jwt` (轻) vs `jose` (功能全). 实施时按 bundle 占用决定, 不影响 Success Criteria.
-- **OQ-2 — `pdfjs-dist` bundle 实际尺寸**: Vite tree-shake 后若 > 1 MB (gzip), 走 lazy load worker. 不影响验收.
+- **OQ-1 — JWT 库选型**: `hono/jwt` (轻) vs `jose` (功能全). 实施时按 bundle 占用决定. 无论选哪个, JWT payload 都必须含 `sub`/`iss`/`iat`/`exp`, `iss` 取请求 origin 防跨部署 cookie 互认.
+- **OQ-2 — `pdfjs-dist` bundle 实际尺寸**: Vite tree-shake 后若 > 1 MB (gzip), 走 lazy load worker. CSP 必须含 `worker-src 'self' blob:`; 若 pdf.js worker 使用 WebAssembly, CSP 还需 `script-src 'self' 'wasm-unsafe-eval'`. Phase 2 末用 CSP-Report-Only 验证一次, Phase 3 切 enforce.
 - **OQ-3 — iOS Safari 拖拽上传兼容性**: 部分 iOS 版本不支持 HTML5 拖拽, 需点选按钮兜底. Phase 2 实测后定 fallback 形态.
 - **OQ-4 — multipart 中断的孤儿 part 清理**: R2 自动会清吗? Phase 2 实测后定, 不归类为 bug.
 - **OQ-5 — 在线预览的 `<video>` 大视频体验**: 不做 Range 支持, 拖拽进度条会重新下载. 单用户场景判断可接受, 若用户反馈差再单独评估.

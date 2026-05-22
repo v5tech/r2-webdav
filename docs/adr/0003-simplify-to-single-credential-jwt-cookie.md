@@ -23,10 +23,16 @@ ADR-0001 / ADR-0002 制定时的假设是: 二次开发应当借这次机会把�
 
 1. **凭据**: `WEBDAV_USERNAME` / `WEBDAV_PASSWORD` 环境变量, 服务端运行时读取. **不持久化哈希**, 因为环境变量本身已是配置形态; 改密码 = Cloudflare 仪表盘改环境变量 + 重新部署.
 2. **比较**: 用常量时间比较替换原始字符串等值, 修掉时序攻击 (替代了 ADR-0001 中"用 Argon2id 哈希"的方案).
-3. **会话**: Web UI 登录成功后服务端签发 JWT, HttpOnly cookie 承载. **签名密钥 = `HMAC(WEBDAV_PASSWORD)`**, 派生而非新增 env var. 改密码 = 所有 JWT 自动签名失效, 全设备等同被踢下线.
-4. **WebDAV 双重鉴权**: `functions/webdav/[[path]].ts` 接受 **cookie (JWT)** 或 **Basic auth (`WEBDAV_USERNAME` + `WEBDAV_PASSWORD`)** 任一通过即放行. Web UI 用 cookie, 第三方客户端用 Basic.
-5. **/api/* 不引入 Hono**: 仅 3 个端点 (`/api/login`, `/api/logout`, `/api/me`), 各作为独立 Pages Function 文件, 与现有 `functions/webdav/*` 同款裸函数风格.
+3. **会话**: Web UI 登录成功后服务端签发 JWT, HttpOnly cookie 承载. **签名密钥派生公式: `HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "fd_session_v1")`**. 派生而非新增 env var. 改密码 = 所有 JWT 自动签名失效, 全设备等同被踢下线. `msg` 是版本化常量, 未来若需"主动让全会话失效但不改密码"可升 `v2`. JWT payload 含 `sub='owner'` + `iss=<请求 origin>` (防跨部署 cookie 互认) + 标准 `iat` / `exp`. 默认 7 天过期.
+4. **WebDAV 双重鉴权**: `functions/webdav/[[path]].ts` 鉴权严格按下列优先级:
+   1. 有 cookie 且 `verifySessionJwt` 通过 → 放行.
+   2. **有 cookie 但验签失败 → 直接 401, 不回退 Basic** (减少攻击面, 强制走 /login 重新发 cookie).
+   3. 无 cookie 且 Basic 通过 → 放行.
+   4. `WEBDAV_PUBLIC_READ === "1"` 且 method ∈ {GET, HEAD, PROPFIND} → 匿名放行. **写操作不享受此短路**.
+   5. 全否则 401, 写操作 401 时**不发 `WWW-Authenticate: Basic` header** (避免浏览器弹原生 Basic 框).
+5. **/api/* 不引入 Hono**: 仅 3 个端点 (`/api/login`, `/api/logout`, `/api/me`), 各作为独立 Pages Function 文件, 与现有 `functions/webdav/*` 同款裸函数风格. 端点数 > 5 才重评估是否引入 Hono.
 6. **不引入** D1 / KV / Durable Objects / 任何新外部状态. R2 仍是唯一持久化, 环境变量是唯一配置.
+7. **范围 catch-all**: ADR-0001 / 0002 中提及但未列入 [SPEC.md](../../SPEC.md) §1 "在范围内"的所有功能 (应用令牌管理、回收站、审计日志、登录失败 D1 计数表、`SETUP_BOOTSTRAP_KEY` 引导流程等) 均不在 Scope B 内. 不为这些功能单独写"已废止"决策, 以 SPEC §1 "不在范围内" 列表为权威清单.
 
 ## 其它已评估方案
 
