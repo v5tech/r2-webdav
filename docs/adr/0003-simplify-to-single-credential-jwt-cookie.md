@@ -30,7 +30,7 @@ ADR-0001 / ADR-0002 制定时的假设是: 二次开发应当借这次机会把�
    3. 无 cookie 且 Basic 通过 → 放行.
    4. `WEBDAV_PUBLIC_READ === "1"` 且 method ∈ {GET, HEAD, PROPFIND} → 匿名放行. **写操作不享受此短路**.
    5. 全否则 401, 写操作 401 时**不发 `WWW-Authenticate: Basic` header** (避免浏览器弹原生 Basic 框).
-5. **/api/* 不引入 Hono**: 仅 3 个端点 (`/api/login`, `/api/logout`, `/api/me`), 各作为独立 Pages Function 文件, 与现有 `functions/webdav/*` 同款裸函数风格. 端点数 > 5 才重评估是否引入 Hono.
+5. **/api/\* 不引入 Hono**: 仅 3 个端点 (`/api/login`, `/api/logout`, `/api/me`), 各作为独立 Pages Function 文件, 与现有 `functions/webdav/*` 同款裸函数风格. 端点数 > 5 才重评估是否引入 Hono.
 6. **不引入** D1 / KV / Durable Objects / 任何新外部状态. R2 仍是唯一持久化, 环境变量是唯一配置.
 7. **范围 catch-all**: ADR-0001 / 0002 中提及但未列入 [SPEC.md](../../SPEC.md) §1 "在范围内"的所有功能 (应用令牌管理、回收站、审计日志、登录失败 D1 计数表、`SETUP_BOOTSTRAP_KEY` 引导流程等) 均不在 Scope B 内. 不为这些功能单独写"已废止"决策, 以 SPEC §1 "不在范围内" 列表为权威清单.
 
@@ -43,6 +43,7 @@ ADR-0001 / ADR-0002 制定时的假设是: 二次开发应当借这次机会把�
 ## 后果
 
 **正面**:
+
 - 部署门槛大幅降低: 只需绑 R2 + 配三个环境变量, 与原项目部署体验一致.
 - 现有所有 WebDAV 客户端配置零变更, 旧密码继续可用.
 - 代码侧少了 D1 schema、migration、CAS 并发处理、令牌 CRUD、应用令牌管理 UI、登录失败计数表等约 60% 的非 UI 工作量.
@@ -50,6 +51,7 @@ ADR-0001 / ADR-0002 制定时的假设是: 二次开发应当借这次机会把�
 - 仓库整体复杂度降低, 与项目"单用户 + WebDAV 核心"的定位匹配.
 
 **负面/代价**:
+
 - **不能为单个客户端独立吊销凭据**. 如果某台设备 (手机) 失窃, 唯一缓解手段是改密码 (使全设备失效) 后逐台重新配置. 单用户场景下视为可接受.
 - **不能区分请求来源** (谁/哪台设备发的). 与放弃审计日志一致.
 - **登录失败 rate limit 不在代码内**. 若需要, 在 Cloudflare 仪表盘配 Rate Limiting Rules. 单口令 + HTTPS + 强密码场景, 单用户判定可接受.

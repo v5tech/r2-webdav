@@ -9,41 +9,49 @@
 ## Phase 0 — 清债 & Vite & Tailwind/shadcn (~1.5 天)
 
 ### T0.1 — 删根目录死代码
+
 - **Acceptance**: `/Main.tsx` `/TextPadDrawer.tsx` `/utils/s3.ts` 不存在. `grep -rn '@aws-sdk\|aws4fetch\|S3Client' .` 零命中.
 - **Verify**: `ls Main.tsx TextPadDrawer.tsx utils/s3.ts 2>&1` 全 No such file.
 - **Files**: 3 (删除).
 
 ### T0.2 — 卸 CRA, 装 Vite + 配置
+
 - **Acceptance**: `package.json` 移除 `react-scripts`, 新增 `vite` `@vitejs/plugin-react`. `vite.config.ts` 含 React 插件 + `@/*` alias. `index.html` 在仓库根.
 - **Verify**: `npm install` 成功; `npm run build` 至少进入构建阶段.
 - **Files**: 4.
 
 ### T0.3 — 入口与导入修正
+
 - **Acceptance**: `src/index.js` → `src/main.tsx` (createRoot). 替换 CRA-only API. 静态资源导入合规.
 - **Verify**: `npm run typecheck` 无 error; `npm run dev` 浏览器看到既有 UI.
 - **Files**: ≤5.
 
 ### T0.4 — Tailwind + PostCSS
+
 - **Acceptance**: `tailwind.config.ts` content 指向 `src/**`. `postcss.config.js`. `src/styles/globals.css` 三指令. main.tsx 导入.
 - **Verify**: 临时给某组件加 `className="bg-red-500"` 渲染红色后回滚.
 - **Files**: 4.
 
 ### T0.5 — shadcn 初始化
+
 - **Acceptance**: `npx shadcn@latest init` 完成. `components.json` 存在. `src/lib/utils.ts` 含 `cn()`. `src/components/ui/` 已创建.
 - **Verify**: `npx shadcn@latest add button` 后引入页面渲染正常, 回滚.
 - **Files**: ~5.
 
 ### T0.6 — ESLint flat + Prettier
+
 - **Acceptance**: `eslint.config.js` (flat) 含 typescript-eslint + react + react-hooks + import. `.prettierrc`: singleQuote / semi false / tabWidth 2. `package.json` 加 lint / format 脚本.
 - **Verify**: `npm run lint` 无 error; `npm run format:check` 通过.
 - **Files**: 3.
 
 ### T0.7 — Vitest + Playwright 骨架
+
 - **Acceptance**: `vitest.config.ts` `playwright.config.ts` 存在. `tests/unit/sanity.test.ts` + `e2e/sanity.spec.ts` 各一个 trivial 测试.
 - **Verify**: `npm run test` 绿; `npm run test:e2e` 绿.
 - **Files**: 4.
 
 ### T0.8 — Phase 0 集成烟测
+
 - **Acceptance**: Vite dev 上跑既有 UI 闭环: 列目录 → 上传小文件 → 看缩略图 → 删除. 控制台无 fatal error.
 - **Verify**: 手测; 截图保留作回归基线.
 - **Files**: 0.
@@ -53,41 +61,49 @@
 ## Phase 1 — Bug 修复 & 鉴权升级 (~1 天)
 
 ### T1.1 — `_shared/auth.ts` 常量时间比较与 Basic 校验
+
 - **Acceptance**: 导出 `constantTimeEqual(a, b): boolean` (XOR 短路安全) 与 `verifyBasic(authHeader, env): boolean` (Basic 解码 + 常量时间比对 `WEBDAV_USERNAME` `WEBDAV_PASSWORD`).
 - **Verify**: 单元测试覆盖等长/不等长/空串/正确/错误.
 - **Files**: 2.
 
 ### T1.2 — `_shared/auth.ts` JWT 工具
+
 - **Acceptance**: 新增 `deriveSessionSecret(password)`, `signSessionJwt(env, payload, ttlSec)`, `verifySessionJwt(env, token, origin)`. HS256, 派生密钥公式 **`HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "fd_session_v1")`**. JWT payload 含 `sub='owner'` / `iss=<origin>` / `iat` / `exp`. `extractSession(request)` 从 cookie 取 `fd_session`.
 - **Verify**: 单元: sign → verify 圆桌通过; 过期 / 错签 / 篡改 token / iss mismatch 各返 null.
 - **Files**: 2.
 
 ### T1.3 — `_shared/xml.ts` 转义函数
+
 - **Acceptance**: `escapeXml(s)` 处理 `& < > " '` 与 unicode.
 - **Verify**: 单元覆盖各特殊字符; `xmllint` 解析输出通过.
 - **Files**: 2.
 
 ### T1.4 — PROPFIND XML 转义修复
+
 - **Acceptance**: `functions/webdav/propfind.ts` 所有用户数据插值经 `escapeXml()`.
 - **Verify**: 上传文件名 `a<b>"c'd&e.txt`, PROPFIND 响应 `xmllint --noout` 通过, displayname decode 后等于原名.
 - **Files**: 1.
 
 ### T1.5 — 删 driveid 多桶后门
+
 - **Acceptance**: `functions/webdav/utils.ts:parseBucketPath` 删 `env[driveid]` 分支与 hostname 解析, 永远返 `env.BUCKET`.
 - **Verify**: 不同子域命中同一桶.
 - **Files**: 1.
 
 ### T1.6 — pdfjs 切本地 npm 包
+
 - **Acceptance**: `src/app/transfer.ts` 中 cdnjs 动态 import 改为 `import * as pdfjs from 'pdfjs-dist'`. worker 用 `import.meta.url`. 装依赖.
 - **Verify**: 生成 PDF 缩略图浏览器 Network 无 cdnjs 请求.
 - **Files**: 2.
 
 ### T1.7 — README 阈值文档
+
 - **Acceptance**: README "≥128MB" → "≥100 MB", 与代码 `SIZE_LIMIT` 一致.
 - **Verify**: `grep -n "128" README.md` 无误导描述.
 - **Files**: 1.
 
 ### T1.8 — WebDAV `[[path]].ts` 双重鉴权改造
+
 - **Acceptance**: 单 commit 完整改完. 删原 `===` 比较. 鉴权流程**严格按下列顺序**:
   1. 有 cookie 且 `verifySessionJwt(env, token, origin)` 通过 → 放行.
   2. **有 cookie 但验签失败 → 直接 401, 不回退 Basic** (减少攻击面; 浏览器侧由 RequireAuth 跳 `/login`).
@@ -98,38 +114,45 @@
 - **Files**: 1.
 
 ### T1.9 — `/api/login` 端点
+
 - **Acceptance**: `functions/api/login.ts` POST: 解 JSON `{username, password}`, 调 `verifyBasic` 风格的明文比较, 通过则签 JWT 并 Set-Cookie `fd_session` (HttpOnly Secure SameSite=Lax Max-Age=604800).
 - **Verify**: curl POST 正确密码返 200 + cookie; 错误密码返 401.
 - **Files**: 1.
 
 ### T1.10 — `/api/logout` 端点
+
 - **Acceptance**: `functions/api/logout.ts` POST: Set-Cookie 清除 (Max-Age=0).
 - **Verify**: 调用后浏览器 cookie 消失.
 - **Files**: 1.
 
 ### T1.11 — `/api/me` 端点
+
 - **Acceptance**: `functions/api/me.ts` GET: 验 cookie JWT, 返 `{ok: true}` 或 401.
 - **Verify**: 有效 cookie 返 200; 无 cookie 或 cookie 过期返 401.
 - **Files**: 1.
 
 ### T1.12 — 装 React Router + 路由表
+
 - **Acceptance**: 装 `react-router-dom@^7`. `App.tsx` 改 BrowserRouter, 路由表: `/login`, `/files-legacy` (临时挂老 UI), `/` 重定向到 `/files-legacy`.
 - **Verify**: 浏览器分别访问 `/login` 与 `/files-legacy` 正确路由.
 - **Files**: 2.
 
 ### T1.13 — Login 页 UI
+
 - **Acceptance**: `src/pages/login.tsx` shadcn 表单 (Card + Input + Button), react-hook-form + zod 校验. 提交到 `/api/login`. 成功跳 `/`. 失败 toast.
 - **Verify**: 浏览器手测正确/错误密码两条路径.
 - **Files**: 1.
 
 ### T1.14 — `use-auth` hook + `RequireAuth` 守卫
+
 - **Acceptance**: `src/hooks/use-auth.ts` 调 `/api/me`. `src/components/auth/RequireAuth.tsx` 守卫: 未登录跳 `/login`. 在路由表给 `/files-legacy` 套上.
 - **Verify**: 清 cookie 后访问 `/files-legacy` 自动跳 `/login`.
 - **Files**: 2.
 
 ### T1.15 — Phase 1 集成验证
+
 - **Acceptance**: PLAN §2 Phase 1 "验证关" 全过.
-- **Verify**: 
+- **Verify**:
   1. 手测 + 单元/集成测试全绿.
   2. **本地复现"改密码即 cookie 失效"**: 启动 `wrangler pages dev`, 用现行 `WEBDAV_PASSWORD` 登录拿到 cookie; 编辑 `.dev.vars` 把 `WEBDAV_PASSWORD` 换为新值; kill 并重启 wrangler dev; 持原 cookie 访问 `/api/me` 应返 401; `curl -u user:<旧密码>` 也应 401; `curl -u user:<新密码>` 200.
   3. **五状态码矩阵**: 按 T1.8 acceptance 五条路径分别 curl 验证.

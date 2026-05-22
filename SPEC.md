@@ -23,45 +23,45 @@
 
 ## 2. Tech Stack
 
-| 类别 | 选型 | 版本 | 说明 |
-|---|---|---|---|
-| 部署平台 | Cloudflare Pages | — | Pages Functions 自动发现 |
-| 文件存储 | Cloudflare R2 | — | binding `BUCKET` 不变 |
-| 鉴权数据 | 环境变量 + JWT cookie | — | **不引入** D1/KV |
-| 前端框架 | React | 18.x | 不升 19 |
-| 构建工具 | Vite | ^7 | 替换 CRA |
-| 路由 | React Router | ^7 | |
-| 类型系统 | TypeScript | ^5.5 | strict |
-| 样式 | Tailwind CSS | ^3.4 | |
-| 组件库 | shadcn/ui | latest | 复制进 `src/components/ui/` |
-| 状态/数据 | TanStack Query | ^5 | |
-| 表单 | react-hook-form + zod | ^7 / ^3 | |
-| i18n | react-i18next | ^14 | 中文默认 |
-| 暗色模式 | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | — | 不装 next-themes |
-| PDF 预览 | `pdfjs-dist` | latest | 本地 npm 包替代 cdnjs |
-| 代码高亮 (预览) | Shiki | latest | lazy import |
-| JWT | `hono/jwt` 或 `jose` | — | 仅用工具函数, 不引入 Hono 框架 |
-| 测试 (单元) | Vitest + RTL | latest | |
-| 测试 (E2E) | Playwright | latest | 仅核心闭环 |
-| Lint | ESLint 9 flat | latest | |
-| 格式化 | Prettier | latest | 单引号/无分号/Tab 宽 2 |
-| 包管理 | npm | Node 20 LTS+ | |
-| 工具链 | wrangler | latest | 仅本地 Pages dev, 不用 D1 命令 |
+| 类别            | 选型                                                          | 版本         | 说明                           |
+| --------------- | ------------------------------------------------------------- | ------------ | ------------------------------ |
+| 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现       |
+| 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变          |
+| 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV               |
+| 前端框架        | React                                                         | 18.x         | 不升 19                        |
+| 构建工具        | Vite                                                          | ^7           | 替换 CRA                       |
+| 路由            | React Router                                                  | ^7           |                                |
+| 类型系统        | TypeScript                                                    | ^5.5         | strict                         |
+| 样式            | Tailwind CSS                                                  | ^3.4         |                                |
+| 组件库          | shadcn/ui                                                     | latest       | 复制进 `src/components/ui/`    |
+| 状态/数据       | TanStack Query                                                | ^5           |                                |
+| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                |
+| i18n            | react-i18next                                                 | ^14          | 中文默认                       |
+| 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes               |
+| PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs          |
+| 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                    |
+| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架 |
+| 测试 (单元)     | Vitest + RTL                                                  | latest       |                                |
+| 测试 (E2E)      | Playwright                                                    | latest       | 仅核心闭环                     |
+| Lint            | ESLint 9 flat                                                 | latest       |                                |
+| 格式化          | Prettier                                                      | latest       | 单引号/无分号/Tab 宽 2         |
+| 包管理          | npm                                                           | Node 20 LTS+ |                                |
+| 工具链          | wrangler                                                      | latest       | 仅本地 Pages dev, 不用 D1 命令 |
 
 ## 3. Commands
 
-| 命令 | 用途 |
-|---|---|
-| `npm install` | 装依赖 |
-| `npm run dev` | Vite 前端开发服务器 |
-| `npm run pages:dev` | `wrangler pages dev` 全栈本地 |
-| `npm run build` | Vite 构建 → `dist/` |
-| `npm run preview` | 预览构建产物 |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` / `lint:fix` | ESLint |
-| `npm run format` / `format:check` | Prettier |
-| `npm run test` / `test:watch` | Vitest |
-| `npm run test:e2e` | Playwright |
+| 命令                              | 用途                          |
+| --------------------------------- | ----------------------------- |
+| `npm install`                     | 装依赖                        |
+| `npm run dev`                     | Vite 前端开发服务器           |
+| `npm run pages:dev`               | `wrangler pages dev` 全栈本地 |
+| `npm run build`                   | Vite 构建 → `dist/`           |
+| `npm run preview`                 | 预览构建产物                  |
+| `npm run typecheck`               | `tsc --noEmit`                |
+| `npm run lint` / `lint:fix`       | ESLint                        |
+| `npm run format` / `format:check` | Prettier                      |
+| `npm run test` / `test:watch`     | Vitest                        |
+| `npm run test:e2e`                | Playwright                    |
 
 提交前必跑: `npm run typecheck && npm run lint && npm run test`.
 
@@ -141,6 +141,7 @@
 路径别名: `@/*` → `src/*`.
 
 **待删** (Phase 0):
+
 - `/Main.tsx`, `/TextPadDrawer.tsx` (根目录死代码)
 - `/utils/s3.ts`
 - 全部 `react-scripts` 配置
@@ -225,6 +226,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ## 7. Boundaries
 
 ### 总是 (Always)
+
 - 提交前跑 `typecheck && lint && test`.
 - 凭据比较用常量时间.
 - 任何 WebDAV verb handler 加进 `functions/webdav/` 时同步考虑双重鉴权适用性.
@@ -233,6 +235,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - 所有用户数据进 PROPFIND XML 之前必经 `escapeXml()`.
 
 ### 先问 (Ask First)
+
 - 新增 npm 依赖.
 - 新增环境变量或 binding (含 D1/KV — 当前明确不引入).
 - 新增 `/api/*` 端点 (默认保持裸 Pages Functions; 仅当端点数 > 5 时重评估是否引入 Hono, 默认答案是不引入. 见 ADR-0002 已废止决策与 ADR-0003 §决策第 5 条).
@@ -241,6 +244,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - 引入 GitHub Actions CI.
 
 ### 永不 (Never)
+
 - 提交密钥到 git.
 - 跳 git hooks.
 - 在日志/错误响应/URL 中暴露完整 JWT 或 cookie 值.
@@ -253,6 +257,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ## 8. Success Criteria
 
 ### 部署与鉴权
+
 - **S1**: 全新部署后, 访问任意非 `/login` 路径自动跳 `/login`.
 - **S2**: `/login` 表单输入正确 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 后, 重定向到 `/`, 浏览器持有 `fd_session` HttpOnly cookie. cookie 内 JWT payload 含 `sub=owner` + `iss=<origin>` + `iat` + `exp`.
 - **S3**: 在 Cloudflare 仪表盘修改 `WEBDAV_PASSWORD` 并重新部署后, 持原 cookie 的浏览器下次请求被踢回 `/login` (JWT 签名验证失败, **不回退 Basic**).
@@ -263,6 +268,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - **S27**: 改 `WEBDAV_PASSWORD` env var 重新部署后, 第三方 WebDAV 客户端**只需在其配置中把密码字段换为新值**即可继续工作, 无需重装/重配其它任何参数.
 
 ### 协议正确性
+
 - **S6**: PROPFIND 响应中含 `<>&"'` 等特殊字符的文件名经 XML parser 解析后等于原始字符串.
 - **S7**: 不同子域 (`a.example.com` / `b.example.com`) 访问命中同一 R2 桶 (driveid 后门已移除).
 - **S8**: 浏览器 Network 面板看不到 cdnjs 请求, PDF 缩略图/预览仍工作.
@@ -270,6 +276,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - **S24**: rclone v1.65+ 将端点配置为 `webdav` remote 后, `rclone copy local.txt remote:/` 与 `rclone ls remote:/` 双向成功; 同样对 BD File Manager (Android) 或 Cx File Explorer 任选其一手测一次通过.
 
 ### 文件 UI
+
 - **S10**: 上传 1MB / 99MB / 200MB 文件成功 (multipart 在 100MB 阈值切换).
 - **S11**: 删除文件直接调 R2 delete, 不进任何回收站 (本期不做回收站).
 - **S12**: 客户端搜索仅过滤当前目录, 跨目录搜索不支持 (与现状一致).
@@ -277,11 +284,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.
 
 ### 多端与体验
+
 - **S16**: 暗色模式开关切换后立即生效, 刷新后保留. 系统级 `prefers-color-scheme` 在用户未显式设定时遵守.
 - **S17**: 语言切换 (中/英) 后所有可见文本立即更换, 无遗漏硬编码英文.
 - **S18**: TextPad 分别新建 `.md` 与 `.txt` 文件各一份, 内容含中英文混排 + 特殊字符 (`<`, `>`, `&`, `'`, `"`, `\t`, 换行); 保存上传 → 关闭浏览器 → 重新打开预览; 内容与原输入字符级一致.
 
 ### 代码质量
+
 - **S19**: Vite 构建初始 bundle ≤ 500 KB (gzipped).
 - **S20**: `npm run typecheck` / `lint` / `test` 全绿.
 - **S21**: `npm run test:e2e` 核心闭环全绿 — Playwright 在 viewport `375 × 667` / `768 × 1024` / `1280 × 800` 三种尺寸下分别跑同一冒烟脚本均通过 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销); 三尺寸下均无横向滚动、无元素溢出.

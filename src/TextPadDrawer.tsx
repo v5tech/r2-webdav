@@ -1,47 +1,37 @@
 // TextPadDrawer.tsx
-import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Drawer,
-  TextField,
-  Typography,
-  IconButton,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { useUploadEnqueue } from "./app/transferQueue";
+import React, { useState } from 'react'
+import { Box, Button, Drawer, TextField, Typography, IconButton } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import { useUploadEnqueue } from './app/transferQueue'
 
 interface TextPadDrawerProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  cwd: string;
-  onUpload: () => void;
+  open: boolean
+  setOpen: (open: boolean) => void
+  cwd: string
+  onUpload: () => void
 }
 
-const TextPadDrawer: React.FC<TextPadDrawerProps> = ({
-  open,
-  setOpen,
-  cwd,
-  onUpload,
-}) => {
-  const [noteText, setNoteText] = useState("");
-  const [noteName, setNoteName] = useState("note.txt");
-  const uploadEnqueue = useUploadEnqueue();
+const TextPadDrawer: React.FC<TextPadDrawerProps> = ({ open, setOpen, cwd, onUpload }) => {
+  const [noteText, setNoteText] = useState('')
+  const [noteName, setNoteName] = useState('note.txt')
+  const uploadEnqueue = useUploadEnqueue()
 
   const handleSaveNote = () => {
-    const fileBlob = new Blob([noteText], { type: "text/plain" });
-    const file = new File([fileBlob], noteName, { type: "text/plain" });
-    uploadEnqueue({ file, basedir: cwd });
-    onUpload(); // Refresh file list after upload
-    setOpen(false); // Close drawer
-    setNoteText(""); // Reset
-    setNoteName("note.txt");
-  };
+    const fileBlob = new Blob([noteText], { type: 'text/plain' })
+    const file = new File([fileBlob], noteName, { type: 'text/plain' })
+    uploadEnqueue({ file, basedir: cwd })
+    onUpload() // Refresh file list after upload
+    setOpen(false) // Close drawer
+    setNoteText('') // Reset
+    setNoteName('note.txt')
+  }
 
   return (
     <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-      <Box sx={{ width: 400, padding: 2, display: "flex", flexDirection: "column", height: "100%" }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+      <Box
+        sx={{ width: 400, padding: 2, display: 'flex', flexDirection: 'column', height: '100%' }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="h6">TextPad</Typography>
           <IconButton onClick={() => setOpen(false)}>
             <CloseIcon />
@@ -76,7 +66,7 @@ const TextPadDrawer: React.FC<TextPadDrawerProps> = ({
         </Button>
       </Box>
     </Drawer>
-  );
-};
+  )
+}
 
-export default TextPadDrawer;
+export default TextPadDrawer

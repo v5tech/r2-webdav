@@ -25,15 +25,18 @@
 ## 后果
 
 **正面**:
+
 - 新 JSON API 的开发体验显著好转 (类型化路由、zod 校验、cookie helper、统一错误格式).
 - 鉴权策略集中于一处, 不可能某个端点忘加.
 - 既有 WebDAV 处理零风险.
 
 **负面/代价**:
+
 - 仓库内并存两种后端写法, 新贡献者需理解 "**协议层 (WebDAV) 走裸函数, 业务层 (JSON API) 走 Hono**" 的边界. 必须在 README 与本 ADR 中明示.
 - Hono 增加约 30KB Worker bundle. 对 Cloudflare Workers 冷启动几乎无感, 可忽略.
 - 鉴权共享模块若改动, 同时影响 WebDAV 与 API, 需有回归测试覆盖.
 
 **边界约束**:
+
 - 任何 WebDAV 协议相关的代码不得迁入 Hono. 反之, 任何 JSON 业务端点不得新增到 `functions/webdav/`.
 - `functions/_shared/` 只放双方真共享的代码 (鉴权、D1 客户端、错误格式), 不放仅一方使用的工具.
