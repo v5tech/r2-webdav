@@ -1,3 +1,4 @@
+import { escapeXml } from '../_shared/xml'
 import { listAll, RequestHandlerParams, ROOT_OBJECT, WEBDAV_ENDPOINT } from './utils'
 
 type DavProperties = {
@@ -72,12 +73,16 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
     const properties = fromR2Object(child)
     return `
   <response>
-    <href>${encodeURI(`${WEBDAV_ENDPOINT}${child.key}`)}</href>
+    <href>${escapeXml(encodeURI(`${WEBDAV_ENDPOINT}${child.key}`))}</href>
     <propstat>
       <prop>
         ${Object.entries(properties)
           .filter(([_, value]) => value !== undefined)
-          .map(([key, value]) => `<${key}>${value}</${key}>`)
+          .map(([key, value]) =>
+            key === 'resourcetype'
+              ? `<${key}>${value}</${key}>`
+              : `<${key}>${escapeXml(value as string)}</${key}>`,
+          )
           .join('\n')}
       </prop>
       <status>HTTP/1.1 200 OK</status>
