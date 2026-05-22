@@ -142,3 +142,43 @@ export function extractSession(request: Request): string | null {
 }
 
 export { SESSION_COOKIE_NAME, DEFAULT_SESSION_TTL_SEC }
+
+export type AuthzResult = { ok: true } | { ok: false; response: Response }
+
+export interface WebdavAuthEnv extends BasicAuthEnv, SessionEnv {
+  WEBDAV_PUBLIC_READ?: string
+}
+
+const READ_METHODS = new Set(['GET', 'HEAD', 'PROPFIND'])
+
+function deny(method: string, withBasicChallenge: boolean): AuthzResult {
+  const headers: Record<string, string> = {}
+  if (withBasicChallenge && READ_METHODS.has(method)) {
+    headers['WWW-Authenticate'] = 'Basic realm="WebDAV"'
+  }
+  return { ok: false, response: new Response('Unauthorized', { status: 401, headers }) }
+}
+
+export async function authorizeWebdav(
+  request: Request,
+  env: WebdavAuthEnv,
+  origin: string,
+): Promise<AuthzResult> {
+  const method = request.method
+  const cookieToken = extractSession(request)
+
+  if (cookieToken) {
+    const payload = await verifySessionJwt(env, cookieToken, origin)
+    if (payload) return { ok: true }
+    return deny(method, false)
+  }
+
+  const authHeader = request.headers.get('Authorization')
+  if (verifyBasic(authHeader, env)) return { ok: true }
+
+  if (env.WEBDAV_PUBLIC_READ === '1' && READ_METHODS.has(method)) {
+    return { ok: true }
+  }
+
+  return deny(method, true)
+}

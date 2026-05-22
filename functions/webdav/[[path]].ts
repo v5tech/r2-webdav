@@ -1,3 +1,4 @@
+import { authorizeWebdav, type WebdavAuthEnv } from '../_shared/auth'
 import { notFound, parseBucketPath } from './utils'
 import { handleRequestCopy } from './copy'
 import { handleRequestDelete } from './delete'
@@ -35,37 +36,17 @@ const HANDLERS: Record<string, (context: RequestHandlerParams) => Promise<Respon
   DELETE: handleRequestDelete,
 }
 
-export const onRequest: PagesFunction<{
-  WEBDAV_USERNAME: string
-  WEBDAV_PASSWORD: string
-  WEBDAV_PUBLIC_READ?: string
-}> = async function (context) {
-  const env = context.env
+export const onRequest: PagesFunction<WebdavAuthEnv> = async function (context) {
   const request: Request = context.request
   if (request.method === 'OPTIONS') return handleRequestOptions()
 
-  const skipAuth =
-    env.WEBDAV_PUBLIC_READ === '1' && ['GET', 'HEAD', 'PROPFIND'].includes(request.method)
-
-  if (!skipAuth) {
-    if (!env.WEBDAV_USERNAME || !env.WEBDAV_PASSWORD)
-      return new Response('WebDAV protocol is not enabled', { status: 403 })
-
-    const auth = request.headers.get('Authorization')
-    if (!auth) {
-      return new Response('Unauthorized', {
-        status: 401,
-        headers: { 'WWW-Authenticate': `Basic realm="WebDAV"` },
-      })
-    }
-    const expectedAuth = `Basic ${btoa(`${env.WEBDAV_USERNAME}:${env.WEBDAV_PASSWORD}`)}`
-    if (auth !== expectedAuth) return new Response('Unauthorized', { status: 401 })
-  }
+  const origin = new URL(request.url).origin
+  const authz = await authorizeWebdav(request, context.env, origin)
+  if (!authz.ok) return authz.response
 
   const [bucket, path] = parseBucketPath(context)
   if (!bucket) return notFound()
 
-  const method: string = (context.request as Request).method
-  const handler = HANDLERS[method] ?? handleMethodNotAllowed
-  return handler({ bucket, path, request: context.request })
+  const handler = HANDLERS[request.method] ?? handleMethodNotAllowed
+  return handler({ bucket, path, request })
 }
