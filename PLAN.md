@@ -9,7 +9,7 @@
 │   Phase 0 — 清债 & Vite 迁移 & Tailwind/shadcn 初始化     │
 │   ~1.5 天                                                │
 │   删死代码 · CRA→Vite · Tailwind+PostCSS · shadcn init   │
-│   ESLint flat · Prettier · Vitest/Playwright 骨架        │
+│   ESLint flat · Prettier · Vitest 骨架                  │
 └──────────────────────┬──────────────────────────────────┘
                        │ 构建工具就位才能动 UI 与新端点
                        ▼
@@ -43,8 +43,8 @@
 ┌─────────────────────────────────────────────────────────┐
 │   Phase 3 — 收尾 (~1 天)                                  │
 │   CSP enforce + safety headers · README 重写 (含 rate    │
-│   limit 部署提示) · 本地开发文档 · Lighthouse · Playwright │
-│   三尺寸冒烟 · rclone 真实回归 · S1-S27 验收               │
+│   limit 部署提示) · 本地开发文档 · Lighthouse · MCP 驱动  │
+│   三尺寸冒烟 (截图存证) · rclone 真实回归 · S1-S27 验收    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -64,7 +64,7 @@
 - `index.html` 迁至仓库根.
 - 装 shadcn (init), 生成 `components.json` + `src/lib/utils.ts` + `src/components/ui/`.
 - ESLint 9 flat + Prettier + tsconfig (`@/*` alias).
-- Vitest + Playwright 骨架文件.
+- Vitest 骨架文件 (E2E 走 Chrome DevTools MCP / agent-browser, 不固化 spec).
 
 **不做**:
 
@@ -76,7 +76,7 @@
 
 - `npm run dev` 启动后浏览器看到既有 MUI UI.
 - `npm run build` 产生 `dist/`, `wrangler pages dev dist` 部署预览可用.
-- `npm run typecheck` / `lint` / `test` / `test:e2e` 全绿.
+- `npm run typecheck` / `lint` / `test` 全绿.
 
 ### Phase 1 — Bug 修复 & 鉴权升级 (~1 天)
 
@@ -185,7 +185,7 @@
 - 删 `src/Main.tsx` / `FileGrid.tsx` / `Header.tsx` / `UploadDrawer.tsx` / `MultiSelectToolbar.tsx` / `MimeIcon.tsx` / `ProgressDialog.tsx` / `TextPadDrawer.tsx` 等 MUI 旧件.
 - `package.json` 卸 `@mui/*` + `@emotion/*`.
 - 删 `/files-legacy` 路由.
-- **CSP Report-Only 验证**: 临时在 `_headers` 加 `Content-Security-Policy-Report-Only: default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'; ...`. Playwright 跑 smoke + 翻预览/TextPad/切语言/切主题各一次, 控制台无 CSP 违规告警.
+- **CSP Report-Only 验证**: 临时在 `_headers` 加 `Content-Security-Policy-Report-Only: default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'; ...`. agent 通过 MCP 跑 smoke + 翻预览/TextPad/切语言/切主题各一次, 控制台无 CSP 违规告警.
 
 **风险**:
 
@@ -218,14 +218,14 @@
 - README 重写 (现代化部署步骤 + 自定义登录说明 + **可选: Cloudflare Rate Limiting Rules 配置指引**, 让部署者知道 login 端点没代码级 rate limit).
 - `docs/development.md` — 本地开发指引 (`.dev.vars` 用法, wrangler pages dev, 改密码本地复现验证).
 - Lighthouse 跑生产 URL, 修 Perf/A11y < 90 项.
-- **Playwright `e2e/smoke.spec.ts`** — 单一脚本, 在 fixture 中参数化三个 viewport (`375x667` / `768x1024` / `1280x800`), 每个 viewport 跑完整闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销).
+- **MCP 三尺寸冒烟** — agent 通过 Chrome DevTools MCP / agent-browser 连接本地浏览器, 依次切换 viewport (`375x667` / `768x1024` / `1280x800`), 每个 viewport 跑完整闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销), 截图归档到 `docs/e2e-evidence/phase3-<viewport>.png`.
 - **rclone 真实回归** (S24): 本地配 webdav remote 指向生产, `rclone copy` + `rclone ls` 双向通; **手机文件管理器 BD/Cx 任选一手测一次往返**.
 - 手动跑 S1-S27 验收单, 每条标记结果.
 
 **验证关 ✅**:
 
 - Lighthouse Performance ≥ 90, Accessibility ≥ 90.
-- Playwright smoke 三尺寸全绿.
+- MCP 三尺寸冒烟全过, 截图归档完整.
 - rclone 真实回归通过.
 - 手机文件管理器手测通过.
 - S1-S27 全过.

@@ -44,11 +44,11 @@
 - **Verify**: `npm run lint` 无 error; `npm run format:check` 通过.
 - **Files**: 3.
 
-### T0.7 — Vitest + Playwright 骨架
+### T0.7 — Vitest 骨架
 
-- **Acceptance**: `vitest.config.ts` `playwright.config.ts` 存在. `tests/unit/sanity.test.ts` + `e2e/sanity.spec.ts` 各一个 trivial 测试.
-- **Verify**: `npm run test` 绿; `npm run test:e2e` 绿.
-- **Files**: 4.
+- **Acceptance**: `vitest.config.ts` 存在. `tests/unit/sanity.test.ts` 一个 trivial 测试. `package.json` 新增 `test` / `test:watch` 脚本. **不引入 Playwright** (E2E 走 Chrome DevTools MCP / agent-browser, 不固化 spec).
+- **Verify**: `npm run test` 绿.
+- **Files**: 3.
 
 ### T0.8 — Phase 0 集成烟测
 
@@ -179,7 +179,7 @@
 - **T2a.13** `UploadDropZone` + `UploadDrawer` (复用 multipart).
 - **T2a.14** `SearchBar` (客户端当前目录过滤).
 - **T2a.15** `pages/files.tsx` 组装.
-- **T2a.16** Phase 2a 集成验证 — Playwright 三尺寸 (375 / 768 / 1280) 跑 "登录 → 上传 → 重命名 → 删除" 全绿; ESLint i18next 规则跑通.
+- **T2a.16** Phase 2a 集成验证 — agent 通过 Chrome DevTools MCP 在三尺寸 (375 / 768 / 1280) 跑 "登录 → 上传 → 重命名 → 删除" 全过 (截图存 `docs/e2e-evidence/phase2a-<viewport>.png`); ESLint i18next 规则跑通.
 
 ---
 
@@ -196,7 +196,7 @@
 - **T2b.7** i18n 全量清查 (lint 规则在 2a 已开, 此处人眼通读所有页面切英文眼检漏抽).
 - **T2b.8** `pages/settings.tsx` (语言 / 主题).
 - **T2b.9** 删旧 MUI 组件 + 卸 `@mui/*` `@emotion/*` 依赖 + 删 `/files-legacy` 路由.
-- **T2b.10** CSP Report-Only 验证 — 临时 `_headers` 加 `Content-Security-Policy-Report-Only`, Playwright 跑 smoke + 预览/TextPad/切语言/切主题, 控制台无 CSP 违规告警.
+- **T2b.10** CSP Report-Only 验证 — 临时 `_headers` 加 `Content-Security-Policy-Report-Only`, agent 通过 MCP 跑 smoke + 预览/TextPad/切语言/切主题, 控制台无 CSP 违规告警 (截图归档).
 - **T2b.11** Phase 2b 集成验证 (S14/S16/S17/S18 通过).
 
 ---
@@ -207,7 +207,7 @@
 - **T3.2** README 重写 (现代化部署 + 登录 UX 说明 + **可选 rate limit 配置指引** 引导部署者去 Cloudflare 仪表盘加 Rate Limiting Rule).
 - **T3.3** `docs/development.md` 本地开发指引 + `.dev.vars` 用法 + 改密码本地复现步骤.
 - **T3.4** Lighthouse 跑 + 修 < 90 项.
-- **T3.5** Playwright `e2e/smoke.spec.ts` 实现 (三 viewport 参数化跑同一闭环) + 全绿.
+- **T3.5** MCP 三尺寸冒烟 — agent 通过 Chrome DevTools MCP 连接本地浏览器, 依次切换 viewport (375x667 / 768x1024 / 1280x800), 每个 viewport 跑完整闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销), 截图归档到 `docs/e2e-evidence/phase3-<viewport>.png`, 三尺寸均无横向滚动/溢出.
 - **T3.6** rclone 真实回归 + 手机文件管理器 (BD/Cx 任一) 真实手测 (S24).
 - **T3.7** S1-S27 手动验收, 每条标记结果.
 

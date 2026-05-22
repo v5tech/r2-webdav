@@ -23,30 +23,30 @@
 
 ## 2. Tech Stack
 
-| 类别            | 选型                                                          | 版本         | 说明                           |
-| --------------- | ------------------------------------------------------------- | ------------ | ------------------------------ |
-| 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现       |
-| 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变          |
-| 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV               |
-| 前端框架        | React                                                         | 18.x         | 不升 19                        |
-| 构建工具        | Vite                                                          | ^7           | 替换 CRA                       |
-| 路由            | React Router                                                  | ^7           |                                |
-| 类型系统        | TypeScript                                                    | ^5.5         | strict                         |
-| 样式            | Tailwind CSS                                                  | ^3.4         |                                |
-| 组件库          | shadcn/ui                                                     | latest       | 复制进 `src/components/ui/`    |
-| 状态/数据       | TanStack Query                                                | ^5           |                                |
-| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                |
-| i18n            | react-i18next                                                 | ^14          | 中文默认                       |
-| 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes               |
-| PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs          |
-| 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                    |
-| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架 |
-| 测试 (单元)     | Vitest + RTL                                                  | latest       |                                |
-| 测试 (E2E)      | Playwright                                                    | latest       | 仅核心闭环                     |
-| Lint            | ESLint 9 flat                                                 | latest       |                                |
-| 格式化          | Prettier                                                      | latest       | 单引号/无分号/Tab 宽 2         |
-| 包管理          | npm                                                           | Node 20 LTS+ |                                |
-| 工具链          | wrangler                                                      | latest       | 仅本地 Pages dev, 不用 D1 命令 |
+| 类别            | 选型                                                          | 版本         | 说明                                             |
+| --------------- | ------------------------------------------------------------- | ------------ | ------------------------------------------------ |
+| 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现                         |
+| 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变                            |
+| 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV                                 |
+| 前端框架        | React                                                         | 18.x         | 不升 19                                          |
+| 构建工具        | Vite                                                          | ^7           | 替换 CRA                                         |
+| 路由            | React Router                                                  | ^7           |                                                  |
+| 类型系统        | TypeScript                                                    | ^5.5         | strict                                           |
+| 样式            | Tailwind CSS                                                  | ^3.4         |                                                  |
+| 组件库          | shadcn/ui                                                     | latest       | 复制进 `src/components/ui/`                      |
+| 状态/数据       | TanStack Query                                                | ^5           |                                                  |
+| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                                  |
+| i18n            | react-i18next                                                 | ^14          | 中文默认                                         |
+| 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes                                 |
+| PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs                            |
+| 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                                      |
+| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架                   |
+| 测试 (单元)     | Vitest + RTL                                                  | latest       |                                                  |
+| 测试 (E2E)      | Chrome DevTools MCP / agent-browser                           | —            | agent 即时驱动真实浏览器 (CDP), 不维护 spec 文件 |
+| Lint            | ESLint 9 flat                                                 | latest       |                                                  |
+| 格式化          | Prettier                                                      | latest       | 单引号/无分号/Tab 宽 2                           |
+| 包管理          | npm                                                           | Node 20 LTS+ |                                                  |
+| 工具链          | wrangler                                                      | latest       | 仅本地 Pages dev, 不用 D1 命令                   |
 
 ## 3. Commands
 
@@ -61,7 +61,6 @@
 | `npm run lint` / `lint:fix`       | ESLint                        |
 | `npm run format` / `format:check` | Prettier                      |
 | `npm run test` / `test:watch`     | Vitest                        |
-| `npm run test:e2e`                | Playwright                    |
 
 提交前必跑: `npm run typecheck && npm run lint && npm run test`.
 
@@ -122,7 +121,7 @@
 │   ├── locales/{zh,en}.json
 │   └── styles/globals.css
 ├── tests/{unit,integration}/
-├── e2e/
+├── docs/e2e-evidence/             # MCP 驱动 E2E 跑出来的截图证据 (按 viewport 归档)
 ├── public/
 ├── index.html
 ├── vite.config.ts
@@ -131,7 +130,6 @@
 ├── tsconfig.json
 ├── eslint.config.js
 ├── .prettierrc
-├── playwright.config.ts
 ├── vitest.config.ts
 ├── wrangler.toml               # 仅 BUCKET binding, 无 D1
 ├── package.json
@@ -215,13 +213,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
 1. **Unit (Vitest)** — `tests/unit/`. 纯函数: 常量时间比较、JWT 签发验签、XML 转义.
 2. **Integration (Vitest + miniflare)** — `tests/integration/`. 本地 Pages Functions 全链路, 含 /api/login → /api/me, /webdav/ 的双重鉴权.
-3. **E2E (Playwright)** — `e2e/`. 仅核心闭环: 登录 → 上传 → 预览 → 重命名 → 删除 → 注销. 桌面 chromium 一种.
+3. **E2E (Chrome DevTools MCP / agent-browser)** — 不维护 spec 文件. agent 通过 CDP 连接本地真实浏览器, 即时驱动核心闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销), 截图存到 `docs/e2e-evidence/<phase>-<viewport>.png` 作回归基线. 桌面 chromium 一种.
 
 ### 覆盖
 
 - 必须有: `_shared/auth.ts`, `_shared/xml.ts`, multipart 上传切片逻辑.
 - 不强求行覆盖率%, 关键路径绿就行.
-- 不为 UI 组件写单元 (留给 E2E).
+- 不为 UI 组件写单元 (留给 MCP E2E).
 
 ## 7. Boundaries
 
@@ -293,7 +291,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
 - **S19**: Vite 构建初始 bundle ≤ 500 KB (gzipped).
 - **S20**: `npm run typecheck` / `lint` / `test` 全绿.
-- **S21**: `npm run test:e2e` 核心闭环全绿 — Playwright 在 viewport `375 × 667` / `768 × 1024` / `1280 × 800` 三种尺寸下分别跑同一冒烟脚本均通过 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销); 三尺寸下均无横向滚动、无元素溢出.
+- **S21**: 核心闭环全过 — agent 通过 Chrome DevTools MCP / agent-browser 连接本地真实浏览器, 在 viewport `375 × 667` / `768 × 1024` / `1280 × 800` 三种尺寸下分别跑同一闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销) 均通过; 三尺寸下均无横向滚动、无元素溢出; 截图归档到 `docs/e2e-evidence/<phase>-<viewport>.png`.
 - **S22**: 根目录 `Main.tsx` / `TextPadDrawer.tsx` / `utils/s3.ts` 已删, `grep -rn '@mui\|react-scripts' .` 仅命中 `package-lock.json` 历史.
 - **S23**: Lighthouse (生产部署, 桌面 viewport) Performance ≥ 90, Accessibility ≥ 90.
 
