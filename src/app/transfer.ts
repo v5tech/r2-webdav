@@ -72,18 +72,17 @@ export async function generateThumbnail(file: File) {
     })
     ctx.drawImage(video, 0, 0, THUMBNAIL_SIZE, THUMBNAIL_SIZE)
   } else if (file.type === 'application/pdf') {
-    const pdfjsLib = await import(
-      // @ts-ignore
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs'
-    )
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs'
+    const pdfjsLib = await import('pdfjs-dist')
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url,
+    ).toString()
     const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise
     const page = await pdf.getPage(1)
     const { width, height } = page.getViewport({ scale: 1 })
     var scale = THUMBNAIL_SIZE / Math.max(width, height)
     const viewport = page.getViewport({ scale })
-    const renderContext = { canvasContext: ctx, viewport }
+    const renderContext = { canvas, canvasContext: ctx, viewport }
     await page.render(renderContext).promise
   }
 
