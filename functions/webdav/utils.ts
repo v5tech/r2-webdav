@@ -24,14 +24,10 @@ export function notFound() {
 }
 
 export function parseBucketPath(context: any): [R2Bucket, string] {
-  const { request, env, params } = context
-  const url = new URL(request.url)
-
+  const { env, params } = context
   const pathSegments = (params.path || []) as String[]
   const path = decodeURIComponent(pathSegments.join('/'))
-  const driveid = url.hostname.replace(/\..*/, '')
-
-  return [env[driveid] || env['BUCKET'], path]
+  return [env.BUCKET, path]
 }
 
 export async function* listAll(bucket: R2Bucket, prefix?: string, isRecursive: boolean = false) {
