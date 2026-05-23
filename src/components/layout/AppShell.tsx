@@ -8,9 +8,10 @@ import { Sidebar } from './Sidebar'
 
 interface AppShellProps {
   children: ReactNode
+  onUpload?: (files: File[]) => void
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, onUpload }: AppShellProps) {
   const { isMobile } = useViewport()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
@@ -20,7 +21,11 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <Header showMenuButton={isMobile} onMenuClick={() => setMobileSidebarOpen(true)} />
+      <Header
+        showMenuButton={isMobile}
+        onMenuClick={() => setMobileSidebarOpen(true)}
+        onUpload={onUpload}
+      />
       <div className="flex flex-1 overflow-hidden">
         {!isMobile ? (
           <aside className="w-64 shrink-0 border-r">

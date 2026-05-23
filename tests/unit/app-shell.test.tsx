@@ -103,3 +103,51 @@ describe('Header logout', () => {
     )
   })
 })
+
+describe('Header upload', () => {
+  it('hides upload button when onUpload not provided', () => {
+    renderShell()
+    expect(screen.queryByRole('button', { name: /upload/i })).toBeNull()
+  })
+
+  it('renders upload button when onUpload provided', () => {
+    const onUpload = vi.fn()
+    render(
+      <MemoryRouter initialEntries={['/files']}>
+        <Routes>
+          <Route
+            path="/files"
+            element={
+              <AppShell onUpload={onUpload}>
+                <div data-testid="main">main</div>
+              </AppShell>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
+  })
+
+  it('change on hidden file input calls onUpload with files', () => {
+    const onUpload = vi.fn()
+    render(
+      <MemoryRouter initialEntries={['/files']}>
+        <Routes>
+          <Route
+            path="/files"
+            element={
+              <AppShell onUpload={onUpload}>
+                <div data-testid="main">main</div>
+              </AppShell>
+            }
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+    const input = screen.getByTestId('upload-input') as HTMLInputElement
+    const file = new File(['x'], 'a.txt')
+    fireEvent.change(input, { target: { files: [file] } })
+    expect(onUpload).toHaveBeenCalledWith([file])
+  })
+})

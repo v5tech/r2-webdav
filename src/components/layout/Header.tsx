@@ -1,4 +1,6 @@
-import { LogOutIcon, MenuIcon } from 'lucide-react'
+import { LogOutIcon, MenuIcon, UploadIcon } from 'lucide-react'
+import { useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
@@ -7,10 +9,13 @@ import { api } from '@/lib/api'
 interface HeaderProps {
   showMenuButton: boolean
   onMenuClick: () => void
+  onUpload?: (files: File[]) => void
 }
 
-export function Header({ showMenuButton, onMenuClick }: HeaderProps) {
+export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleLogout = async () => {
     try {
@@ -19,6 +24,12 @@ export function Header({ showMenuButton, onMenuClick }: HeaderProps) {
       // proceed to /login regardless of logout outcome
     }
     navigate('/login', { replace: true })
+  }
+
+  function handlePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length && onUpload) onUpload(files)
+    e.target.value = ''
   }
 
   return (
@@ -35,6 +46,26 @@ export function Header({ showMenuButton, onMenuClick }: HeaderProps) {
       ) : null}
       <img src="/logo144.png" alt="FlareDrive" className="size-7" />
       <div className="flex-1" />
+      {onUpload ? (
+        <>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handlePick}
+            data-testid="upload-input"
+          />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => inputRef.current?.click()}
+            aria-label={t('files.upload.button')}
+          >
+            <UploadIcon />
+          </Button>
+        </>
+      ) : null}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -46,3 +77,4 @@ export function Header({ showMenuButton, onMenuClick }: HeaderProps) {
     </header>
   )
 }
+
