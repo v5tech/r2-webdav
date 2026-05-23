@@ -24,14 +24,20 @@ describe('PreviewDialog type dispatch', () => {
     expect(img.getAttribute('src')).toBe('/webdav/photos/pic%20name.png')
   })
 
-  it('renders VideoPreview stub for video/* contentType', () => {
-    renderPreview(makeFile('video/mp4', 'clip.mp4'))
-    expect(screen.getByTestId('video-preview-stub')).toBeInTheDocument()
+  it('renders VideoPreview with /webdav/<encoded> src for video/* contentType', () => {
+    renderPreview(makeFile('video/mp4', 'clips/my clip.mp4'))
+    const video = document.querySelector('video')
+    expect(video).not.toBeNull()
+    expect(video?.getAttribute('src')).toBe('/webdav/clips/my%20clip.mp4')
+    expect(video?.hasAttribute('controls')).toBe(true)
   })
 
-  it('renders AudioPreview stub for audio/* contentType', () => {
-    renderPreview(makeFile('audio/mpeg', 'song.mp3'))
-    expect(screen.getByTestId('audio-preview-stub')).toBeInTheDocument()
+  it('renders AudioPreview with /webdav/<encoded> src for audio/* contentType', () => {
+    renderPreview(makeFile('audio/mpeg', 'music/song name.mp3'))
+    const audio = document.querySelector('audio')
+    expect(audio).not.toBeNull()
+    expect(audio?.getAttribute('src')).toBe('/webdav/music/song%20name.mp3')
+    expect(audio?.hasAttribute('controls')).toBe(true)
   })
 
   it('renders PdfPreview stub for application/pdf contentType', () => {
