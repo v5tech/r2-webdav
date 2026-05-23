@@ -46,6 +46,8 @@
     "search": {
       "placeholder": "Search in this folder",
       "clear": "Clear search"
-    }
+    },
+    "loading": "Loading...",
+    "retry": "Retry"
   }
 }
