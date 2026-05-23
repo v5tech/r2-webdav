@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchPath } from '../../src/lib/webdav'
+import { fetchPath, isDirectory } from '../../src/lib/webdav'
+import type { FileItem } from '../../src/lib/types'
 
 const fetchMock = vi.fn()
 
@@ -146,5 +147,26 @@ describe('fetchPath', () => {
     fetchMock.mockResolvedValueOnce(xmlResponse(xml))
     const items = await fetchPath('a b/')
     expect(items[0].key).toBe('a b/c d.txt')
+  })
+})
+
+describe('isDirectory', () => {
+  function make(contentType: string): FileItem {
+    return {
+      key: 'foo',
+      size: 0,
+      uploaded: '',
+      httpMetadata: { contentType },
+    }
+  }
+
+  it('returns true for application/x-directory', () => {
+    expect(isDirectory(make('application/x-directory'))).toBe(true)
+  })
+
+  it('returns false for regular files', () => {
+    expect(isDirectory(make('text/plain'))).toBe(false)
+    expect(isDirectory(make('image/png'))).toBe(false)
+    expect(isDirectory(make(''))).toBe(false)
   })
 })

@@ -6,6 +6,10 @@ export function encodeKey(key: string) {
   return key.split('/').map(encodeURIComponent).join('/')
 }
 
+export function isDirectory(file: FileItem) {
+  return file.httpMetadata?.contentType === 'application/x-directory'
+}
+
 export async function fetchPath(path: string): Promise<FileItem[]> {
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(path)}`, {
     method: 'PROPFIND',
