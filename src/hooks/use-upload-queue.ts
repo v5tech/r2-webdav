@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { generateImageThumbnail, uploadThumbnail } from '@/lib/thumbnail'
 import { uploadFile as defaultUploadFile, type UploadProgress } from '@/lib/webdav'
 
 export interface UploadTask {
@@ -19,6 +20,7 @@ export interface UseUploadQueueOptions {
     file: File,
     onProgress: UploadProgress,
     signal: AbortSignal,
+    thumbnailHash?: string,
   ) => Promise<void>
 }
 
@@ -78,42 +80,55 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
     setTasks((prev) =>
       prev.map((t) => (t.id === next.id ? { ...t, status: 'uploading' } : t)),
     )
-    upload(
-      next.cwd + next.file.name,
-      next.file,
-      (loaded, total) => {
-        setTasks((prev) => prev.map((t) => (t.id === next.id ? { ...t, loaded, total } : t)))
-      },
-      controller.signal,
-    )
-      .then(() => {
-        setTasks((prev) => {
-          const updated = prev.map((t) =>
-            t.id === next.id && t.status === 'uploading'
-              ? { ...t, status: 'completed' as const, loaded: t.total }
-              : t,
-          )
-          const completed = updated.find((t) => t.id === next.id)
-          if (completed?.status === 'completed') onCompletedRef.current?.(completed)
-          return updated
+    void (async () => {
+      let thumbnailHash: string | undefined
+      if (next.file.type.startsWith('image/')) {
+        try {
+          const { blob, hash } = await generateImageThumbnail(next.file)
+          await uploadThumbnail(blob, hash, controller.signal)
+          thumbnailHash = hash
+        } catch {
+          // 静默跳过：thumbnail 是次要功能，不阻塞主上传
+        }
+      }
+      upload(
+        next.cwd + next.file.name,
+        next.file,
+        (loaded, total) => {
+          setTasks((prev) => prev.map((t) => (t.id === next.id ? { ...t, loaded, total } : t)))
+        },
+        controller.signal,
+        thumbnailHash,
+      )
+        .then(() => {
+          setTasks((prev) => {
+            const updated = prev.map((t) =>
+              t.id === next.id && t.status === 'uploading'
+                ? { ...t, status: 'completed' as const, loaded: t.total }
+                : t,
+            )
+            const completed = updated.find((t) => t.id === next.id)
+            if (completed?.status === 'completed') onCompletedRef.current?.(completed)
+            return updated
+          })
+          controllers.current.delete(next.id)
+          processing.current = false
         })
-        controllers.current.delete(next.id)
-        processing.current = false
-      })
-      .catch((err: Error) => {
-        const aborted = controller.signal.aborted || err.name === 'AbortError'
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === next.id
-              ? aborted
-                ? { ...t, status: 'cancelled' as const }
-                : { ...t, status: 'failed' as const, error: err.message }
-              : t,
-          ),
-        )
-        controllers.current.delete(next.id)
-        processing.current = false
-      })
+        .catch((err: Error) => {
+          const aborted = controller.signal.aborted || err.name === 'AbortError'
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === next.id
+                ? aborted
+                  ? { ...t, status: 'cancelled' as const }
+                  : { ...t, status: 'failed' as const, error: err.message }
+                : t,
+            ),
+          )
+          controllers.current.delete(next.id)
+          processing.current = false
+        })
+    })()
   }, [tasks, upload])
 
   return { tasks, enqueue, clearCompleted, cancel }

@@ -39,13 +39,16 @@ export async function uploadFile(
   file: File,
   onProgress?: UploadProgress,
   signal?: AbortSignal,
+  thumbnailHash?: string,
 ): Promise<void> {
   const contentType = file.type || 'application/octet-stream'
+  const baseHeaders: Record<string, string> = { 'Content-Type': contentType }
+  if (thumbnailHash) baseHeaders['fd-thumbnail'] = thumbnailHash
   if (file.size < UPLOAD_CHUNK_SIZE) {
     onProgress?.(0, file.size)
     const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, {
       method: 'PUT',
-      headers: { 'Content-Type': contentType },
+      headers: baseHeaders,
       body: file,
       signal,
     })
@@ -53,19 +56,19 @@ export async function uploadFile(
     onProgress?.(file.size, file.size)
     return
   }
-  await multipartUpload(key, file, contentType, onProgress, signal)
+  await multipartUpload(key, file, baseHeaders, onProgress, signal)
 }
 
 async function multipartUpload(
   key: string,
   file: File,
-  contentType: string,
+  initHeaders: Record<string, string>,
   onProgress?: UploadProgress,
   signal?: AbortSignal,
 ): Promise<void> {
   const initRes = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}?uploads`, {
     method: 'POST',
-    headers: { 'Content-Type': contentType },
+    headers: initHeaders,
     signal,
   })
   if (!initRes.ok) throw new Error(`Failed to start multipart: ${initRes.status}`)

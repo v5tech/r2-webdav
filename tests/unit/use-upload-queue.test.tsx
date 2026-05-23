@@ -1,7 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook, waitFor } from '@testing-library/react'
 
+vi.mock('@/lib/thumbnail', () => ({
+  generateImageThumbnail: vi.fn(),
+  uploadThumbnail: vi.fn(),
+}))
+
+import { generateImageThumbnail, uploadThumbnail } from '@/lib/thumbnail'
+
 import { useUploadQueue } from '../../src/hooks/use-upload-queue'
+
+const generateThumbMock = vi.mocked(generateImageThumbnail)
+const uploadThumbMock = vi.mocked(uploadThumbnail)
 
 function deferred<T>() {
   let resolve!: (v: T) => void
@@ -18,6 +28,8 @@ beforeEach(() => {
     let i = 0
     ;(crypto as { randomUUID: () => string }).randomUUID = () => `id-${i++}`
   }
+  generateThumbMock.mockReset()
+  uploadThumbMock.mockReset()
 })
 
 describe('useUploadQueue', () => {
@@ -54,6 +66,7 @@ describe('useUploadQueue', () => {
       expect.any(File),
       expect.any(Function),
       expect.any(AbortSignal),
+      undefined,
     )
   })
 
@@ -209,5 +222,45 @@ describe('useUploadQueue', () => {
       await d.promise.catch(() => {})
     })
     await waitFor(() => expect(result.current.tasks[0].status).toBe('cancelled'))
+  })
+
+  it('image upload generates thumbnail and passes hash to upload', async () => {
+    const d = deferred<void>()
+    const upload = vi.fn(() => d.promise)
+    generateThumbMock.mockResolvedValue({ blob: new Blob(['t']), hash: 'sha1hex' })
+    uploadThumbMock.mockResolvedValue()
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [new File(['img'], 'photo.png', { type: 'image/png' })])
+    })
+    await waitFor(() => expect(upload).toHaveBeenCalled())
+    expect(generateThumbMock).toHaveBeenCalledTimes(1)
+    expect(uploadThumbMock).toHaveBeenCalledWith(expect.any(Blob), 'sha1hex', expect.any(AbortSignal))
+    expect(upload.mock.calls[0][4]).toBe('sha1hex')
+  })
+
+  it('non-image upload skips thumbnail generation', async () => {
+    const d = deferred<void>()
+    const upload = vi.fn(() => d.promise)
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [new File(['t'], 'doc.txt', { type: 'text/plain' })])
+    })
+    await waitFor(() => expect(upload).toHaveBeenCalled())
+    expect(generateThumbMock).not.toHaveBeenCalled()
+    expect(uploadThumbMock).not.toHaveBeenCalled()
+    expect(upload.mock.calls[0][4]).toBeUndefined()
+  })
+
+  it('thumbnail generation failure does not block upload', async () => {
+    const d = deferred<void>()
+    const upload = vi.fn(() => d.promise)
+    generateThumbMock.mockRejectedValue(new Error('canvas failure'))
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [new File(['img'], 'p.png', { type: 'image/png' })])
+    })
+    await waitFor(() => expect(upload).toHaveBeenCalled())
+    expect(upload.mock.calls[0][4]).toBeUndefined()
   })
 })
