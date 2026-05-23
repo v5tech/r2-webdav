@@ -45,9 +45,14 @@ describe('PreviewDialog type dispatch', () => {
     expect(screen.getByTestId('pdf-preview-stub')).toBeInTheDocument()
   })
 
-  it('renders TextPreview stub for text/* contentType', () => {
+  it('renders TextPreview for text/* contentType', () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockReturnValue(new Promise(() => {})),
+    )
     renderPreview(makeFile('text/plain', 'readme.txt'))
-    expect(screen.getByTestId('text-preview-stub')).toBeInTheDocument()
+    expect(document.querySelector('[data-testid^="text-preview"]')).not.toBeNull()
+    vi.unstubAllGlobals()
   })
 
   it('renders UnsupportedPreview for unknown contentType', () => {

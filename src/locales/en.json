@@ -75,6 +75,10 @@
     "stub": {
       "coming": "{{type}} preview coming soon"
     },
+    "text": {
+      "oversize": "File too large to preview here.",
+      "error": "Failed to load text"
+    },
     "unsupported": {
       "description": "This file type cannot be previewed in the browser.",
       "openExternal": "Open in new tab"

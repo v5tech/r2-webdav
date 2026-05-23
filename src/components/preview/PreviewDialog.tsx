@@ -9,7 +9,8 @@ import type { FileItem } from '@/lib/types'
 
 import { AudioPreview } from './AudioPreview'
 import { ImagePreview } from './ImagePreview'
-import { PdfPreview, TextPreview } from './stubs'
+import { PdfPreview } from './stubs'
+import { TextPreview } from './TextPreview'
 import { UnsupportedPreview } from './UnsupportedPreview'
 import { VideoPreview } from './VideoPreview'
 
@@ -29,7 +30,7 @@ function dispatchBody(file: FileItem) {
   if (type.startsWith('video/')) return <VideoPreview fileKey={file.key} />
   if (type.startsWith('audio/')) return <AudioPreview fileKey={file.key} />
   if (type === 'application/pdf') return <PdfPreview type={type} />
-  if (type.startsWith('text/')) return <TextPreview type={type} />
+  if (type.startsWith('text/')) return <TextPreview fileKey={file.key} size={file.size} />
   return <UnsupportedPreview fileKey={file.key} />
 }
 
