@@ -3,6 +3,7 @@ import tseslint from 'typescript-eslint'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import importPlugin from 'eslint-plugin-import'
+import i18next from 'eslint-plugin-i18next'
 import prettier from 'eslint-config-prettier'
 import globals from 'globals'
 
@@ -85,6 +86,19 @@ export default tseslint.config(
       'no-var': 'warn',
       'no-async-promise-executor': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',
+    },
+  },
+  // Phase 2a new UI components: enforce i18n on visible JSX text.
+  // Scope intentionally narrow — legacy MUI files and pre-i18n pages (login) untouched.
+  {
+    files: [
+      'src/components/layout/**/*.{ts,tsx}',
+      'src/components/files/**/*.{ts,tsx}',
+      'src/components/upload/**/*.{ts,tsx}',
+    ],
+    plugins: { i18next },
+    rules: {
+      'i18next/no-literal-string': ['warn', { mode: 'jsx-text-only' }],
     },
   },
   prettier,
