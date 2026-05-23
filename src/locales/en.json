@@ -30,6 +30,18 @@
       "clear": "Clear selection",
       "count_one": "{{count}} selected",
       "count_other": "{{count}} selected"
+    },
+    "upload": {
+      "dropHere": "Drop files to upload",
+      "button": "Upload files",
+      "queueTitle": "Uploads",
+      "clearCompleted": "Clear completed",
+      "status": {
+        "pending": "Pending",
+        "uploading": "Uploading",
+        "completed": "Done",
+        "failed": "Failed"
+      }
     }
   }
 }

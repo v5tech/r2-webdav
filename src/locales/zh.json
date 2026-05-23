@@ -30,6 +30,18 @@
       "clear": "清除选择",
       "count_one": "已选 {{count}} 项",
       "count_other": "已选 {{count}} 项"
+    },
+    "upload": {
+      "dropHere": "拖拽文件到此上传",
+      "button": "上传文件",
+      "queueTitle": "上传队列",
+      "clearCompleted": "清除已完成",
+      "status": {
+        "pending": "等待中",
+        "uploading": "上传中",
+        "completed": "完成",
+        "failed": "失败"
+      }
     }
   }
 }
