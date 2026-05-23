@@ -1,4 +1,5 @@
 import { MoreHorizontalIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +25,7 @@ function extractFilename(key: string) {
 }
 
 export function FileCard({ file, onCwdChange, onRename, onDelete }: FileCardProps) {
+  const { t } = useTranslation()
   const dir = isDirectory(file)
   const name = extractFilename(file.key)
   const thumb = file.customMetadata?.thumbnail
@@ -70,12 +72,16 @@ export function FileCard({ file, onCwdChange, onRename, onDelete }: FileCardProp
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => onRename(file)}>Rename</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => onDelete(file)}>Delete</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onRename(file)}>
+            {t('files.menu.rename')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onDelete(file)}>
+            {t('files.menu.delete')}
+          </DropdownMenuItem>
           {!dir && (
             <DropdownMenuItem asChild>
               <a href={`/webdav/${encodeKey(file.key)}`} download>
-                Download
+                {t('files.menu.download')}
               </a>
             </DropdownMenuItem>
           )}

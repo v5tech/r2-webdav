@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest'
+import '../src/lib/i18n'
 
 if (typeof window !== 'undefined') {
   if (!Element.prototype.hasPointerCapture) {

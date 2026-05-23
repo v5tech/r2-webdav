@@ -1,1 +1,9 @@
-{}
+{
+  "files": {
+    "menu": {
+      "rename": "Rename",
+      "delete": "Delete",
+      "download": "Download"
+    }
+  }
+}

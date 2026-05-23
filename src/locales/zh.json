@@ -1,1 +1,9 @@
-{}
+{
+  "files": {
+    "menu": {
+      "rename": "重命名",
+      "delete": "删除",
+      "download": "下载"
+    }
+  }
+}
