@@ -26,4 +26,11 @@ describe('Sidebar', () => {
     expect(link).toBeInTheDocument()
     expect(link.getAttribute('href')).toBe('/trash')
   })
+
+  it('renders Settings link pointing to /settings', () => {
+    renderSidebar()
+    const link = screen.getByRole('link', { name: /settings|设置/i })
+    expect(link).toBeInTheDocument()
+    expect(link.getAttribute('href')).toBe('/settings')
+  })
 })

@@ -56,7 +56,8 @@
     "menu": "Menu",
     "primary": "Primary navigation",
     "files": "Files",
-    "trash": "Trash"
+    "trash": "Trash",
+    "settings": "Settings"
   },
   "header": {
     "theme": {
@@ -98,6 +99,17 @@
       "description": "This action cannot be undone.",
       "cancel": "Cancel",
       "confirm": "Delete"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": {
+      "title": "Theme",
+      "description": "Choose how FlareDrive looks."
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choose interface language."
     }
   }
 }

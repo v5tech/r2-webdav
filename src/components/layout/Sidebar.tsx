@@ -1,4 +1,4 @@
-import { FolderIcon, Trash2Icon } from 'lucide-react'
+import { FolderIcon, SettingsIcon, Trash2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -19,6 +19,13 @@ export function Sidebar() {
       >
         <Trash2Icon className="size-4" />
         {t('nav.trash')}
+      </Link>
+      <Link
+        to="/settings"
+        className="flex items-center gap-2 rounded px-3 py-2 text-sm hover:bg-muted"
+      >
+        <SettingsIcon className="size-4" />
+        {t('nav.settings')}
       </Link>
     </nav>
   )

@@ -56,7 +56,8 @@
     "menu": "菜单",
     "primary": "主导航",
     "files": "文件",
-    "trash": "回收站"
+    "trash": "回收站",
+    "settings": "设置"
   },
   "header": {
     "theme": {
@@ -98,6 +99,17 @@
       "description": "此操作无法撤销。",
       "cancel": "取消",
       "confirm": "删除"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "theme": {
+      "title": "主题",
+      "description": "选择 FlareDrive 的外观。"
+    },
+    "language": {
+      "title": "语言",
+      "description": "选择界面语言。"
     }
   }
 }

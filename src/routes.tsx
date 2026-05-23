@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom'
 import { RequireAuth } from './components/auth/RequireAuth'
 import FilesPage from './pages/files'
 import LoginPage from './pages/login'
+import SettingsPage from './pages/settings'
 import TrashPage from './pages/trash'
 
 export const routes: RouteObject[] = [
@@ -21,6 +22,14 @@ export const routes: RouteObject[] = [
     element: (
       <RequireAuth>
         <TrashPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <RequireAuth>
+        <SettingsPage />
       </RequireAuth>
     ),
   },

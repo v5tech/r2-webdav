@@ -23,6 +23,12 @@ describe('app routes', () => {
     expect(isValidElement(r!.element)).toBe(true)
   })
 
+  it('exposes /settings route with element', () => {
+    const r = routes.find((x) => x.path === '/settings')
+    expect(r).toBeDefined()
+    expect(isValidElement(r!.element)).toBe(true)
+  })
+
   it('redirects / to /files via <Navigate>', () => {
     const r = routes.find((x) => x.path === '/')
     expect(r).toBeDefined()
