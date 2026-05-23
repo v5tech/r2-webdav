@@ -71,6 +71,15 @@
       "en": "English"
     }
   },
+  "preview": {
+    "stub": {
+      "coming": "{{type}} 预览即将到来"
+    },
+    "unsupported": {
+      "description": "此文件类型无法在浏览器内预览。",
+      "openExternal": "在新标签打开"
+    }
+  },
   "trash": {
     "title": "回收站",
     "empty": "回收站为空",

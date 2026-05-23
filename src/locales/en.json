@@ -71,6 +71,15 @@
       "en": "English"
     }
   },
+  "preview": {
+    "stub": {
+      "coming": "{{type}} preview coming soon"
+    },
+    "unsupported": {
+      "description": "This file type cannot be previewed in the browser.",
+      "openExternal": "Open in new tab"
+    }
+  },
   "trash": {
     "title": "Trash",
     "empty": "Trash is empty",
