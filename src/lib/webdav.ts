@@ -10,6 +10,20 @@ export function isDirectory(file: FileItem) {
   return file.httpMetadata?.contentType === 'application/x-directory'
 }
 
+export async function createFolder(key: string): Promise<void> {
+  const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'MKCOL' })
+  if (!res.ok) throw new Error(`Failed to create folder: ${res.status}`)
+}
+
+export async function moveFile(source: string, target: string): Promise<void> {
+  const dest = new URL(`${WEBDAV_ENDPOINT}${encodeKey(target)}`, window.location.href)
+  const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(source)}`, {
+    method: 'MOVE',
+    headers: { Destination: dest.href },
+  })
+  if (!res.ok) throw new Error(`Failed to move: ${res.status}`)
+}
+
 export async function fetchPath(path: string): Promise<FileItem[]> {
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(path)}`, {
     method: 'PROPFIND',

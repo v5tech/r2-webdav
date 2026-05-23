@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fetchPath, isDirectory } from '../../src/lib/webdav'
+import { createFolder, fetchPath, isDirectory, moveFile } from '../../src/lib/webdav'
 import type { FileItem } from '../../src/lib/types'
 
 const fetchMock = vi.fn()
@@ -168,5 +168,37 @@ describe('isDirectory', () => {
     expect(isDirectory(make('text/plain'))).toBe(false)
     expect(isDirectory(make('image/png'))).toBe(false)
     expect(isDirectory(make(''))).toBe(false)
+  })
+})
+
+describe('createFolder', () => {
+  it('sends MKCOL to /webdav/<encoded>', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 201 }))
+    await createFolder('foo/bar baz')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/webdav/foo/bar%20baz')
+    expect(init.method).toBe('MKCOL')
+  })
+
+  it('throws on non-OK response', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 409 }))
+    await expect(createFolder('exists/')).rejects.toThrow(/409/)
+  })
+})
+
+describe('moveFile', () => {
+  it('sends MOVE with Destination header (absolute URL)', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 201 }))
+    await moveFile('a/old name.txt', 'a/new name.txt')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/webdav/a/old%20name.txt')
+    expect(init.method).toBe('MOVE')
+    expect(init.headers.Destination).toMatch(/\/webdav\/a\/new%20name\.txt$/)
+    expect(init.headers.Destination.startsWith('http')).toBe(true)
+  })
+
+  it('throws on non-OK response', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 412 }))
+    await expect(moveFile('a', 'b')).rejects.toThrow(/412/)
   })
 })
