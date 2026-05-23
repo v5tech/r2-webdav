@@ -40,8 +40,10 @@
         "pending": "等待中",
         "uploading": "上传中",
         "completed": "完成",
-        "failed": "失败"
-      }
+        "failed": "失败",
+        "cancelled": "已取消"
+      },
+      "cancel": "取消"
     },
     "search": {
       "placeholder": "在当前目录搜索",

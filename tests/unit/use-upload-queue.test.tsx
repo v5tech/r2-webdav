@@ -53,6 +53,7 @@ describe('useUploadQueue', () => {
       'docs/a.txt',
       expect.any(File),
       expect.any(Function),
+      expect.any(AbortSignal),
     )
   })
 
@@ -164,5 +165,49 @@ describe('useUploadQueue', () => {
     })
     await waitFor(() => expect(onCompleted).toHaveBeenCalled())
     expect(onCompleted.mock.calls[0][0].status).toBe('completed')
+  })
+
+  it('cancel pending task marks it cancelled without invoking upload', async () => {
+    const d = deferred<void>()
+    const upload = vi.fn(() => d.promise)
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [
+        new File(['1'], 'a.txt'),
+        new File(['2'], 'b.txt'),
+      ])
+    })
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
+    const secondId = result.current.tasks[1].id
+    act(() => result.current.cancel(secondId))
+    await waitFor(() => {
+      expect(result.current.tasks[1].status).toBe('cancelled')
+    })
+    expect(upload).toHaveBeenCalledTimes(1)
+    expect(upload.mock.calls[0][1].name).toBe('a.txt')
+  })
+
+  it('cancel uploading task aborts signal and marks it cancelled', async () => {
+    const d = deferred<void>()
+    let receivedSignal: AbortSignal | undefined
+    const upload = vi.fn((_key, _file, _onProgress, signal: AbortSignal) => {
+      receivedSignal = signal
+      return d.promise
+    })
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [new File(['x'], 'big.bin')])
+    })
+    await waitFor(() => expect(result.current.tasks[0].status).toBe('uploading'))
+    expect(receivedSignal).toBeDefined()
+    expect(receivedSignal!.aborted).toBe(false)
+    const id = result.current.tasks[0].id
+    act(() => result.current.cancel(id))
+    expect(receivedSignal!.aborted).toBe(true)
+    await act(async () => {
+      d.reject(Object.assign(new Error('aborted'), { name: 'AbortError' }))
+      await d.promise.catch(() => {})
+    })
+    await waitFor(() => expect(result.current.tasks[0].status).toBe('cancelled'))
   })
 })

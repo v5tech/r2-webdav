@@ -38,6 +38,7 @@ export async function uploadFile(
   key: string,
   file: File,
   onProgress?: UploadProgress,
+  signal?: AbortSignal,
 ): Promise<void> {
   const contentType = file.type || 'application/octet-stream'
   if (file.size < UPLOAD_CHUNK_SIZE) {
@@ -46,12 +47,13 @@ export async function uploadFile(
       method: 'PUT',
       headers: { 'Content-Type': contentType },
       body: file,
+      signal,
     })
     if (!res.ok) throw new Error(`Failed to upload: ${res.status}`)
     onProgress?.(file.size, file.size)
     return
   }
-  await multipartUpload(key, file, contentType, onProgress)
+  await multipartUpload(key, file, contentType, onProgress, signal)
 }
 
 async function multipartUpload(
@@ -59,10 +61,12 @@ async function multipartUpload(
   file: File,
   contentType: string,
   onProgress?: UploadProgress,
+  signal?: AbortSignal,
 ): Promise<void> {
   const initRes = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}?uploads`, {
     method: 'POST',
     headers: { 'Content-Type': contentType },
+    signal,
   })
   if (!initRes.ok) throw new Error(`Failed to start multipart: ${initRes.status}`)
   const { uploadId } = (await initRes.json()) as { uploadId: string }
@@ -81,6 +85,7 @@ async function multipartUpload(
         const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}?${params}`, {
           method: 'PUT',
           body: chunk,
+          signal,
         })
         if (!res.ok) throw new Error(`Failed to upload part ${partNumber}: ${res.status}`)
         const etag = res.headers.get('etag') ?? res.headers.get('ETag') ?? ''
@@ -98,7 +103,7 @@ async function multipartUpload(
 
   const completeRes = await fetch(
     `${WEBDAV_ENDPOINT}${encodeKey(key)}?${new URLSearchParams({ uploadId })}`,
-    { method: 'POST', body: JSON.stringify({ parts }) },
+    { method: 'POST', body: JSON.stringify({ parts }), signal },
   )
   if (!completeRes.ok) throw new Error(`Failed to complete multipart: ${completeRes.status}`)
 }

@@ -40,8 +40,10 @@
         "pending": "Pending",
         "uploading": "Uploading",
         "completed": "Done",
-        "failed": "Failed"
-      }
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
+      "cancel": "Cancel"
     },
     "search": {
       "placeholder": "Search in this folder",
