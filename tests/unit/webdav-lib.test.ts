@@ -6,6 +6,7 @@ import {
   fetchPath,
   isDirectory,
   moveFile,
+  uploadFile,
 } from '../../src/lib/webdav'
 import type { FileItem } from '../../src/lib/types'
 
@@ -221,5 +222,54 @@ describe('deleteFile', () => {
   it('throws on non-OK response', async () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 404 }))
     await expect(deleteFile('missing')).rejects.toThrow(/404/)
+  })
+})
+
+describe('uploadFile', () => {
+  it('sends PUT to /webdav/<encoded> with file body and content-type', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 201 }))
+    const file = new File(['hello'], 'note.txt', { type: 'text/plain' })
+    await uploadFile('docs/note.txt', file)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/webdav/docs/note.txt')
+    expect(init.method).toBe('PUT')
+    expect(init.headers['Content-Type']).toBe('text/plain')
+    expect(init.body).toBe(file)
+  })
+
+  it('falls back to application/octet-stream when file.type empty', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 201 }))
+    const file = new File(['x'], 'bin', { type: '' })
+    await uploadFile('bin', file)
+    expect(fetchMock.mock.calls[0][1].headers['Content-Type']).toBe(
+      'application/octet-stream',
+    )
+  })
+
+  it('emits progress 0/total then total/total on success', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 201 }))
+    const file = new File(['hello'], 'a.txt', { type: 'text/plain' })
+    const events: Array<[number, number]> = []
+    await uploadFile('a.txt', file, (loaded, total) => events.push([loaded, total]))
+    expect(events[0]).toEqual([0, file.size])
+    expect(events[events.length - 1]).toEqual([file.size, file.size])
+  })
+
+  it('throws on non-OK upload response', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 507 }))
+    const file = new File(['x'], 'a.txt')
+    await expect(uploadFile('a.txt', file)).rejects.toThrow(/507/)
+  })
+
+  it('uses multipart (POST ?uploads) for files >= 100MB', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ uploadId: 'uid' }), { status: 200 }))
+    fetchMock.mockResolvedValue(
+      new Response('', { status: 200, headers: { etag: '"abc"' } }),
+    )
+    const file = new File(['x'], 'big.bin', { type: 'application/octet-stream' })
+    Object.defineProperty(file, 'size', { value: 250 * 1000 * 1000 })
+    await uploadFile('big.bin', file)
+    expect(fetchMock.mock.calls[0][0]).toBe('/webdav/big.bin?uploads')
+    expect(fetchMock.mock.calls[0][1].method).toBe('POST')
   })
 })
