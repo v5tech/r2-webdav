@@ -1,3 +1,4 @@
+import { XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -6,9 +7,10 @@ import type { UploadTask } from '@/hooks/use-upload-queue'
 interface UploadDrawerProps {
   tasks: UploadTask[]
   onClearCompleted: () => void
+  onCancel?: (id: string) => void
 }
 
-export function UploadDrawer({ tasks, onClearCompleted }: UploadDrawerProps) {
+export function UploadDrawer({ tasks, onClearCompleted, onCancel }: UploadDrawerProps) {
   const { t } = useTranslation()
   if (tasks.length === 0) return null
   const hasCompleted = tasks.some((task) => task.status === 'completed')
@@ -27,38 +29,51 @@ export function UploadDrawer({ tasks, onClearCompleted }: UploadDrawerProps) {
         </Button>
       </div>
       <ul className="max-h-64 overflow-y-auto">
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="flex flex-col gap-1 border-b border-border px-3 py-2 last:border-b-0"
-          >
-            <div className="flex items-center gap-2 text-sm">
-              <span className="flex-1 truncate">{task.file.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {t(`files.upload.status.${task.status}`)}
-              </span>
-            </div>
-            {task.status === 'uploading' ? (
-              <div
-                role="progressbar"
-                aria-valuenow={task.loaded}
-                aria-valuemin={0}
-                aria-valuemax={task.total}
-                className="h-1 overflow-hidden rounded bg-muted"
-              >
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{
-                    width: `${task.total === 0 ? 0 : (task.loaded / task.total) * 100}%`,
-                  }}
-                />
+        {tasks.map((task) => {
+          const canCancel = task.status === 'pending' || task.status === 'uploading'
+          return (
+            <li
+              key={task.id}
+              className="flex flex-col gap-1 border-b border-border px-3 py-2 last:border-b-0"
+            >
+              <div className="flex items-center gap-2 text-sm">
+                <span className="flex-1 truncate">{task.file.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t(`files.upload.status.${task.status}`)}
+                </span>
+                {canCancel && onCancel ? (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`${t('files.upload.cancel')} ${task.file.name}`}
+                    onClick={() => onCancel(task.id)}
+                  >
+                    <XIcon />
+                  </Button>
+                ) : null}
               </div>
-            ) : null}
-            {task.status === 'failed' && task.error ? (
-              <p className="text-xs text-destructive">{task.error}</p>
-            ) : null}
-          </li>
-        ))}
+              {task.status === 'uploading' ? (
+                <div
+                  role="progressbar"
+                  aria-valuenow={task.loaded}
+                  aria-valuemin={0}
+                  aria-valuemax={task.total}
+                  className="h-1 overflow-hidden rounded bg-muted"
+                >
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{
+                      width: `${task.total === 0 ? 0 : (task.loaded / task.total) * 100}%`,
+                    }}
+                  />
+                </div>
+              ) : null}
+              {task.status === 'failed' && task.error ? (
+                <p className="text-xs text-destructive">{task.error}</p>
+              ) : null}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

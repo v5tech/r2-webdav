@@ -81,4 +81,43 @@ describe('UploadDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: /clear completed/i }))
     expect(onClearCompleted).toHaveBeenCalled()
   })
+
+  it('shows cancel button only for pending and uploading tasks', () => {
+    render(
+      <UploadDrawer
+        tasks={[
+          task({ id: '1', file: new File(['x'], 'p.txt'), status: 'pending' }),
+          task({ id: '2', file: new File(['x'], 'u.txt'), status: 'uploading' }),
+          task({ id: '3', file: new File(['x'], 'c.txt'), status: 'completed' }),
+          task({
+            id: '4',
+            file: new File(['x'], 'f.txt'),
+            status: 'failed',
+            error: 'boom',
+          }),
+          task({ id: '5', file: new File(['x'], 'x.txt'), status: 'cancelled' }),
+        ]}
+        onClearCompleted={() => {}}
+        onCancel={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /cancel p\.txt/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel u\.txt/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancel c\.txt/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancel f\.txt/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancel x\.txt/i })).not.toBeInTheDocument()
+  })
+
+  it('clicking cancel button calls onCancel with task id', () => {
+    const onCancel = vi.fn()
+    render(
+      <UploadDrawer
+        tasks={[task({ id: 'abc', file: new File(['x'], 'big.bin'), status: 'uploading' })]}
+        onClearCompleted={() => {}}
+        onCancel={onCancel}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /cancel big\.bin/i }))
+    expect(onCancel).toHaveBeenCalledWith('abc')
+  })
 })

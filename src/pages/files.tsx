@@ -220,7 +220,11 @@ export default function FilesPage() {
         onDownload={handleBulkDownload}
       />
       <UploadDropZone onDrop={(files) => queue.enqueue(cwd, files)} />
-      <UploadDrawer tasks={queue.tasks} onClearCompleted={queue.clearCompleted} />
+      <UploadDrawer
+        tasks={queue.tasks}
+        onClearCompleted={queue.clearCompleted}
+        onCancel={queue.cancel}
+      />
     </AppShell>
   )
 }
