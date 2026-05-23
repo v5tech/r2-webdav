@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useViewport } from '@/hooks/use-viewport'
@@ -12,6 +13,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, onUpload }: AppShellProps) {
+  const { t } = useTranslation()
   const { isMobile } = useViewport()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
@@ -34,8 +36,8 @@ export function AppShell({ children, onUpload }: AppShellProps) {
         ) : (
           <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
             <SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
-              <SheetTitle className="sr-only">Menu</SheetTitle>
-              <SheetDescription className="sr-only">Primary navigation</SheetDescription>
+              <SheetTitle className="sr-only">{t('nav.menu')}</SheetTitle>
+              <SheetDescription className="sr-only">{t('nav.primary')}</SheetDescription>
               <Sidebar />
             </SheetContent>
           </Sheet>

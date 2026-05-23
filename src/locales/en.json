@@ -49,5 +49,9 @@
     },
     "loading": "Loading...",
     "retry": "Retry"
+  },
+  "nav": {
+    "menu": "Menu",
+    "primary": "Primary navigation"
   }
 }
