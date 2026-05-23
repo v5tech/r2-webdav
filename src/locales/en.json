@@ -24,6 +24,12 @@
       "error": {
         "submit": "Failed to rename"
       }
+    },
+    "selection": {
+      "toolbar": "Selection actions",
+      "clear": "Clear selection",
+      "count_one": "{{count}} selected",
+      "count_other": "{{count}} selected"
     }
   }
 }

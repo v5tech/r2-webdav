@@ -24,6 +24,12 @@
       "error": {
         "submit": "重命名失败"
       }
+    },
+    "selection": {
+      "toolbar": "选中项操作",
+      "clear": "清除选择",
+      "count_one": "已选 {{count}} 项",
+      "count_other": "已选 {{count}} 项"
     }
   }
 }
