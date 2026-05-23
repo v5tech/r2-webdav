@@ -54,7 +54,9 @@
   },
   "nav": {
     "menu": "菜单",
-    "primary": "主导航"
+    "primary": "主导航",
+    "files": "文件",
+    "trash": "回收站"
   },
   "trash": {
     "title": "回收站",

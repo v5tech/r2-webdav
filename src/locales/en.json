@@ -54,7 +54,9 @@
   },
   "nav": {
     "menu": "Menu",
-    "primary": "Primary navigation"
+    "primary": "Primary navigation",
+    "files": "Files",
+    "trash": "Trash"
   },
   "trash": {
     "title": "Trash",
