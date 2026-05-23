@@ -1,6 +1,7 @@
 import { AlertCircleIcon, FolderPlusIcon, Loader2Icon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import { Breadcrumb } from '@/components/files/Breadcrumb'
 import { FileCard } from '@/components/files/FileCard'
@@ -42,7 +43,15 @@ function sortItems(items: FileItem[], key: SortKey, dir: SortDir): FileItem[] {
 
 export default function FilesPage() {
   const { t } = useTranslation()
-  const [cwd, setCwd] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const rawCwd = searchParams.get('p')
+  const cwd = rawCwd ? (rawCwd.endsWith('/') ? rawCwd : rawCwd + '/') : ''
+  const setCwd = useCallback(
+    (next: string) => {
+      setSearchParams(next ? { p: next } : {})
+    },
+    [setSearchParams],
+  )
   const [files, setFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

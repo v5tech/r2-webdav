@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 
 vi.mock('@/lib/webdav', async () => {
   const actual =
@@ -44,10 +44,16 @@ function dir(key: string): FileItem {
   }
 }
 
-function renderPage() {
+function LocationProbe() {
+  const loc = useLocation()
+  return <div data-testid="location" data-search={loc.search} />
+}
+
+function renderPage(initial = '/files') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initial]}>
       <FilesPage />
+      <LocationProbe />
     </MemoryRouter>,
   )
 }
@@ -168,5 +174,39 @@ describe('FilesPage', () => {
     })
     await screen.findByText(/uploads/i)
     expect(screen.getByText('pic.png')).toBeInTheDocument()
+  })
+
+  it('hydrates cwd from URL query on mount', async () => {
+    fetchPathMock.mockResolvedValue([file({ key: 'docs/2024/r.pdf' })])
+    renderPage('/files?p=docs/2024/')
+    await waitFor(() => expect(fetchPathMock).toHaveBeenCalledWith('docs/2024/'))
+  })
+
+  it('normalizes URL p without trailing slash', async () => {
+    fetchPathMock.mockResolvedValue([])
+    renderPage('/files?p=docs')
+    await waitFor(() => expect(fetchPathMock).toHaveBeenCalledWith('docs/'))
+  })
+
+  it('clicking a directory writes URL ?p=<key>', async () => {
+    fetchPathMock.mockResolvedValueOnce([dir('photos')])
+    fetchPathMock.mockResolvedValueOnce([])
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: /open photos/i }))
+    await waitFor(() =>
+      expect(screen.getByTestId('location').dataset.search).toBe('?p=photos%2F'),
+    )
+  })
+
+  it('Home breadcrumb clears the query', async () => {
+    fetchPathMock.mockResolvedValueOnce([dir('photos')])
+    fetchPathMock.mockResolvedValueOnce([])
+    fetchPathMock.mockResolvedValueOnce([])
+    renderPage('/files?p=photos/')
+    await waitFor(() => expect(fetchPathMock).toHaveBeenCalledWith('photos/'))
+    fireEvent.click(screen.getByRole('button', { name: /^home$/i }))
+    await waitFor(() => {
+      expect(screen.getByTestId('location').dataset.search).toBe('')
+    })
   })
 })
