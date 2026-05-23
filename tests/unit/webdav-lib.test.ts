@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createFolder, fetchPath, isDirectory, moveFile } from '../../src/lib/webdav'
+import {
+  createFolder,
+  deleteFile,
+  fetchPath,
+  isDirectory,
+  moveFile,
+} from '../../src/lib/webdav'
 import type { FileItem } from '../../src/lib/types'
 
 const fetchMock = vi.fn()
@@ -200,5 +206,20 @@ describe('moveFile', () => {
   it('throws on non-OK response', async () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 412 }))
     await expect(moveFile('a', 'b')).rejects.toThrow(/412/)
+  })
+})
+
+describe('deleteFile', () => {
+  it('sends DELETE to /webdav/<encoded>', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 200 }))
+    await deleteFile('a b/c.txt')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/webdav/a%20b/c.txt')
+    expect(init.method).toBe('DELETE')
+  })
+
+  it('throws on non-OK response', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 404 }))
+    await expect(deleteFile('missing')).rejects.toThrow(/404/)
   })
 })

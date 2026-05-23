@@ -24,6 +24,11 @@ export async function moveFile(source: string, target: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to move: ${res.status}`)
 }
 
+export async function deleteFile(key: string): Promise<void> {
+  const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`Failed to delete: ${res.status}`)
+}
+
 export async function fetchPath(path: string): Promise<FileItem[]> {
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(path)}`, {
     method: 'PROPFIND',
