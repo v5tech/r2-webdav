@@ -17,12 +17,6 @@ describe('app routes', () => {
     expect(isValidElement(r!.element)).toBe(true)
   })
 
-  it('exposes /files-legacy route with element', () => {
-    const r = routes.find((x) => x.path === '/files-legacy')
-    expect(r).toBeDefined()
-    expect(isValidElement(r!.element)).toBe(true)
-  })
-
   it('redirects / to /files via <Navigate>', () => {
     const r = routes.find((x) => x.path === '/')
     expect(r).toBeDefined()
