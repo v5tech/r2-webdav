@@ -17,6 +17,12 @@ describe('app routes', () => {
     expect(isValidElement(r!.element)).toBe(true)
   })
 
+  it('exposes /trash route with element', () => {
+    const r = routes.find((x) => x.path === '/trash')
+    expect(r).toBeDefined()
+    expect(isValidElement(r!.element)).toBe(true)
+  })
+
   it('redirects / to /files via <Navigate>', () => {
     const r = routes.find((x) => x.path === '/')
     expect(r).toBeDefined()

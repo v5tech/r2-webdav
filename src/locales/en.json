@@ -55,5 +55,12 @@
   "nav": {
     "menu": "Menu",
     "primary": "Primary navigation"
+  },
+  "trash": {
+    "title": "Trash",
+    "empty": "Trash is empty",
+    "deletedAt": "Deleted at",
+    "entries": "Original path",
+    "count": "Items"
   }
 }

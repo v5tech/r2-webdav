@@ -55,5 +55,12 @@
   "nav": {
     "menu": "菜单",
     "primary": "主导航"
+  },
+  "trash": {
+    "title": "回收站",
+    "empty": "回收站为空",
+    "deletedAt": "删除时间",
+    "entries": "原路径",
+    "count": "项数"
   }
 }

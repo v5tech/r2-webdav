@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom'
 import { RequireAuth } from './components/auth/RequireAuth'
 import FilesPage from './pages/files'
 import LoginPage from './pages/login'
+import TrashPage from './pages/trash'
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
@@ -12,6 +13,14 @@ export const routes: RouteObject[] = [
     element: (
       <RequireAuth>
         <FilesPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: '/trash',
+    element: (
+      <RequireAuth>
+        <TrashPage />
       </RequireAuth>
     ),
   },
