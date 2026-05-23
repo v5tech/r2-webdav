@@ -23,22 +23,43 @@ function computeRootEntries(paths: string[]): string[] {
   return roots
 }
 
-export const onRequestGet: PagesFunction<TrashEnv> = async ({ request, env }) => {
+function unauthorized(): Response {
+  return new Response(JSON.stringify({ error: 'unauthorized' }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+async function requireAuth(
+  request: Request,
+  env: TrashEnv,
+): Promise<Response | null> {
   const token = extractSession(request)
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+  if (!token) return unauthorized()
   const origin = new URL(request.url).origin
   const payload = await verifySessionJwt(env, token, origin)
-  if (!payload) {
-    return new Response(JSON.stringify({ error: 'unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+  if (!payload) return unauthorized()
+  return null
+}
+
+async function listSessionObjects(
+  bucket: R2Bucket,
+  deletedAt: number,
+): Promise<R2Object[]> {
+  const prefix = `${TRASH_PREFIX}${deletedAt}/`
+  const result: R2Object[] = []
+  let cursor: string | undefined = undefined
+  do {
+    const res = await bucket.list({ prefix, cursor })
+    result.push(...res.objects)
+    cursor = res.truncated ? res.cursor : undefined
+  } while (cursor)
+  return result
+}
+
+export const onRequestGet: PagesFunction<TrashEnv> = async ({ request, env }) => {
+  const authError = await requireAuth(request, env)
+  if (authError) return authError
 
   const groups = new Map<number, string[]>()
   let cursor: string | undefined = undefined
@@ -70,4 +91,66 @@ export const onRequestGet: PagesFunction<TrashEnv> = async ({ request, env }) =>
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+export const onRequestPost: PagesFunction<TrashEnv> = async ({ request, env }) => {
+  const authError = await requireAuth(request, env)
+  if (authError) return authError
+
+  let body: { deletedAt?: unknown }
+  try {
+    body = (await request.json()) as { deletedAt?: unknown }
+  } catch {
+    return new Response('Bad Request', { status: 400 })
+  }
+  const deletedAt = Number(body.deletedAt)
+  if (!Number.isFinite(deletedAt)) return new Response('Bad Request', { status: 400 })
+
+  const trashObjects = await listSessionObjects(env.BUCKET, deletedAt)
+  if (trashObjects.length === 0) return new Response('Not Found', { status: 404 })
+
+  const trashPrefix = `${TRASH_PREFIX}${deletedAt}/`
+
+  for (const obj of trashObjects) {
+    const originalKey = obj.key.slice(trashPrefix.length)
+    const existing = await env.BUCKET.head(originalKey)
+    if (existing) {
+      return new Response(
+        JSON.stringify({ error: 'conflict', conflictKey: originalKey }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
+  }
+
+  for (const obj of trashObjects) {
+    const originalKey = obj.key.slice(trashPrefix.length)
+    const src = await env.BUCKET.get(obj.key)
+    if (!src) continue
+    await env.BUCKET.put(originalKey, src.body, {
+      httpMetadata: obj.httpMetadata,
+      customMetadata: obj.customMetadata,
+    })
+    await env.BUCKET.delete(obj.key)
+  }
+
+  return new Response(null, { status: 204 })
+}
+
+export const onRequestDelete: PagesFunction<TrashEnv> = async ({ request, env }) => {
+  const authError = await requireAuth(request, env)
+  if (authError) return authError
+
+  const url = new URL(request.url)
+  const tsParam = url.searchParams.get('ts')
+  const ts = Number(tsParam)
+  if (!tsParam || !Number.isFinite(ts)) return new Response('Bad Request', { status: 400 })
+
+  const trashObjects = await listSessionObjects(env.BUCKET, ts)
+  if (trashObjects.length === 0) return new Response('Not Found', { status: 404 })
+
+  for (const obj of trashObjects) {
+    await env.BUCKET.delete(obj.key)
+  }
+
+  return new Response(null, { status: 204 })
 }
