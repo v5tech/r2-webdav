@@ -1,10 +1,24 @@
-import { LogOutIcon, MenuIcon, UploadIcon } from 'lucide-react'
-import { useRef } from 'react'
+import { GlobeIcon, LogOutIcon, MenuIcon, MoonIcon, SunIcon, UploadIcon } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { api } from '@/lib/api'
+import {
+  applyTheme,
+  getStoredTheme,
+  resolveTheme,
+  setStoredTheme,
+  type Theme,
+} from '@/lib/theme'
 
 interface HeaderProps {
   showMenuButton: boolean
@@ -13,9 +27,10 @@ interface HeaderProps {
 }
 
 export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
+  const [theme, setTheme] = useState<Theme>(() => getStoredTheme())
 
   const handleLogout = async () => {
     try {
@@ -31,6 +46,19 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
     if (files.length && onUpload) onUpload(files)
     e.target.value = ''
   }
+
+  function handleThemeChange(next: string) {
+    const value = next as Theme
+    setTheme(value)
+    setStoredTheme(value)
+    applyTheme(resolveTheme(value))
+  }
+
+  function handleLanguageChange(next: string) {
+    void i18n.changeLanguage(next)
+  }
+
+  const resolvedTheme = resolveTheme(theme)
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
@@ -66,6 +94,36 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
           </Button>
         </>
       ) : null}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label={t('header.theme.toggle')}>
+            {resolvedTheme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+            <DropdownMenuRadioItem value="light">{t('header.theme.light')}</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="dark">{t('header.theme.dark')}</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="system">{t('header.theme.system')}</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-sm" aria-label={t('header.language.toggle')}>
+            <GlobeIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuRadioGroup
+            value={i18n.language.startsWith('zh') ? 'zh' : 'en'}
+            onValueChange={handleLanguageChange}
+          >
+            <DropdownMenuRadioItem value="zh">{t('header.language.zh')}</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="en">{t('header.language.en')}</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
         variant="ghost"
         size="icon-sm"
@@ -77,4 +135,3 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
     </header>
   )
 }
-

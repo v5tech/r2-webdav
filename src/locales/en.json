@@ -58,6 +58,19 @@
     "files": "Files",
     "trash": "Trash"
   },
+  "header": {
+    "theme": {
+      "toggle": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "toggle": "Change language",
+      "zh": "中文",
+      "en": "English"
+    }
+  },
   "trash": {
     "title": "Trash",
     "empty": "Trash is empty",

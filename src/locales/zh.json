@@ -58,6 +58,19 @@
     "files": "文件",
     "trash": "回收站"
   },
+  "header": {
+    "theme": {
+      "toggle": "切换主题",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "language": {
+      "toggle": "切换语言",
+      "zh": "中文",
+      "en": "English"
+    }
+  },
   "trash": {
     "title": "回收站",
     "empty": "回收站为空",
