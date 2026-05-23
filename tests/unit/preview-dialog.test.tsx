@@ -18,9 +18,10 @@ function renderPreview(file: FileItem | null) {
 }
 
 describe('PreviewDialog type dispatch', () => {
-  it('renders ImagePreview stub for image/* contentType', () => {
-    renderPreview(makeFile('image/png', 'pic.png'))
-    expect(screen.getByTestId('image-preview-stub')).toBeInTheDocument()
+  it('renders ImagePreview with /webdav/<encoded> src for image/* contentType', () => {
+    renderPreview(makeFile('image/png', 'photos/pic name.png'))
+    const img = screen.getByAltText('pic name.png') as HTMLImageElement
+    expect(img.getAttribute('src')).toBe('/webdav/photos/pic%20name.png')
   })
 
   it('renders VideoPreview stub for video/* contentType', () => {

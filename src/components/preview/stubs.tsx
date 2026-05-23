@@ -4,15 +4,6 @@ interface PreviewStubProps {
   type: string
 }
 
-export function ImagePreview({ type }: PreviewStubProps) {
-  const { t } = useTranslation()
-  return (
-    <div data-testid="image-preview-stub" className="p-12 text-center text-muted-foreground">
-      {t('preview.stub.coming', { type })}
-    </div>
-  )
-}
-
 export function VideoPreview({ type }: PreviewStubProps) {
   const { t } = useTranslation()
   return (

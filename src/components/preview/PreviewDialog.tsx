@@ -7,13 +7,8 @@ import {
 } from '@/components/ui/dialog'
 import type { FileItem } from '@/lib/types'
 
-import {
-  AudioPreview,
-  ImagePreview,
-  PdfPreview,
-  TextPreview,
-  VideoPreview,
-} from './stubs'
+import { ImagePreview } from './ImagePreview'
+import { AudioPreview, PdfPreview, TextPreview, VideoPreview } from './stubs'
 import { UnsupportedPreview } from './UnsupportedPreview'
 
 interface PreviewDialogProps {
@@ -22,18 +17,18 @@ interface PreviewDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+function extractFilename(key: string) {
+  return key.replace(/\/$/, '').split('/').pop() ?? key
+}
+
 function dispatchBody(file: FileItem) {
   const type = file.httpMetadata.contentType
-  if (type.startsWith('image/')) return <ImagePreview type={type} />
+  if (type.startsWith('image/')) return <ImagePreview fileKey={file.key} name={extractFilename(file.key)} />
   if (type.startsWith('video/')) return <VideoPreview type={type} />
   if (type.startsWith('audio/')) return <AudioPreview type={type} />
   if (type === 'application/pdf') return <PdfPreview type={type} />
   if (type.startsWith('text/')) return <TextPreview type={type} />
   return <UnsupportedPreview fileKey={file.key} />
-}
-
-function extractFilename(key: string) {
-  return key.replace(/\/$/, '').split('/').pop() ?? key
 }
 
 export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) {
