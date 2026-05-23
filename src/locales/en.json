@@ -42,6 +42,10 @@
         "completed": "Done",
         "failed": "Failed"
       }
+    },
+    "search": {
+      "placeholder": "Search in this folder",
+      "clear": "Clear search"
     }
   }
 }
