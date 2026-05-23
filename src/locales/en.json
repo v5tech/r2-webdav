@@ -14,6 +14,16 @@
       "error": {
         "submit": "Failed to create folder"
       }
+    },
+    "rename": {
+      "title": "Rename",
+      "description": "Enter a new name.",
+      "label": "New name",
+      "confirm": "Rename",
+      "cancel": "Cancel",
+      "error": {
+        "submit": "Failed to rename"
+      }
     }
   }
 }

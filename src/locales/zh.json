@@ -14,6 +14,16 @@
       "error": {
         "submit": "创建失败"
       }
+    },
+    "rename": {
+      "title": "重命名",
+      "description": "请输入新的名称。",
+      "label": "新名称",
+      "confirm": "重命名",
+      "cancel": "取消",
+      "error": {
+        "submit": "重命名失败"
+      }
     }
   }
 }
