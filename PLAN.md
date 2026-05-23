@@ -59,7 +59,7 @@
 **主要工作**:
 
 - 删根目录 `Main.tsx`, `TextPadDrawer.tsx`, `utils/s3.ts`.
-- 卸 `react-scripts`. 装 `vite` + `@vitejs/plugin-react` + Tailwind + autoprefixer + postcss.
+- 卸 `react-scripts`. 装 `vite` + `@vitejs/plugin-react` + Tailwind + autoprefixer + postcss. _(注: Phase 1 中段已升 Tailwind v4 + shadcn 4, 卸 autoprefixer/postcss/tailwindcss-animate, 装 `@tailwindcss/vite` + `tw-animate-css` + 本地 `shadcn` dep. 见 [ADR-0004](./docs/adr/0004-tailwind-v4-shadcn-4.md).)_
 - `src/index.js` → `src/main.tsx` (`createRoot`).
 - `index.html` 迁至仓库根.
 - 装 shadcn (init), 生成 `components.json` + `src/lib/utils.ts` + `src/components/ui/`.

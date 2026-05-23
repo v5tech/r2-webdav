@@ -32,8 +32,8 @@
 | 构建工具        | Vite                                                          | ^7           | 替换 CRA                                         |
 | 路由            | React Router                                                  | ^7           |                                                  |
 | 类型系统        | TypeScript                                                    | ^5.5         | strict                                           |
-| 样式            | Tailwind CSS                                                  | ^3.4         |                                                  |
-| 组件库          | shadcn/ui                                                     | latest       | 复制进 `src/components/ui/`                      |
+| 样式            | Tailwind CSS                                                  | ^4           | 现代浏览器底线: Safari 16.4+ / Chrome 111+ / Firefox 128+ (ADR-0004) |
+| 组件库          | shadcn/ui                                                     | 4.x          | 复制进 `src/components/ui/`; new-york style; `shadcn` 装为本地 dep (`shadcn/tailwind.css` 提供 data-* variants) |
 | 状态/数据       | TanStack Query                                                | ^5           |                                                  |
 | 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                                  |
 | i18n            | react-i18next                                                 | ^14          | 中文默认                                         |
@@ -125,8 +125,6 @@
 ├── public/
 ├── index.html
 ├── vite.config.ts
-├── tailwind.config.ts
-├── postcss.config.js
 ├── tsconfig.json
 ├── eslint.config.js
 ├── .prettierrc
