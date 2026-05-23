@@ -166,7 +166,7 @@
 
 - **T2a.1** 装依赖: TanStack Query v5, react-hook-form, zod, react-i18next, i18next-browser-languagedetector.
 - **T2a.2** `lib/api.ts` — `/api/*` 客户端 (fetch wrapper + TanStack Query keys).
-- **T2a.3** `lib/webdav.ts` — 从 `src/app/transfer.ts` 迁出 PROPFIND 解析 / multipart / 缩略图.
+- **T2a.3** `lib/webdav.ts` — 从 `src/app/transfer.ts` 迁出 PROPFIND 解析 / multipart / 缩略图. _(注: 按增量策略实施 — T2a.3a 当前只迁 PROPFIND `fetchPath` + `FileItem` 类型 (`src/lib/types.ts`); multipart 留给 T2a.13, thumbnail/blobDigest 留给 T2a.13 或 T2a.10, copyPaste/createFolder 留给 T2a.11. `src/app/transfer.ts` 暂保留作 legacy backing, Phase 2b 删 MUI 时一并清.)_
 - **T2a.4** `lib/i18n.ts` + `locales/zh.json` + `locales/en.json` 初版. **同步开启 ESLint `i18next/no-literal-string` 规则**, 后续组件边写边抽.
 - **T2a.5** `lib/theme.ts` — prefers-color-scheme + localStorage 基础设施 (UI 切换按钮留到 2b).
 - **T2a.6** `components/layout/AppShell` + `Header (无切换按钮)` + `Sidebar` (响应式 sheet 切换). 注: 此 task 涉及 3 组件 + 1 viewport hook, 接近 5 文件上限.
