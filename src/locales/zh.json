@@ -4,6 +4,16 @@
       "rename": "重命名",
       "delete": "删除",
       "download": "下载"
+    },
+    "newFolder": {
+      "title": "新建文件夹",
+      "description": "在当前位置创建一个文件夹。",
+      "label": "文件夹名",
+      "create": "创建",
+      "cancel": "取消",
+      "error": {
+        "submit": "创建失败"
+      }
     }
   }
 }

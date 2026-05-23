@@ -4,6 +4,16 @@
       "rename": "Rename",
       "delete": "Delete",
       "download": "Download"
+    },
+    "newFolder": {
+      "title": "New folder",
+      "description": "Create a folder in the current location.",
+      "label": "Folder name",
+      "create": "Create",
+      "cancel": "Cancel",
+      "error": {
+        "submit": "Failed to create folder"
+      }
     }
   }
 }
