@@ -18,13 +18,14 @@ interface FileRowProps {
   onCwdChange: (cwd: string) => void
   onRename: (file: FileItem) => void
   onDelete: (file: FileItem) => void
+  onPreview?: (file: FileItem) => void
 }
 
 function extractFilename(key: string) {
   return key.replace(/\/$/, '').split('/').pop() ?? key
 }
 
-export function FileRow({ file, onCwdChange, onRename, onDelete }: FileRowProps) {
+export function FileRow({ file, onCwdChange, onRename, onDelete, onPreview }: FileRowProps) {
   const { t } = useTranslation()
   const dir = isDirectory(file)
   const name = extractFilename(file.key)
@@ -32,6 +33,8 @@ export function FileRow({ file, onCwdChange, onRename, onDelete }: FileRowProps)
   function handleOpen() {
     if (dir) {
       onCwdChange(file.key.endsWith('/') ? file.key : file.key + '/')
+    } else if (onPreview) {
+      onPreview(file)
     } else {
       window.open(`/webdav/${encodeKey(file.key)}`, '_blank', 'noopener,noreferrer')
     }

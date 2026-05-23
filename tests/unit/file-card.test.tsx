@@ -75,6 +75,25 @@ describe('FileCard', () => {
     openSpy.mockRestore()
   })
 
+  it('clicking file card calls onPreview when provided (no window.open)', () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const onPreview = vi.fn()
+    const file = makeFile({ key: 'docs/a.png' })
+    render(
+      <FileCard
+        file={file}
+        onCwdChange={() => {}}
+        onRename={() => {}}
+        onDelete={() => {}}
+        onPreview={onPreview}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /open a\.png/i }))
+    expect(onPreview).toHaveBeenCalledWith(file)
+    expect(openSpy).not.toHaveBeenCalled()
+    openSpy.mockRestore()
+  })
+
   it('renders thumbnail img with loading=lazy when thumbnail set', () => {
     render(
       <FileCard

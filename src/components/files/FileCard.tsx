@@ -18,13 +18,14 @@ interface FileCardProps {
   onCwdChange: (cwd: string) => void
   onRename: (file: FileItem) => void
   onDelete: (file: FileItem) => void
+  onPreview?: (file: FileItem) => void
 }
 
 function extractFilename(key: string) {
   return key.replace(/\/$/, '').split('/').pop() ?? key
 }
 
-export function FileCard({ file, onCwdChange, onRename, onDelete }: FileCardProps) {
+export function FileCard({ file, onCwdChange, onRename, onDelete, onPreview }: FileCardProps) {
   const { t } = useTranslation()
   const dir = isDirectory(file)
   const name = extractFilename(file.key)
@@ -33,6 +34,8 @@ export function FileCard({ file, onCwdChange, onRename, onDelete }: FileCardProp
   function handleOpen() {
     if (dir) {
       onCwdChange(file.key.endsWith('/') ? file.key : file.key + '/')
+    } else if (onPreview) {
+      onPreview(file)
     } else {
       window.open(`/webdav/${encodeKey(file.key)}`, '_blank', 'noopener,noreferrer')
     }

@@ -17,6 +17,7 @@ import { UploadDrawer } from '@/components/files/UploadDrawer'
 import { UploadDropZone } from '@/components/files/UploadDropZone'
 import { type ViewMode, ViewToggle } from '@/components/files/ViewToggle'
 import { AppShell } from '@/components/layout/AppShell'
+import { PreviewDialog } from '@/components/preview/PreviewDialog'
 import { Button } from '@/components/ui/button'
 import { useFileSelection } from '@/hooks/use-file-selection'
 import { useUploadQueue } from '@/hooks/use-upload-queue'
@@ -61,6 +62,7 @@ export default function FilesPage() {
   const [search, setSearch] = useState('')
   const [newFolderOpen, setNewFolderOpen] = useState(false)
   const [renameTarget, setRenameTarget] = useState<FileItem | null>(null)
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
   const selection = useFileSelection()
   const queue = useUploadQueue({ onCompleted: () => void refresh() })
 
@@ -180,6 +182,7 @@ export default function FilesPage() {
                   onCwdChange={setCwd}
                   onRename={setRenameTarget}
                   onDelete={handleDelete}
+                  onPreview={setPreviewFile}
                 />
               )}
             />
@@ -193,6 +196,7 @@ export default function FilesPage() {
                   onCwdChange={setCwd}
                   onRename={setRenameTarget}
                   onDelete={handleDelete}
+                  onPreview={setPreviewFile}
                 />
               )}
             />
@@ -224,6 +228,13 @@ export default function FilesPage() {
         tasks={queue.tasks}
         onClearCompleted={queue.clearCompleted}
         onCancel={queue.cancel}
+      />
+      <PreviewDialog
+        file={previewFile}
+        open={previewFile !== null}
+        onOpenChange={(open) => {
+          if (!open) setPreviewFile(null)
+        }}
       />
     </AppShell>
   )

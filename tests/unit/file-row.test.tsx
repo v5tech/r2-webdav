@@ -75,6 +75,25 @@ describe('FileRow', () => {
     openSpy.mockRestore()
   })
 
+  it('clicking file row calls onPreview when provided (no window.open)', () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const onPreview = vi.fn()
+    const file = makeFile({ key: 'docs/a.txt' })
+    render(
+      <FileRow
+        file={file}
+        onCwdChange={() => {}}
+        onRename={() => {}}
+        onDelete={() => {}}
+        onPreview={onPreview}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /open a\.txt/i }))
+    expect(onPreview).toHaveBeenCalledWith(file)
+    expect(openSpy).not.toHaveBeenCalled()
+    openSpy.mockRestore()
+  })
+
   it('renders MimeIcon (no large thumbnail)', () => {
     const { container } = render(
       <FileRow
