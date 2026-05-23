@@ -3,14 +3,31 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { AppShell } from '@/components/layout/AppShell'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { fetchTrash, type TrashSession } from '@/lib/trash'
+import {
+  fetchTrash,
+  permanentDeleteSession,
+  restoreSession,
+  type TrashSession,
+} from '@/lib/trash'
 
 export default function TrashPage() {
   const { t } = useTranslation()
   const [sessions, setSessions] = useState<TrashSession[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [busyAt, setBusyAt] = useState<number | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -27,6 +44,36 @@ export default function TrashPage() {
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  const handleRestore = useCallback(
+    async (deletedAt: number) => {
+      setBusyAt(deletedAt)
+      try {
+        await restoreSession(deletedAt)
+        await refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to restore')
+      } finally {
+        setBusyAt(null)
+      }
+    },
+    [refresh],
+  )
+
+  const handlePermanentDelete = useCallback(
+    async (deletedAt: number) => {
+      setBusyAt(deletedAt)
+      try {
+        await permanentDeleteSession(deletedAt)
+        await refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete')
+      } finally {
+        setBusyAt(null)
+      }
+    },
+    [refresh],
+  )
 
   return (
     <AppShell>
@@ -60,6 +107,7 @@ export default function TrashPage() {
                   <th className="px-4 py-2 font-medium">{t('trash.deletedAt')}</th>
                   <th className="px-4 py-2 font-medium">{t('trash.entries')}</th>
                   <th className="px-4 py-2 font-medium">{t('trash.count')}</th>
+                  <th className="px-4 py-2 font-medium">{t('trash.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -79,6 +127,49 @@ export default function TrashPage() {
                       ))}
                     </td>
                     <td className="px-4 py-2 text-muted-foreground">{session.totalCount}</td>
+                    <td className="px-4 py-2">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busyAt === session.deletedAt}
+                          onClick={() => void handleRestore(session.deletedAt)}
+                        >
+                          {t('trash.restore')}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              disabled={busyAt === session.deletedAt}
+                            >
+                              {t('trash.permanentDelete')}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {t('trash.confirmDelete.title')}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t('trash.confirmDelete.description')}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>
+                                {t('trash.confirmDelete.cancel')}
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => void handlePermanentDelete(session.deletedAt)}
+                              >
+                                {t('trash.confirmDelete.confirm')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -63,6 +63,15 @@
     "empty": "Trash is empty",
     "deletedAt": "Deleted at",
     "entries": "Original path",
-    "count": "Items"
+    "count": "Items",
+    "actions": "Actions",
+    "restore": "Restore",
+    "permanentDelete": "Delete permanently",
+    "confirmDelete": {
+      "title": "Permanently delete this trash session?",
+      "description": "This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
   }
 }

@@ -63,6 +63,15 @@
     "empty": "回收站为空",
     "deletedAt": "删除时间",
     "entries": "原路径",
-    "count": "项数"
+    "count": "项数",
+    "actions": "操作",
+    "restore": "恢复",
+    "permanentDelete": "永久删除",
+    "confirmDelete": {
+      "title": "确认永久删除此回收记录?",
+      "description": "此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除"
+    }
   }
 }
