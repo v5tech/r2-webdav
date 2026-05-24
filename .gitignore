@@ -17,6 +17,11 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.dev.vars
+wrangler.toml
+
+# evidence (not committed)
+docs/e2e-evidence/
 
 npm-debug.log*
 yarn-debug.log*

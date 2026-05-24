@@ -1,0 +1,11 @@
+# R2 WebDAV — Local Development Secrets
+#
+# Copy this file to `.dev.vars` (gitignored) and fill in real values
+# for local `wrangler pages dev`. These values are used ONLY locally
+# and are NEVER sent to Cloudflare.
+#
+# Reference: https://developers.cloudflare.com/pages/functions/bindings/#secrets
+
+WEBDAV_USERNAME=admin
+WEBDAV_PASSWORD=changeme
+WEBDAV_PUBLIC_READ=0
