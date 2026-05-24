@@ -1,0 +1,27 @@
+# wrangler.toml.example
+#
+# Copy this file to wrangler.toml (gitignored) and customize the values
+# below for your Cloudflare Pages deployment.
+#
+# Reference: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+
+# ⚠ Change these to YOUR unique values (must not collide with other Pages projects):
+name = "your-r2-webdav-instance"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+# R2 bucket binding — functions/ accesses the bucket via `env.BUCKET`.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "your-r2-bucket-name"
+
+# Plain-text environment variables (non-sensitive).
+[vars]
+WEBDAV_PUBLIC_READ = "0"
+
+# ⚠ DO NOT put WEBDAV_USERNAME / WEBDAV_PASSWORD here.
+# This file is committed (via wrangler.toml.example) and even your gitignored
+# wrangler.toml could leak. Secrets MUST go to:
+#   - Production:  Cloudflare Dashboard → Settings → Variables and Secrets → Encrypt
+#                  OR: npx wrangler pages secret put WEBDAV_PASSWORD --project-name=<name>
+#   - Local dev:   .dev.vars (see .dev.vars.example)

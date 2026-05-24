@@ -1,54 +1,167 @@
-# FlareDrive
+# R2 WebDAV
 
-Cloudflare R2 storage manager with Pages and Workers. Free 10 GB storage.
-Free serverless backend with a limit of 100,000 invocation requests per day.
-[More about pricing](https://developers.cloudflare.com/r2/platform/pricing/)
+A modern Cloudflare R2 storage manager with WebDAV support, file preview,
+authentication, dark mode, and i18n.
+
+> Forked from [FlareDrive](https://github.com/longern/FlareDrive) by
+> [@longern](https://github.com/longern). Rewritten in Phase 0-3 to Vite 8 +
+> React 19 + Tailwind v4 + shadcn/ui (Radix), with added JWT authentication,
+> file preview, TextPad, i18n (zh-CN / en), dark mode, and CSP hardening.
+> See [Acknowledgments](#acknowledgments).
 
 ## Features
 
-- Upload large files
-- Create folders
-- Search files
-- Image/video/PDF thumbnails
-- WebDAV endpoint
-- Drag and drop upload
+- **Modern UI** — React 19 + Vite 8 + Tailwind v4 + shadcn/ui (Radix), responsive
+  across 375 / 768 / 1280 viewports
+- **Authentication** — `/login` page with JWT session cookie (HMAC-SHA256
+  derived from `WEBDAV_PASSWORD`); session revocation on password change
+- **File operations** — Browse / create folder / upload / rename / delete /
+  copy / move / multi-select, with breadcrumb navigation and client-side search
+- **Multi-type preview** — Image (`<img>`), video / audio (native controls),
+  PDF (pdfjs-dist with paginator), code (Shiki with on-demand language
+  registration), plain text (1 MB cap)
+- **TextPad** — Quick `.txt` / `.md` upload drawer for note-taking directly
+  into the current directory
+- **i18n** — Zh-CN / English with auto language detection (browser language +
+  user override persisted to localStorage)
+- **Dark mode** — Light / dark / follow-system, persisted to localStorage
+- **Settings page** — `/settings` for theme + language toggle
+- **Thumbnails** — Auto-generated for image / video / PDF
+- **Large file upload** — Chunked multipart upload (≥ 100 MB supported via
+  the web UI; standard WebDAV clients are limited to 100 MB by Cloudflare
+  Workers)
+- **WebDAV endpoint** — Compatible with rclone, [Cx File Explorer](https://play.google.com/store/apps/details?id=com.cxinventor.file.explorer),
+  [BD File Manager](https://play.google.com/store/apps/details?id=com.liuzho.file.explorer),
+  and any standards-compliant WebDAV client
+- **Security** — Content Security Policy (enforce mode), nosniff,
+  Referrer-Policy, Permissions-Policy
 
-## Usage
+## Deploy
 
-### Installation
+### Prerequisites
 
-Before starting, you should make sure that
+- A [Cloudflare](https://dash.cloudflare.com/) account
+- R2 enabled with at least one bucket created
+- (Optional) A custom domain
 
-- you have created a [Cloudflare](https://dash.cloudflare.com/) account
-- your payment method is added
-- R2 service is activated and at least one bucket is created
+### Option A — Cloudflare Pages UI integration (recommended)
 
-Steps:
+1. Fork this repository and connect your fork to Cloudflare Pages
+   - Framework preset: **None** (uses Vite directly)
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+2. After the initial build, go to your Pages project → **Settings**:
+   - **Bindings** → Add **R2 bucket binding** with **Variable name** = `BUCKET`,
+     pointing to your R2 bucket
+   - **Variables and Secrets** → Add:
+     - `WEBDAV_USERNAME` (encrypted)
+     - `WEBDAV_PASSWORD` (encrypted)
+     - `WEBDAV_PUBLIC_READ` = `0` or `1` (plain text; optional, defaults to `0`)
+3. Trigger a redeploy from the **Deployments** tab so the bindings take effect
+4. (Optional) Add a custom domain in **Custom domains**
 
-1. Fork this project and connect your fork with Cloudflare Pages
-   - Select `Docusaurus` framework preset
-   - Set `WEBDAV_USERNAME` and `WEBDAV_PASSWORD`
-   - (Optional) Set `WEBDAV_PUBLIC_READ` to `1` to enable public read
-2. After initial deployment, bind your R2 bucket to `BUCKET` variable
-3. Retry deployment in `Deployments` page to apply the changes
-4. (Optional) Add a custom domain
+### Option B — Wrangler CLI
 
-You can also deploy this project using Wrangler CLI:
+For automated or scripted deployments:
 
 ```bash
+cp wrangler.toml.example wrangler.toml
+# Edit wrangler.toml: change `name` and `bucket_name` to your unique values
 npm run build
-npx wrangler pages deploy build
+npx wrangler pages deploy dist
 ```
 
-### WebDAV endpoint
+Secrets (`WEBDAV_USERNAME`, `WEBDAV_PASSWORD`) must be set once via the
+Cloudflare Dashboard or `wrangler pages secret put`:
 
-You can use any client (such as [Cx File Explorer](https://play.google.com/store/apps/details?id=com.cxinventor.file.explorer), [BD File Manager](https://play.google.com/store/apps/details?id=com.liuzho.file.explorer))
-that supports the WebDAV protocol to access your files.
-Fill the endpoint URL as `https://<your-domain.com>/webdav` and use the username and password you set.
+```bash
+npx wrangler pages secret put WEBDAV_USERNAME --project-name=<your-project>
+npx wrangler pages secret put WEBDAV_PASSWORD --project-name=<your-project>
+```
 
-However, the standard WebDAV protocol does not support large file (≥100 MB) uploads due to the limitation of Cloudflare Workers.
-You must upload large files through the web interface which supports chunked uploads.
+## Authentication
+
+R2 WebDAV uses a modern `/login` page (HTML form) rather than HTTP Basic Auth.
+On successful login the server sets a JWT cookie (`fd_session`) signed with
+HMAC-SHA256, derived from `WEBDAV_PASSWORD`. Changing `WEBDAV_PASSWORD` and
+redeploying invalidates all existing sessions.
+
+For WebDAV clients (rclone, BD/Cx File Manager) that do not support the login
+page, the WebDAV endpoint accepts HTTP Basic Auth headers directly.
+
+## WebDAV endpoint
+
+Configure your WebDAV client with:
+
+- **URL:** `https://<your-domain>/webdav`
+- **Username:** `WEBDAV_USERNAME`
+- **Password:** `WEBDAV_PASSWORD`
+
+**Large file limitation:** Cloudflare Workers caps request bodies at 100 MB.
+Files larger than that must be uploaded via the web UI, which uses chunked
+multipart upload.
+
+## Rate limiting (recommended)
+
+To protect `/api/login` from brute-force attempts, add a Cloudflare
+**Rate Limiting Rule** via the dashboard:
+
+1. Cloudflare Dashboard → your zone → **Security** → **WAF** → **Rate limiting rules**
+2. Create a rule:
+   - **If:** `(http.request.uri.path eq "/api/login" and http.request.method eq "POST")`
+   - **Then:** Block, with a threshold of e.g. 5 requests per 1 minute per IP
+
+This is optional but strongly recommended for production deployments.
+
+## Customization
+
+- **Theme** — Settings page → toggle Light / Dark / System
+- **Language** — Settings page → toggle 中文 / English
+
+Preferences are stored in `localStorage` (`fd_theme`, `i18nextLng`).
+
+## Development
+
+See [docs/development.md](./docs/development.md) for the contributor guide,
+including UI development workflow, server-side preview-branch workflow,
+optional local full-stack setup (`wrangler pages dev`), and how to change
+the WebDAV password.
+
+For Chinese documentation, see [README.zh.md](./README.zh.md).
 
 ## Acknowledgments
 
-WebDAV related code is based on [r2-webdav](https://github.com/abersheeran/r2-webdav) project by [abersheeran](https://github.com/abersheeran).
+This project would not exist without the original work of the FlareDrive
+community.
+
+### Original FlareDrive
+
+R2 WebDAV is a fork of [FlareDrive](https://github.com/longern/FlareDrive) by
+[Siyu Long](https://github.com/longern) ([@longern](https://github.com/longern)),
+with additional contributions from
+[@SujalPatel-2020](https://github.com/SujalPatel-2020) and other
+[contributors](https://github.com/longern/FlareDrive/graphs/contributors).
+
+The R2 WebDAV fork (2026-) was rewritten across Phase 0-3:
+
+- **Phase 0** — Build chain modernization (CRA → Vite 8, Material-UI →
+  Tailwind v4 + shadcn/ui)
+- **Phase 1** — Authentication overhaul (JWT cookie + session secret
+  derivation + revocation hooks)
+- **Phase 2** — Full UI rebuild (file CRUD, preview dialog, TextPad drawer,
+  i18n, dark mode, settings page)
+- **Phase 3** — Hardening (Content Security Policy enforce, Lighthouse,
+  documentation)
+
+### Upstream WebDAV
+
+The WebDAV protocol implementation is based on
+[r2-webdav](https://github.com/abersheeran/r2-webdav) by
+[abersheeran](https://github.com/abersheeran), preserved from the original
+FlareDrive project.
+
+### License
+
+R2 WebDAV is distributed under the [MIT License](./LICENSE), inheriting
+the license of the original FlareDrive project. See `LICENSE` for full
+copyright attribution.
