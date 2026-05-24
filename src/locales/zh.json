@@ -134,7 +134,7 @@
     "title": "设置",
     "theme": {
       "title": "主题",
-      "description": "选择 FlareDrive 的外观。"
+      "description": "选择 R2 WebDAV 的外观。"
     },
     "language": {
       "title": "语言",
@@ -150,7 +150,7 @@
     "save": "保存并上传"
   },
   "login": {
-    "title": "登录 FlareDrive",
+    "title": "登录 R2 WebDAV",
     "description": "使用所有者凭据登录",
     "username": "用户名",
     "password": "密码",

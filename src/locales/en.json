@@ -134,7 +134,7 @@
     "title": "Settings",
     "theme": {
       "title": "Theme",
-      "description": "Choose how FlareDrive looks."
+      "description": "Choose how R2 WebDAV looks."
     },
     "language": {
       "title": "Language",
@@ -150,7 +150,7 @@
     "save": "Save & upload"
   },
   "login": {
-    "title": "Sign in to FlareDrive",
+    "title": "Sign in to R2 WebDAV",
     "description": "Use the owner credentials.",
     "username": "Username",
     "password": "Password",

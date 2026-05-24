@@ -48,7 +48,7 @@ function renderShell(initial = '/files') {
 describe('AppShell desktop', () => {
   it('renders header logo, sidebar nav, and main children', () => {
     renderShell()
-    expect(screen.getByRole('img', { name: 'FlareDrive' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'R2 WebDAV' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'primary' })).toBeInTheDocument()
     expect(screen.getByTestId('main')).toBeInTheDocument()
   })

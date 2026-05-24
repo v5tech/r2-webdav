@@ -72,7 +72,7 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
           <MenuIcon />
         </Button>
       ) : null}
-      <img src="/logo144.png" alt="FlareDrive" className="size-7" />
+      <img src="/logo144.png" alt="R2 WebDAV" className="size-7" />
       <div className="flex-1" />
       {onUpload ? (
         <>
