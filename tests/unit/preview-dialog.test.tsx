@@ -1,5 +1,10 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('pdfjs-dist', () => ({
+  GlobalWorkerOptions: { workerSrc: '' },
+  getDocument: () => ({ promise: new Promise(() => {}) }),
+}))
 
 import { PreviewDialog } from '../../src/components/preview/PreviewDialog'
 import type { FileItem } from '../../src/lib/types'
@@ -40,9 +45,9 @@ describe('PreviewDialog type dispatch', () => {
     expect(audio?.hasAttribute('controls')).toBe(true)
   })
 
-  it('renders PdfPreview stub for application/pdf contentType', () => {
+  it('renders PdfPreview for application/pdf contentType', () => {
     renderPreview(makeFile('application/pdf', 'doc.pdf'))
-    expect(screen.getByTestId('pdf-preview-stub')).toBeInTheDocument()
+    expect(screen.getByTestId('pdf-preview-loading')).toBeInTheDocument()
   })
 
   it('renders TextPreview for text/* contentType', () => {

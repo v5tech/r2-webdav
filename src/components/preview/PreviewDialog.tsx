@@ -9,7 +9,7 @@ import type { FileItem } from '@/lib/types'
 
 import { AudioPreview } from './AudioPreview'
 import { ImagePreview } from './ImagePreview'
-import { PdfPreview } from './stubs'
+import { PdfPreview } from './PdfPreview'
 import { TextPreview } from './TextPreview'
 import { UnsupportedPreview } from './UnsupportedPreview'
 import { VideoPreview } from './VideoPreview'
@@ -58,7 +58,7 @@ function dispatchBody(file: FileItem) {
     case 'audio':
       return <AudioPreview fileKey={file.key} />
     case 'pdf':
-      return <PdfPreview type={file.httpMetadata.contentType} />
+      return <PdfPreview fileKey={file.key} />
     case 'text':
       return <TextPreview fileKey={file.key} size={file.size} />
     default:

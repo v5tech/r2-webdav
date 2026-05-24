@@ -80,6 +80,11 @@
       "oversize": "File too large to preview here.",
       "error": "Failed to load text"
     },
+    "pdf": {
+      "prev": "Previous page",
+      "next": "Next page",
+      "error": "Failed to load PDF"
+    },
     "unsupported": {
       "description": "This file type cannot be previewed in the browser.",
       "openExternal": "Open in new tab"
