@@ -67,7 +67,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center p-4">
+    <main className="flex min-h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>{t('login.title')}</CardTitle>
@@ -131,6 +131,6 @@ export default function LoginPage() {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </main>
   )
 }
