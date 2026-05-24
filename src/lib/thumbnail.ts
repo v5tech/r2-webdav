@@ -27,7 +27,7 @@ export async function uploadThumbnail(
   hash: string,
   signal?: AbortSignal,
 ): Promise<void> {
-  const key = `_$flaredrive$/thumbnails/${hash}.png`
+  const key = `_$r2webdav$/thumbnails/${hash}.png`
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'image/png' },

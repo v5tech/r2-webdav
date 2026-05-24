@@ -52,7 +52,7 @@ export function FileCard({ file, onCwdChange, onRename, onDelete, onPreview }: F
         <div className="flex h-20 w-20 items-center justify-center">
           {thumb ? (
             <img
-              src={`/webdav/_$flaredrive$/thumbnails/${thumb}.png`}
+              src={`/webdav/_$r2webdav$/thumbnails/${thumb}.png`}
               alt={name}
               loading="lazy"
               className="size-full rounded object-cover"

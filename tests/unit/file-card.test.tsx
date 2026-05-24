@@ -107,7 +107,7 @@ describe('FileCard', () => {
       />,
     )
     const img = screen.getByAltText('pic.png') as HTMLImageElement
-    expect(img.getAttribute('src')).toContain('/webdav/_$flaredrive$/thumbnails/abc.png')
+    expect(img.getAttribute('src')).toContain('/webdav/_$r2webdav$/thumbnails/abc.png')
     expect(img.getAttribute('loading')).toBe('lazy')
   })
 

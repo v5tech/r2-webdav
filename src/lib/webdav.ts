@@ -139,7 +139,7 @@ export async function fetchPath(path: string): Promise<FileItem[]> {
       const size = response.querySelector('getcontentlength')?.textContent
       const lastModified = response.querySelector('getlastmodified')?.textContent
       const thumbnail =
-        response.getElementsByTagNameNS('flaredrive', 'thumbnail')[0]?.textContent ?? undefined
+        response.getElementsByTagNameNS('r2webdav', 'thumbnail')[0]?.textContent ?? undefined
       return {
         key: decodeURI(href).replace(/^\/webdav\//, ''),
         size: size ? Number(size) : 0,

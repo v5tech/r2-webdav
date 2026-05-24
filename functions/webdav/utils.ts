@@ -41,7 +41,7 @@ export async function* listAll(bucket: R2Bucket, prefix?: string, isRecursive: b
       include: ['httpMetadata', 'customMetadata'],
     })
 
-    for await (const obj of r2Objects.objects) if (!obj.key.startsWith('_$flaredrive$/')) yield obj
+    for await (const obj of r2Objects.objects) if (!obj.key.startsWith('_$r2webdav$/')) yield obj
 
     if (r2Objects.truncated) cursor = r2Objects.cursor
   } while (r2Objects.truncated)

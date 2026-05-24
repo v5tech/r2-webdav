@@ -51,7 +51,7 @@ async function findChildren({
 
 export async function handleRequestPropfind({ bucket, path, request }: RequestHandlerParams) {
   const responseTemplate = `<?xml version="1.0" encoding="utf-8" ?>
-<multistatus xmlns="DAV:" xmlns:fd="flaredrive">
+<multistatus xmlns="DAV:" xmlns:fd="r2webdav">
 {{items}}
 </multistatus>`
 

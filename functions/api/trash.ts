@@ -1,6 +1,6 @@
 import { extractSession, verifySessionJwt, type SessionEnv } from '../_shared/auth'
 
-const TRASH_PREFIX = '_$flaredrive$/trash/'
+const TRASH_PREFIX = '_$r2webdav$/trash/'
 
 interface TrashEnv extends SessionEnv {
   BUCKET: R2Bucket

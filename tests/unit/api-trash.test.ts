@@ -85,7 +85,7 @@ describe('GET /api/trash', () => {
     const json = (await res.json()) as unknown[]
     expect(json).toEqual([])
     expect(bucket.list).toHaveBeenCalledWith(
-      expect.objectContaining({ prefix: '_$flaredrive$/trash/' }),
+      expect.objectContaining({ prefix: '_$r2webdav$/trash/' }),
     )
   })
 
@@ -94,22 +94,22 @@ describe('GET /api/trash', () => {
     bucket.list.mockResolvedValue({
       objects: [
         {
-          key: '_$flaredrive$/trash/1000/docs',
+          key: '_$r2webdav$/trash/1000/docs',
           size: 0,
           httpMetadata: { contentType: 'application/x-directory' },
         },
         {
-          key: '_$flaredrive$/trash/1000/docs/a.txt',
+          key: '_$r2webdav$/trash/1000/docs/a.txt',
           size: 1,
           httpMetadata: { contentType: 'text/plain' },
         },
         {
-          key: '_$flaredrive$/trash/1000/docs/sub/b.txt',
+          key: '_$r2webdav$/trash/1000/docs/sub/b.txt',
           size: 1,
           httpMetadata: { contentType: 'text/plain' },
         },
         {
-          key: '_$flaredrive$/trash/2000/photo.png',
+          key: '_$r2webdav$/trash/2000/photo.png',
           size: 10,
           httpMetadata: { contentType: 'image/png' },
         },
@@ -138,7 +138,7 @@ describe('POST /api/trash (restore)', () => {
   it('restores session: puts back to original keys and deletes trash objects', async () => {
     const bucket = makeBucket()
     const trashObj = {
-      key: '_$flaredrive$/trash/1000/docs/a.txt',
+      key: '_$r2webdav$/trash/1000/docs/a.txt',
       size: 1,
       httpMetadata: { contentType: 'text/plain' },
       customMetadata: undefined,
@@ -157,13 +157,13 @@ describe('POST /api/trash (restore)', () => {
       'body-a',
       expect.objectContaining({ httpMetadata: { contentType: 'text/plain' } }),
     )
-    expect(bucket.delete).toHaveBeenCalledWith('_$flaredrive$/trash/1000/docs/a.txt')
+    expect(bucket.delete).toHaveBeenCalledWith('_$r2webdav$/trash/1000/docs/a.txt')
   })
 
   it('returns 409 when any original key already exists', async () => {
     const bucket = makeBucket()
     const trashObj = {
-      key: '_$flaredrive$/trash/1000/docs/a.txt',
+      key: '_$r2webdav$/trash/1000/docs/a.txt',
       size: 1,
       httpMetadata: { contentType: 'text/plain' },
       customMetadata: undefined,
@@ -197,15 +197,15 @@ describe('DELETE /api/trash (permanent)', () => {
     const bucket = makeBucket()
     bucket.list.mockResolvedValue({
       objects: [
-        { key: '_$flaredrive$/trash/1000/a.txt', size: 1 },
-        { key: '_$flaredrive$/trash/1000/b.txt', size: 1 },
+        { key: '_$r2webdav$/trash/1000/a.txt', size: 1 },
+        { key: '_$r2webdav$/trash/1000/b.txt', size: 1 },
       ],
       truncated: false,
     })
     const token = await makeToken()
     const res = await callDelete(bucket, token, '1000')
     expect(res.status).toBe(204)
-    expect(bucket.delete).toHaveBeenCalledWith('_$flaredrive$/trash/1000/a.txt')
-    expect(bucket.delete).toHaveBeenCalledWith('_$flaredrive$/trash/1000/b.txt')
+    expect(bucket.delete).toHaveBeenCalledWith('_$r2webdav$/trash/1000/a.txt')
+    expect(bucket.delete).toHaveBeenCalledWith('_$r2webdav$/trash/1000/b.txt')
   })
 })

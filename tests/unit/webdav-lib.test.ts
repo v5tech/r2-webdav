@@ -31,7 +31,7 @@ function xmlResponse(body: string, init: ResponseInit = {}) {
 
 function multistatus(entries: string) {
   return `<?xml version="1.0" encoding="utf-8"?>
-<multistatus xmlns="DAV:" xmlns:fd="flaredrive">${entries}</multistatus>`
+<multistatus xmlns="DAV:" xmlns:fd="r2webdav">${entries}</multistatus>`
 }
 
 function entry({

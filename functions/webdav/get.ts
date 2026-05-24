@@ -11,6 +11,6 @@ export async function handleRequestGet({ bucket, path, request }: RequestHandler
 
   const headers = new Headers()
   obj.writeHttpMetadata(headers)
-  if (path.startsWith('_$flaredrive$/thumbnails/')) headers.set('Cache-Control', 'max-age=31536000')
+  if (path.startsWith('_$r2webdav$/thumbnails/')) headers.set('Cache-Control', 'max-age=31536000')
   return new Response(obj.body, { headers })
 }

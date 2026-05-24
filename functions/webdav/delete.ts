@@ -1,7 +1,7 @@
 import { notFound } from './utils'
 import { listAll, RequestHandlerParams } from './utils'
 
-const TRASH_PREFIX = '_$flaredrive$/trash/'
+const TRASH_PREFIX = '_$r2webdav$/trash/'
 
 export async function handleRequestDelete({ bucket, path }: RequestHandlerParams) {
   const trashRoot = `${TRASH_PREFIX}${Date.now()}/`

@@ -52,7 +52,7 @@ describe('handleRequestDelete (trash)', () => {
 
     expect(res.status).toBe(204)
     expect(bucket.put).toHaveBeenCalledWith(
-      `_$flaredrive$/trash/${FIXED_NOW}/foo.txt`,
+      `_$r2webdav$/trash/${FIXED_NOW}/foo.txt`,
       'body-stream',
       expect.objectContaining({
         httpMetadata: { contentType: 'text/plain' },
@@ -108,17 +108,17 @@ describe('handleRequestDelete (trash)', () => {
       expect.objectContaining({ prefix: 'docs/', delimiter: undefined }),
     )
     expect(bucket.put).toHaveBeenCalledWith(
-      `_$flaredrive$/trash/${FIXED_NOW}/docs`,
+      `_$r2webdav$/trash/${FIXED_NOW}/docs`,
       'body-docs',
       expect.anything(),
     )
     expect(bucket.put).toHaveBeenCalledWith(
-      `_$flaredrive$/trash/${FIXED_NOW}/docs/a.txt`,
+      `_$r2webdav$/trash/${FIXED_NOW}/docs/a.txt`,
       'body-docs/a.txt',
       expect.anything(),
     )
     expect(bucket.put).toHaveBeenCalledWith(
-      `_$flaredrive$/trash/${FIXED_NOW}/docs/sub/b.txt`,
+      `_$r2webdav$/trash/${FIXED_NOW}/docs/sub/b.txt`,
       'body-docs/sub/b.txt',
       expect.anything(),
     )

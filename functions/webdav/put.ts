@@ -28,7 +28,7 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
   }
 
   // Check if the parent directory exists
-  if (!path.startsWith('_$flaredrive$/')) {
+  if (!path.startsWith('_$r2webdav$/')) {
     const parentPath = path.replace(/(\/|^)[^/]*$/, '')
     const parentDir = parentPath === '' ? ROOT_OBJECT : await bucket.head(parentPath)
     if (parentDir === null) return new Response('Conflict', { status: 409 })
