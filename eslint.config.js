@@ -71,9 +71,13 @@ export default tseslint.config(
   // Scope intentionally narrow — pages outside this list (login etc.) untouched.
   {
     files: [
-      'src/components/layout/**/*.{ts,tsx}',
+      'src/components/auth/**/*.{ts,tsx}',
       'src/components/files/**/*.{ts,tsx}',
+      'src/components/layout/**/*.{ts,tsx}',
+      'src/components/preview/**/*.{ts,tsx}',
+      'src/components/textpad/**/*.{ts,tsx}',
       'src/components/upload/**/*.{ts,tsx}',
+      'src/pages/**/*.{ts,tsx}',
     ],
     plugins: { i18next },
     rules: {

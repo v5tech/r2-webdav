@@ -127,5 +127,22 @@
     "body": "Content",
     "placeholder": "Write a note...",
     "save": "Save & upload"
+  },
+  "login": {
+    "title": "Sign in to FlareDrive",
+    "description": "Use the owner credentials.",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "validation": {
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    },
+    "error": {
+      "invalidCredentials": "Invalid username or password",
+      "generic": "Login failed ({{status}})",
+      "network": "Network error, please retry"
+    }
   }
 }

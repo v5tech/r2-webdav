@@ -36,8 +36,8 @@ describe('LoginPage', () => {
   it('shows validation errors on empty submit', async () => {
     renderLogin()
     fireEvent.click(screen.getByRole('button', { name: /登录|sign in|log in/i }))
-    expect(await screen.findByText(/用户名不能为空/)).toBeInTheDocument()
-    expect(await screen.findByText(/密码不能为空/)).toBeInTheDocument()
+    expect(await screen.findByText(/用户名不能为空|username is required/i)).toBeInTheDocument()
+    expect(await screen.findByText(/密码不能为空|password is required/i)).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 

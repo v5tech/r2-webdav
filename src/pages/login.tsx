@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
@@ -21,16 +22,17 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const loginSchema = z.object({
-  username: z.string().min(1, '用户名不能为空'),
-  password: z.string().min(1, '密码不能为空'),
-})
-
-type LoginValues = z.infer<typeof loginSchema>
-
 export default function LoginPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const loginSchema = z.object({
+    username: z.string().min(1, t('login.validation.usernameRequired')),
+    password: z.string().min(1, t('login.validation.passwordRequired')),
+  })
+
+  type LoginValues = z.infer<typeof loginSchema>
 
   const {
     control,
@@ -54,9 +56,13 @@ export default function LoginPage() {
         navigate('/', { replace: true })
         return
       }
-      setSubmitError(res.status === 401 ? '用户名或密码错误' : `登录失败 (${res.status})`)
+      setSubmitError(
+        res.status === 401
+          ? t('login.error.invalidCredentials')
+          : t('login.error.generic', { status: res.status }),
+      )
     } catch {
-      setSubmitError('网络错误, 请稍后重试')
+      setSubmitError(t('login.error.network'))
     }
   }
 
@@ -64,8 +70,8 @@ export default function LoginPage() {
     <div className="flex min-h-full items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>登录 FlareDrive</CardTitle>
-          <CardDescription>使用所有者凭据登录</CardDescription>
+          <CardTitle>{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <CardContent>
@@ -75,7 +81,7 @@ export default function LoginPage() {
                 name="username"
                 render={({ field: { ref: _ref, ...field }, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor="username">用户名</FieldLabel>
+                    <FieldLabel htmlFor="username">{t('login.username')}</FieldLabel>
                     <Input
                       {...field}
                       id="username"
@@ -94,7 +100,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field: { ref: _ref, ...field }, fieldState }) => (
                   <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor="password">密码</FieldLabel>
+                    <FieldLabel htmlFor="password">{t('login.password')}</FieldLabel>
                     <Input
                       {...field}
                       id="password"
@@ -120,7 +126,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? '登录中…' : '登录'}
+              {isSubmitting ? t('login.submitting') : t('login.submit')}
             </Button>
           </CardFooter>
         </form>
