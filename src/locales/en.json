@@ -119,5 +119,13 @@
       "title": "Language",
       "description": "Choose interface language."
     }
+  },
+  "textpad": {
+    "title": "TextPad",
+    "description": "Quickly create a text note in the current folder.",
+    "name": "Filename",
+    "body": "Content",
+    "placeholder": "Write a note...",
+    "save": "Save & upload"
   }
 }

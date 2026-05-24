@@ -1,4 +1,4 @@
-import { AlertCircleIcon, FolderPlusIcon, Loader2Icon } from 'lucide-react'
+import { AlertCircleIcon, FolderPlusIcon, Loader2Icon, NotebookPenIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
@@ -18,6 +18,7 @@ import { UploadDropZone } from '@/components/files/UploadDropZone'
 import { type ViewMode, ViewToggle } from '@/components/files/ViewToggle'
 import { AppShell } from '@/components/layout/AppShell'
 import { PreviewDialog } from '@/components/preview/PreviewDialog'
+import { TextPadDrawer } from '@/components/textpad/TextPadDrawer'
 import { Button } from '@/components/ui/button'
 import { useFileSelection } from '@/hooks/use-file-selection'
 import { useUploadQueue } from '@/hooks/use-upload-queue'
@@ -61,6 +62,7 @@ export default function FilesPage() {
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [search, setSearch] = useState('')
   const [newFolderOpen, setNewFolderOpen] = useState(false)
+  const [textpadOpen, setTextpadOpen] = useState(false)
   const [renameTarget, setRenameTarget] = useState<FileItem | null>(null)
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
   const selection = useFileSelection()
@@ -143,6 +145,15 @@ export default function FilesPage() {
             <FolderPlusIcon />
             {t('files.newFolder.title')}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTextpadOpen(true)}
+            aria-label={t('textpad.title')}
+          >
+            <NotebookPenIcon />
+            {t('textpad.title')}
+          </Button>
           <div className="ml-auto flex items-center gap-2">
             <div className="w-48">
               <SearchBar value={search} onChange={setSearch} />
@@ -208,6 +219,12 @@ export default function FilesPage() {
         onOpenChange={setNewFolderOpen}
         cwd={cwd}
         onCreated={() => void refresh()}
+      />
+      <TextPadDrawer
+        open={textpadOpen}
+        onOpenChange={setTextpadOpen}
+        cwd={cwd}
+        onSave={(file, folder) => queue.enqueue(folder, [file])}
       />
       <RenameDialog
         open={renameTarget !== null}
