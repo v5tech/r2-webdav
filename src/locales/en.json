@@ -49,15 +49,36 @@
       "placeholder": "Search in this folder",
       "clear": "Clear search"
     },
+    "sort": {
+      "key": "Sort key",
+      "byName": "Sort by name",
+      "bySize": "Sort by size",
+      "byModified": "Sort by modified",
+      "name": "Name",
+      "size": "Size",
+      "modified": "Modified",
+      "directionAsc": "Sort direction ascending",
+      "directionDesc": "Sort direction descending"
+    },
+    "view": {
+      "title": "View mode",
+      "grid": "Grid view",
+      "list": "List view"
+    },
+    "moreActions": "More actions",
+    "open": "Open {{name}}",
     "loading": "Loading...",
     "retry": "Retry"
   },
   "nav": {
     "menu": "Menu",
+    "openMenu": "Open menu",
     "primary": "Primary navigation",
+    "home": "Home",
     "files": "Files",
     "trash": "Trash",
-    "settings": "Settings"
+    "settings": "Settings",
+    "logout": "Logout"
   },
   "header": {
     "theme": {

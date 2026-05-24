@@ -49,15 +49,36 @@
       "placeholder": "在当前目录搜索",
       "clear": "清除搜索"
     },
+    "sort": {
+      "key": "排序方式",
+      "byName": "按名称排序",
+      "bySize": "按大小排序",
+      "byModified": "按修改时间排序",
+      "name": "名称",
+      "size": "大小",
+      "modified": "修改时间",
+      "directionAsc": "升序",
+      "directionDesc": "降序"
+    },
+    "view": {
+      "title": "视图模式",
+      "grid": "网格视图",
+      "list": "列表视图"
+    },
+    "moreActions": "更多操作",
+    "open": "打开 {{name}}",
     "loading": "加载中…",
     "retry": "重试"
   },
   "nav": {
     "menu": "菜单",
+    "openMenu": "打开菜单",
     "primary": "主导航",
+    "home": "主页",
     "files": "文件",
     "trash": "回收站",
-    "settings": "设置"
+    "settings": "设置",
+    "logout": "退出登录"
   },
   "header": {
     "theme": {

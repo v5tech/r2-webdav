@@ -1,5 +1,6 @@
 import { HomeIcon } from 'lucide-react'
 import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 
@@ -9,6 +10,7 @@ interface BreadcrumbProps {
 }
 
 export function Breadcrumb({ cwd, onCwdChange }: BreadcrumbProps) {
+  const { t } = useTranslation()
   const trimmed = cwd.replace(/\/$/, '')
   const segments = trimmed ? trimmed.split('/') : []
 
@@ -17,7 +19,7 @@ export function Breadcrumb({ cwd, onCwdChange }: BreadcrumbProps) {
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label="Home"
+        aria-label={t('nav.home')}
         onClick={() => onCwdChange('')}
       >
         <HomeIcon />

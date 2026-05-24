@@ -67,7 +67,7 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
           variant="ghost"
           size="icon-sm"
           onClick={onMenuClick}
-          aria-label="Open menu"
+          aria-label={t('nav.openMenu')}
         >
           <MenuIcon />
         </Button>
@@ -128,7 +128,7 @@ export function Header({ showMenuButton, onMenuClick, onUpload }: HeaderProps) {
         variant="ghost"
         size="icon-sm"
         onClick={handleLogout}
-        aria-label="Logout"
+        aria-label={t('nav.logout')}
       >
         <LogOutIcon />
       </Button>
