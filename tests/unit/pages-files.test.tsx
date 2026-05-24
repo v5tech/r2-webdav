@@ -103,7 +103,7 @@ describe('FilesPage', () => {
     fetchPathMock.mockResolvedValueOnce([dir('photos')])
     fetchPathMock.mockResolvedValueOnce([file({ key: 'photos/pic.png' })])
     renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: /open photos/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /photos/i }))
     await waitFor(() => expect(fetchPathMock).toHaveBeenLastCalledWith('photos/'))
     expect(await screen.findByText('pic.png')).toBeInTheDocument()
   })
@@ -128,8 +128,9 @@ describe('FilesPage', () => {
       dir('zoo'),
     ])
     renderPage()
-    const items = await screen.findAllByRole('button', { name: /open/i })
-    expect(items[0].getAttribute('aria-label')).toMatch(/open zoo/i)
+    const zoo = await screen.findByRole('button', { name: 'zoo' })
+    const aTxt = screen.getByRole('button', { name: 'a.txt' })
+    expect(zoo.compareDocumentPosition(aTxt) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('opens new-folder dialog', async () => {
@@ -192,7 +193,7 @@ describe('FilesPage', () => {
     fetchPathMock.mockResolvedValueOnce([dir('photos')])
     fetchPathMock.mockResolvedValueOnce([])
     renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: /open photos/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /photos/i }))
     await waitFor(() =>
       expect(screen.getByTestId('location').dataset.search).toBe('?p=photos%2F'),
     )

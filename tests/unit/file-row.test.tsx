@@ -52,7 +52,7 @@ describe('FileRow', () => {
         onDelete={() => {}}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: /open photos/i }))
+    fireEvent.click(screen.getByRole('button', { name: /photos/i }))
     expect(onCwdChange).toHaveBeenCalledWith('photos/')
   })
 
@@ -66,7 +66,7 @@ describe('FileRow', () => {
         onDelete={() => {}}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: /open c d\.txt/i }))
+    fireEvent.click(screen.getByRole('button', { name: /c d\.txt/i }))
     expect(openSpy).toHaveBeenCalledWith(
       '/webdav/a%20b/c%20d.txt',
       '_blank',
@@ -88,7 +88,7 @@ describe('FileRow', () => {
         onPreview={onPreview}
       />,
     )
-    fireEvent.click(screen.getByRole('button', { name: /open a\.txt/i }))
+    fireEvent.click(screen.getByRole('button', { name: /a\.txt/i }))
     expect(onPreview).toHaveBeenCalledWith(file)
     expect(openSpy).not.toHaveBeenCalled()
     openSpy.mockRestore()

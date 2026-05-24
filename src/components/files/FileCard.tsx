@@ -46,7 +46,6 @@ export function FileCard({ file, onCwdChange, onRename, onDelete, onPreview }: F
       <button
         type="button"
         onClick={handleOpen}
-        aria-label={t('files.open', { name })}
         className="flex flex-col items-center gap-2 p-3 text-left"
       >
         <div className="flex h-20 w-20 items-center justify-center">

@@ -45,7 +45,6 @@ export function FileRow({ file, onCwdChange, onRename, onDelete, onPreview }: Fi
       <button
         type="button"
         onClick={handleOpen}
-        aria-label={t('files.open', { name })}
         className="flex flex-1 items-center gap-3 text-left"
       >
         <MimeIcon contentType={file.httpMetadata.contentType} className="size-5 shrink-0" />
