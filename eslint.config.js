@@ -67,29 +67,8 @@ export default tseslint.config(
       'no-var': 'warn',
     },
   },
-  // Legacy MUI files (slated for rewrite in Phase 2); downgrade rules to warnings
-  {
-    files: [
-      'src/Main.tsx',
-      'src/Header.tsx',
-      'src/FileGrid.tsx',
-      'src/MimeIcon.tsx',
-      'src/MultiSelectToolbar.tsx',
-      'src/ProgressDialog.tsx',
-      'src/TextPadDrawer.tsx',
-      'src/UploadDrawer.tsx',
-      'src/app/transfer.ts',
-      'src/app/transferQueue.tsx',
-    ],
-    rules: {
-      'react/display-name': 'warn',
-      'no-var': 'warn',
-      'no-async-promise-executor': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'warn',
-    },
-  },
   // Phase 2a new UI components: enforce i18n on visible JSX text.
-  // Scope intentionally narrow — legacy MUI files and pre-i18n pages (login) untouched.
+  // Scope intentionally narrow — pages outside this list (login etc.) untouched.
   {
     files: [
       'src/components/layout/**/*.{ts,tsx}',
