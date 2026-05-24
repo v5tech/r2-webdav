@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
@@ -17,9 +17,9 @@ export function AppShell({ children, onUpload }: AppShellProps) {
   const { isMobile } = useViewport()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
-  useEffect(() => {
-    if (!isMobile) setMobileSidebarOpen(false)
-  }, [isMobile])
+  if (!isMobile && mobileSidebarOpen) {
+    setMobileSidebarOpen(false)
+  }
 
   return (
     <div className="flex h-full flex-col">

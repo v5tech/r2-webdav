@@ -36,7 +36,9 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
   const [tasks, setTasks] = useState<UploadTask[]>([])
   const processing = useRef(false)
   const onCompletedRef = useRef(onCompleted)
-  onCompletedRef.current = onCompleted
+  useEffect(() => {
+    onCompletedRef.current = onCompleted
+  })
   const controllers = useRef<Map<string, AbortController>>(new Map())
 
   const enqueue = useCallback((cwd: string, files: File[]) => {
@@ -70,6 +72,7 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
     )
   }, [])
 
+  /* eslint-disable react-hooks/set-state-in-effect -- 上传队列调度器: tasks 变化触发 effect 推进状态机 (pending→uploading→completed/failed/cancelled), 不是简单 prop→state 派生 */
   useEffect(() => {
     if (processing.current) return
     const next = tasks.find((t) => t.status === 'pending')
@@ -130,6 +133,7 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
         })
     })()
   }, [tasks, upload])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return { tasks, enqueue, clearCompleted, cancel }
 }

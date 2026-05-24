@@ -42,6 +42,7 @@ export default function TrashPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 组件挂载触发初次 fetch; 后续迁移 react-query 后清理
     void refresh()
   }, [refresh])
 
