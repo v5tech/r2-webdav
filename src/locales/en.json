@@ -85,6 +85,9 @@
       "next": "Next page",
       "error": "Failed to load PDF"
     },
+    "code": {
+      "error": "Failed to load code"
+    },
     "unsupported": {
       "description": "This file type cannot be previewed in the browser.",
       "openExternal": "Open in new tab"

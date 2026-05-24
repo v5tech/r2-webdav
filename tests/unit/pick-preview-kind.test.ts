@@ -30,7 +30,27 @@ describe('pickPreviewKind', () => {
   })
 
   it('routes text/* MIME for plain text to text', () => {
-    expect(pickPreviewKind(makeFile('readme.md', 'text/plain'))).toBe('text')
+    expect(pickPreviewKind(makeFile('readme.txt', 'text/plain'))).toBe('text')
+  })
+
+  it('routes .ts extension to code regardless of MIME', () => {
+    expect(pickPreviewKind(makeFile('a.ts', 'text/plain'))).toBe('code')
+  })
+
+  it('routes .py extension to code regardless of MIME', () => {
+    expect(pickPreviewKind(makeFile('script.py', 'application/octet-stream'))).toBe('code')
+  })
+
+  it('routes .json extension to code (MIME application/json)', () => {
+    expect(pickPreviewKind(makeFile('config.json', 'application/json'))).toBe('code')
+  })
+
+  it('routes .md extension to code', () => {
+    expect(pickPreviewKind(makeFile('README.md', 'text/markdown'))).toBe('code')
+  })
+
+  it('routes .log to text (plain log)', () => {
+    expect(pickPreviewKind(makeFile('server.log', 'text/plain'))).toBe('text')
   })
 
   it('falls back to unsupported when MIME is text/xml but extension is .zip (R2 sniff workaround)', () => {
