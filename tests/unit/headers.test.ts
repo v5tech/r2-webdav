@@ -5,16 +5,16 @@ import { describe, expect, it } from 'vitest'
 
 const HEADERS_PATH = path.resolve(__dirname, '../../public/_headers')
 
-describe('public/_headers (CSP Report-Only)', () => {
+describe('public/_headers (CSP enforce)', () => {
   const content = readFileSync(HEADERS_PATH, 'utf-8')
 
   it('applies to all routes', () => {
     expect(content).toMatch(/^\/\*\s*$/m)
   })
 
-  it('uses Report-Only (not enforce) during Phase 2b', () => {
-    expect(content).toMatch(/Content-Security-Policy-Report-Only:/i)
-    expect(content).not.toMatch(/^\s*Content-Security-Policy:/im)
+  it('uses enforce (not Report-Only) since Phase 3', () => {
+    expect(content).toMatch(/^\s*Content-Security-Policy:/im)
+    expect(content).not.toMatch(/Content-Security-Policy-Report-Only:/i)
   })
 
   it('declares directives required by pdfjs worker + wasm', () => {
