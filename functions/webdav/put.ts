@@ -37,6 +37,8 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
   const thumbnail = request.headers.get('fd-thumbnail')
   const customMetadata = thumbnail ? { thumbnail } : undefined
 
+  const existing = await bucket.head(path)
+
   const result = await bucket.put(path, request.body, {
     httpMetadata: request.headers,
     customMetadata,
@@ -44,5 +46,5 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
 
   if (!result) return new Response('Preconditions failed', { status: 412 })
 
-  return new Response('', { status: 201 })
+  return new Response(null, { status: existing ? 204 : 201 })
 }
