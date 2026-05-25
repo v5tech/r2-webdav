@@ -1,4 +1,5 @@
 import { RequestHandlerParams, ROOT_OBJECT } from './utils'
+import { inferContentType } from '../_shared/mime'
 
 async function handleRequestPutMultipart({ bucket, path, request }: RequestHandlerParams) {
   const url = new URL(request.url)
@@ -39,8 +40,11 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
 
   const existing = await bucket.head(path)
 
+  const headers = new Headers(request.headers)
+  headers.set('Content-Type', inferContentType(path, headers.get('Content-Type')))
+
   const result = await bucket.put(path, request.body, {
-    httpMetadata: request.headers,
+    httpMetadata: headers,
     customMetadata,
   })
 

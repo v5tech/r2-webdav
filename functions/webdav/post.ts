@@ -1,5 +1,6 @@
 import { notFound } from './utils'
 import { RequestHandlerParams } from './utils'
+import { inferContentType } from '../_shared/mime'
 
 export async function handleRequestPostCreateMultipart({
   bucket,
@@ -9,8 +10,11 @@ export async function handleRequestPostCreateMultipart({
   const thumbnail = request.headers.get('fd-thumbnail')
   const customMetadata = thumbnail ? { thumbnail } : undefined
 
+  const headers = new Headers(request.headers)
+  headers.set('Content-Type', inferContentType(path, headers.get('Content-Type')))
+
   const multipartUpload = await bucket.createMultipartUpload(path, {
-    httpMetadata: request.headers,
+    httpMetadata: headers,
     customMetadata,
   })
 
