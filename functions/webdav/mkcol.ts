@@ -1,6 +1,11 @@
 import { RequestHandlerParams, ROOT_OBJECT } from './utils'
 
 export async function handleRequestMkcol({ bucket, path, request }: RequestHandlerParams) {
+  const contentLength = request.headers.get('Content-Length')
+  if (contentLength && contentLength !== '0') {
+    return new Response('Unsupported Media Type', { status: 415 })
+  }
+
   // Check if the resource already exists
   const resource = await bucket.head(path)
   if (resource !== null) {
