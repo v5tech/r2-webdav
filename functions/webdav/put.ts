@@ -38,7 +38,6 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
   const customMetadata = thumbnail ? { thumbnail } : undefined
 
   const result = await bucket.put(path, request.body, {
-    onlyIf: request.headers,
     httpMetadata: request.headers,
     customMetadata,
   })
