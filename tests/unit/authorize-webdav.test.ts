@@ -133,7 +133,7 @@ describe('authorizeWebdav — step 4: WEBDAV_PUBLIC_READ', () => {
     expect(res.ok).toBe(false)
     if (res.ok) return
     expect(res.response.status).toBe(401)
-    expect(res.response.headers.get('WWW-Authenticate')).toBeNull()
+    expect(res.response.headers.get('WWW-Authenticate')).toMatch(/^Basic /)
   })
 
   it('rejects anonymous DELETE even when public read enabled', async () => {
@@ -176,13 +176,13 @@ describe('authorizeWebdav — step 5: full deny', () => {
     }
   })
 
-  it('rejects no-creds write method WITHOUT WWW-Authenticate', async () => {
+  it('rejects no-creds write method with WWW-Authenticate challenge', async () => {
     for (const m of ['PUT', 'POST', 'DELETE', 'MOVE', 'COPY', 'MKCOL']) {
       const res = await authorizeWebdav(mkReq({ method: m }), env, origin)
       expect(res.ok).toBe(false)
       if (res.ok) continue
       expect(res.response.status).toBe(401)
-      expect(res.response.headers.get('WWW-Authenticate')).toBeNull()
+      expect(res.response.headers.get('WWW-Authenticate')).toMatch(/^Basic /)
     }
   })
 

@@ -151,9 +151,9 @@ export interface WebdavAuthEnv extends BasicAuthEnv, SessionEnv {
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'PROPFIND'])
 
-function deny(method: string, withBasicChallenge: boolean): AuthzResult {
+function deny(withBasicChallenge: boolean): AuthzResult {
   const headers: Record<string, string> = {}
-  if (withBasicChallenge && READ_METHODS.has(method)) {
+  if (withBasicChallenge) {
     headers['WWW-Authenticate'] = 'Basic realm="WebDAV"'
   }
   return { ok: false, response: new Response('Unauthorized', { status: 401, headers }) }
@@ -170,7 +170,7 @@ export async function authorizeWebdav(
   if (cookieToken) {
     const payload = await verifySessionJwt(env, cookieToken, origin)
     if (payload) return { ok: true }
-    return deny(method, false)
+    return deny(false)
   }
 
   const authHeader = request.headers.get('Authorization')
@@ -180,5 +180,5 @@ export async function authorizeWebdav(
     return { ok: true }
   }
 
-  return deny(method, true)
+  return deny(true)
 }
