@@ -14,7 +14,7 @@ import { handleRequestPost } from './post'
 async function handleRequestOptions() {
   return new Response(null, {
     headers: {
-      Allow: Object.keys(HANDLERS).join(', '),
+      Allow: `OPTIONS, ${Object.keys(HANDLERS).join(', ')}`,
       DAV: '1',
     },
   })
