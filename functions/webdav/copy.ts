@@ -11,8 +11,11 @@ export async function handleRequestCopy({ bucket, path, request }: RequestHandle
   const src = await bucket.get(path)
   if (src === null) return notFound()
 
-  const destPathname = new URL(destinationHeader).pathname
-  const decodedPathname = decodeURIComponent(destPathname).replace(/\/$/, '')
+  const destURL = new URL(destinationHeader)
+  if (destURL.host !== new URL(request.url).host) {
+    return new Response('Bad Gateway', { status: 502 })
+  }
+  const decodedPathname = decodeURIComponent(destURL.pathname).replace(/\/$/, '')
   if (!decodedPathname.startsWith(WEBDAV_ENDPOINT))
     return new Response('Bad Request', { status: 400 })
   const destination = decodedPathname.slice(WEBDAV_ENDPOINT.length)
