@@ -59,7 +59,7 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
   if (!rootObject) return new Response('Not found', { status: 404 })
   const isDirectory =
     rootObject === ROOT_OBJECT || rootObject.httpMetadata?.contentType === 'application/x-directory'
-  const depth = request.headers.get('Depth') ?? 'infinity'
+  const depth = request.headers.get('Depth') ?? '1'
 
   const children = !isDirectory
     ? []
