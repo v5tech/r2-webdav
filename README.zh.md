@@ -107,6 +107,26 @@ WebDAV 客户端配置：
 
 可选配置，但生产环境强烈推荐。
 
+## R2 生命周期：自动清理未完成的分片上传（推荐配置）
+
+大文件上传走 S3 风格的分片协议（multipart）。如果客户端在上传途中崩溃或
+网络断开，已上传的分片会留在 R2 桶里继续计费。R2 桶级生命周期规则可以
+自动清理。
+
+用 `wrangler` 一次性配置：
+
+```bash
+npx wrangler r2 bucket lifecycle add <your-bucket> \
+  --name "abort-incomplete-mpu" \
+  --abort-multipart-days 7
+```
+
+或在 Cloudflare Dashboard → R2 → 你的桶 → **设置** → **对象生命周期规则** →
+新建规则，把 **未完成的分片上传中止时间** 设为 `7 天`。
+
+R2 会按规则自动 abort 超时未完成的 multipart upload。无需写代码也无需
+配 cron。
+
 ## 个性化设置
 
 - **主题** — 设置页 → 切换浅色 / 深色 / 跟随系统

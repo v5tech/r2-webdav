@@ -113,6 +113,25 @@ To protect `/api/login` from brute-force attempts, add a Cloudflare
 
 This is optional but strongly recommended for production deployments.
 
+## R2 lifecycle: abort incomplete multipart uploads (recommended)
+
+Large file uploads use S3-style multipart. If a client aborts mid-upload
+(crash, network drop), the already-uploaded parts stay in the bucket and
+are billed as storage. R2's bucket lifecycle can clean them up automatically.
+
+Configure the rule once via `wrangler`:
+
+```bash
+npx wrangler r2 bucket lifecycle add <your-bucket> \
+  --name "abort-incomplete-mpu" \
+  --abort-multipart-days 7
+```
+
+Or in the Cloudflare Dashboard → R2 → your bucket → **Settings** → **Object lifecycle rules** → add a rule with **Abort incomplete multipart uploads after** = `7 days`.
+
+R2 then aborts any multipart upload not completed within the window. No
+application code or cron job needed.
+
 ## Customization
 
 - **Theme** — Settings page → toggle Light / Dark / System
