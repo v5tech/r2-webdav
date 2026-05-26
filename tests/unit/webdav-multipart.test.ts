@@ -62,7 +62,7 @@ describe('multipart upload', () => {
       expect(ct).toBe('video/mp4')
     })
 
-    it('passes fd-thumbnail header into customMetadata', async () => {
+    it('passes x-r2-thumbnail header into customMetadata', async () => {
       const bucket = makeBucket()
 
       await handleRequestPost({
@@ -70,7 +70,7 @@ describe('multipart upload', () => {
         path: 'pic.png',
         request: new Request('http://x/webdav/pic.png?uploads', {
           method: 'POST',
-          headers: { 'fd-thumbnail': 'BASE64THUMB' },
+          headers: { 'x-r2-thumbnail': 'BASE64THUMB' },
         }),
       })
 

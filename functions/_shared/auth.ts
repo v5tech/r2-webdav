@@ -43,8 +43,8 @@ export function verifyBasic(authHeader: string | null | undefined, env: BasicAut
   return userMatch && passMatch
 }
 
-const SESSION_DERIVATION_MSG = 'fd_session_v1'
-const SESSION_COOKIE_NAME = 'fd_session'
+const SESSION_DERIVATION_MSG = 'r2_session_v1'
+const SESSION_COOKIE_NAME = 'r2_session'
 const DEFAULT_SESSION_TTL_SEC = 60 * 60 * 24 * 7 // 7 days
 
 function base64urlEncode(data: Uint8Array | string): string {
@@ -137,7 +137,7 @@ export async function verifySessionJwt(
 export function extractSession(request: Request): string | null {
   const cookie = request.headers.get('Cookie')
   if (!cookie) return null
-  const match = cookie.match(/(?:^|;\s*)fd_session=([^;]+)/)
+  const match = cookie.match(/(?:^|;\s*)r2_session=([^;]+)/)
   return match ? match[1] : null
 }
 

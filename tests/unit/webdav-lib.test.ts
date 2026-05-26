@@ -31,7 +31,7 @@ function xmlResponse(body: string, init: ResponseInit = {}) {
 
 function multistatus(entries: string) {
   return `<?xml version="1.0" encoding="utf-8"?>
-<multistatus xmlns="DAV:" xmlns:fd="r2webdav">${entries}</multistatus>`
+<multistatus xmlns="DAV:" xmlns:r2="r2webdav">${entries}</multistatus>`
 }
 
 function entry({
@@ -51,7 +51,7 @@ function entry({
     contentType && `<getcontenttype>${contentType}</getcontenttype>`,
     size && `<getcontentlength>${size}</getcontentlength>`,
     lastModified && `<getlastmodified>${lastModified}</getlastmodified>`,
-    thumbnail && `<fd:thumbnail>${thumbnail}</fd:thumbnail>`,
+    thumbnail && `<r2:thumbnail>${thumbnail}</r2:thumbnail>`,
   ]
     .filter(Boolean)
     .join('')
@@ -94,7 +94,7 @@ describe('fetchPath', () => {
     })
   })
 
-  it('parses fd:thumbnail via namespace lookup', async () => {
+  it('parses r2:thumbnail via namespace lookup', async () => {
     const xml = multistatus(
       entry({
         href: '/webdav/pic.png',

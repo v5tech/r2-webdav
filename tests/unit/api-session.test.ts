@@ -6,7 +6,7 @@ import { onRequestGet as meHandler } from '../../functions/api/me'
 import { signSessionJwt } from '../../functions/_shared/auth'
 
 const env = { WEBDAV_USERNAME: 'admin', WEBDAV_PASSWORD: 'secret123' }
-const origin = 'https://drive.example.com'
+const origin = 'https://r2-webdav.example.com'
 
 // Pages Functions context shape — only fields the handlers touch.
 const ctx = (request: Request, envOverride = env) =>
@@ -22,11 +22,11 @@ const postLogin = (body: unknown) =>
 const parseSetCookie = (res: Response) => res.headers.get('Set-Cookie') ?? ''
 
 describe('/api/login POST', () => {
-  it('returns 200 + Set-Cookie fd_session on correct creds', async () => {
+  it('returns 200 + Set-Cookie r2_session on correct creds', async () => {
     const res = await loginHandler(ctx(postLogin({ username: 'admin', password: 'secret123' })))
     expect(res.status).toBe(200)
     const cookie = parseSetCookie(res)
-    expect(cookie).toMatch(/^fd_session=[^;]+/)
+    expect(cookie).toMatch(/^r2_session=[^;]+/)
     expect(cookie).toMatch(/HttpOnly/)
     expect(cookie).toMatch(/Secure/)
     expect(cookie).toMatch(/SameSite=Lax/)
@@ -65,7 +65,7 @@ describe('/api/login POST', () => {
   it('signed JWT verifies for current origin', async () => {
     const res = await loginHandler(ctx(postLogin({ username: 'admin', password: 'secret123' })))
     const cookie = parseSetCookie(res)
-    const m = cookie.match(/fd_session=([^;]+)/)
+    const m = cookie.match(/r2_session=([^;]+)/)
     expect(m).not.toBeNull()
     const { verifySessionJwt } = await import('../../functions/_shared/auth')
     const payload = await verifySessionJwt(env, m![1], origin)
@@ -81,7 +81,7 @@ describe('/api/logout POST', () => {
     const res = await logoutHandler(ctx(req))
     expect(res.status).toBe(200)
     const cookie = parseSetCookie(res)
-    expect(cookie).toMatch(/^fd_session=/)
+    expect(cookie).toMatch(/^r2_session=/)
     expect(cookie).toMatch(/Max-Age=0/)
     expect(cookie).toMatch(/HttpOnly/)
     expect(cookie).toMatch(/Path=\//)
@@ -92,7 +92,7 @@ describe('/api/me GET', () => {
   it('returns 200 + {ok:true} on valid cookie', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
     const req = new Request(`${origin}/api/me`, {
-      headers: { Cookie: `fd_session=${token}` },
+      headers: { Cookie: `r2_session=${token}` },
     })
     const res = await meHandler(ctx(req))
     expect(res.status).toBe(200)
@@ -109,7 +109,7 @@ describe('/api/me GET', () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
     const tampered = token.slice(0, -3) + 'AAA'
     const req = new Request(`${origin}/api/me`, {
-      headers: { Cookie: `fd_session=${tampered}` },
+      headers: { Cookie: `r2_session=${tampered}` },
     })
     const res = await meHandler(ctx(req))
     expect(res.status).toBe(401)
@@ -118,7 +118,7 @@ describe('/api/me GET', () => {
   it('returns 401 on cookie issued for different origin', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: 'https://other.example' })
     const req = new Request(`${origin}/api/me`, {
-      headers: { Cookie: `fd_session=${token}` },
+      headers: { Cookie: `r2_session=${token}` },
     })
     const res = await meHandler(ctx(req))
     expect(res.status).toBe(401)

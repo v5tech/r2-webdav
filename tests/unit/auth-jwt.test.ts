@@ -8,7 +8,7 @@ import {
 } from '../../functions/_shared/auth'
 
 const env = { WEBDAV_PASSWORD: 'secret123' }
-const origin = 'https://drive.example.com'
+const origin = 'https://r2-webdav.example.com'
 
 const mkReq = (cookie: string | null) =>
   new Request('https://x/', { headers: cookie ? { Cookie: cookie } : {} })
@@ -86,19 +86,19 @@ describe('signSessionJwt + verifySessionJwt', () => {
 })
 
 describe('extractSession', () => {
-  it('extracts fd_session from cookie header', () => {
-    expect(extractSession(mkReq('fd_session=abc123'))).toBe('abc123')
+  it('extracts r2_session from cookie header', () => {
+    expect(extractSession(mkReq('r2_session=abc123'))).toBe('abc123')
   })
 
-  it('extracts fd_session when other cookies precede', () => {
-    expect(extractSession(mkReq('lang=zh; fd_session=xyz; theme=dark'))).toBe('xyz')
+  it('extracts r2_session when other cookies precede', () => {
+    expect(extractSession(mkReq('lang=zh; r2_session=xyz; theme=dark'))).toBe('xyz')
   })
 
   it('returns null when no cookie header', () => {
     expect(extractSession(mkReq(null))).toBeNull()
   })
 
-  it('returns null when fd_session absent', () => {
+  it('returns null when r2_session absent', () => {
     expect(extractSession(mkReq('lang=zh; theme=dark'))).toBeNull()
   })
 })

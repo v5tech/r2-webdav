@@ -6,7 +6,7 @@ const env = {
   WEBDAV_USERNAME: 'admin',
   WEBDAV_PASSWORD: 'secret123',
 }
-const origin = 'https://drive.example.com'
+const origin = 'https://r2-webdav.example.com'
 const basicHeader = (u: string, p: string) => `Basic ${btoa(`${u}:${p}`)}`
 
 const mkReq = (opts: {
@@ -28,7 +28,7 @@ describe('authorizeWebdav — step 1: valid cookie', () => {
   it('allows when cookie JWT verifies', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
     const res = await authorizeWebdav(
-      mkReq({ method: 'PUT', cookie: `fd_session=${token}` }),
+      mkReq({ method: 'PUT', cookie: `r2_session=${token}` }),
       env,
       origin,
     )
@@ -38,7 +38,7 @@ describe('authorizeWebdav — step 1: valid cookie', () => {
   it('allows valid cookie even with bogus Basic header', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
     const res = await authorizeWebdav(
-      mkReq({ cookie: `fd_session=${token}`, auth: basicHeader('admin', 'wrong') }),
+      mkReq({ cookie: `r2_session=${token}`, auth: basicHeader('admin', 'wrong') }),
       env,
       origin,
     )
@@ -52,7 +52,7 @@ describe('authorizeWebdav — step 2: invalid cookie → 401 no fallback', () =>
     const tampered = token.slice(0, -3) + 'AAA'
     const res = await authorizeWebdav(
       mkReq({
-        cookie: `fd_session=${tampered}`,
+        cookie: `r2_session=${tampered}`,
         auth: basicHeader('admin', 'secret123'),
       }),
       env,
@@ -67,7 +67,7 @@ describe('authorizeWebdav — step 2: invalid cookie → 401 no fallback', () =>
   it('rejects cookie signed for different origin', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: 'https://other.example' })
     const res = await authorizeWebdav(
-      mkReq({ cookie: `fd_session=${token}` }),
+      mkReq({ cookie: `r2_session=${token}` }),
       env,
       origin,
     )
@@ -79,7 +79,7 @@ describe('authorizeWebdav — step 2: invalid cookie → 401 no fallback', () =>
 
   it('rejects malformed cookie value', async () => {
     const res = await authorizeWebdav(
-      mkReq({ cookie: 'fd_session=not.a.jwt' }),
+      mkReq({ cookie: 'r2_session=not.a.jwt' }),
       env,
       origin,
     )

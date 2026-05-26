@@ -9,7 +9,7 @@ import {
   setStoredTheme,
 } from '../../src/lib/theme'
 
-const STORAGE_KEY = 'fd_theme'
+const STORAGE_KEY = 'r2_theme'
 
 beforeEach(() => {
   localStorage.clear()

@@ -35,7 +35,7 @@ export async function handleRequestPut({ bucket, path, request }: RequestHandler
     if (parentDir === null) return new Response('Conflict', { status: 409 })
   }
 
-  const thumbnail = request.headers.get('fd-thumbnail')
+  const thumbnail = request.headers.get('x-r2-thumbnail')
   const customMetadata = thumbnail ? { thumbnail } : undefined
 
   const existing = await bucket.head(path)

@@ -21,7 +21,7 @@
 **单一口令模型** (2026-05-22 简化, 替代之前的双轨方案):
 
 - **凭据 (Credential)** — 由 Cloudflare Pages 环境变量 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 配置的一对用户名/密码. 同时是所有者登录 Web UI 与配置第三方 WebDAV 客户端使用的口令. 服务端永不在 D1 / KV / 任何持久化中保存; 仅运行时从环境变量读取并做常量时间比较. 改密码 = 在 Cloudflare 仪表盘修改环境变量并重新部署.
-- **派生密钥 (Derived secret)** — JWT 签名密钥, 从 `WEBDAV_PASSWORD` 派生而来. 公式: `HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "fd_session_v1")`. `msg` 是版本化常量, 将来若需"主动让所有会话失效但不改密码"可升 `v2`. **不另设独立 env var** — 派生关系保证"改密码 = 全 JWT 自动失效", 且无需密钥同步.
+- **派生密钥 (Derived secret)** — JWT 签名密钥, 从 `WEBDAV_PASSWORD` 派生而来. 公式: `HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "r2_session_v1")`. `msg` 是版本化常量, 将来若需"主动让所有会话失效但不改密码"可升 `v2`. **不另设独立 env var** — 派生关系保证"改密码 = 全 JWT 自动失效", 且无需密钥同步.
 - **会话 (Session)** — Web UI 登录成功后服务端签发的 JWT, 以 HttpOnly cookie 形态承载. 签名密钥为上述派生密钥. JWT payload 含 `sub: 'owner'` + `iss: <origin>` (防跨部署 cookie 互认) + 标准 `iat` / `exp`. 默认 7 天过期.
 - **双重鉴权 (Dual auth)** — `/webdav/*` 端点的鉴权策略: 优先尝试解析 cookie 内 JWT, 验签通过即放行; **cookie 存在但验签失败不回退 Basic** — 直接 401 (减少攻击面, 改密码后旧 cookie 走完 /login 重发). 无 cookie 或 cookie 为空时尝试 `Authorization: Basic` header; Basic 通过即放行. 全否则 401. `WEBDAV_PUBLIC_READ=1` 的匿名短路**仅限 GET / HEAD / PROPFIND** 三个只读 verbs, 不覆盖任何写操作.
 

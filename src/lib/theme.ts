@@ -1,7 +1,7 @@
 export type Theme = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
 
-const STORAGE_KEY = 'fd_theme'
+const STORAGE_KEY = 'r2_theme'
 
 export function getStoredTheme(): Theme {
   if (typeof localStorage === 'undefined') return 'system'

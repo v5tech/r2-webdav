@@ -45,9 +45,9 @@ describe('escapeXml', () => {
 })
 
 describe('MULTISTATUS_OPEN / MULTISTATUS_CLOSE', () => {
-  it('open declares XML version and DAV/fd namespaces', () => {
+  it('open declares XML version and DAV/r2 namespaces', () => {
     expect(MULTISTATUS_OPEN).toContain('<?xml version="1.0" encoding="utf-8" ?>')
-    expect(MULTISTATUS_OPEN).toContain('<multistatus xmlns="DAV:" xmlns:fd="r2webdav">')
+    expect(MULTISTATUS_OPEN).toContain('<multistatus xmlns="DAV:" xmlns:r2="r2webdav">')
   })
 
   it('close ends multistatus root element', () => {

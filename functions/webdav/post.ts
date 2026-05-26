@@ -7,7 +7,7 @@ export async function handleRequestPostCreateMultipart({
   path,
   request,
 }: RequestHandlerParams) {
-  const thumbnail = request.headers.get('fd-thumbnail')
+  const thumbnail = request.headers.get('x-r2-thumbnail')
   const customMetadata = thumbnail ? { thumbnail } : undefined
 
   const headers = new Headers(request.headers)

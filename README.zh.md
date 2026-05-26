@@ -77,7 +77,7 @@ npx wrangler pages secret put WEBDAV_PASSWORD --project-name=<your-project>
 ## 登录鉴权
 
 R2 WebDAV 使用现代化的 `/login` 页面（HTML 表单），不再使用 HTTP Basic Auth
-弹窗。登录成功后服务端设置 JWT cookie（`fd_session`），使用 HMAC-SHA256
+弹窗。登录成功后服务端设置 JWT cookie（`r2_session`），使用 HMAC-SHA256
 签名，密钥派生自 `WEBDAV_PASSWORD`。修改 `WEBDAV_PASSWORD` 并重新部署后，
 所有现有会话立即失效。
 
@@ -138,7 +138,7 @@ R2 会按规则自动 abort 超时未完成的 multipart upload。无需写代�
 - **主题** — 设置页 → 切换浅色 / 深色 / 跟随系统
 - **语言** — 设置页 → 切换中文 / English
 
-偏好保存在 `localStorage`（`fd_theme`、`i18nextLng`）。
+偏好保存在 `localStorage`（`r2_theme`、`i18nextLng`）。
 
 ## 开发
 

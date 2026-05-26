@@ -11,7 +11,7 @@ export function escapeXml(s: string): string {
 }
 
 export const MULTISTATUS_OPEN = `<?xml version="1.0" encoding="utf-8" ?>
-<multistatus xmlns="DAV:" xmlns:fd="r2webdav">
+<multistatus xmlns="DAV:" xmlns:r2="r2webdav">
 `
 
 export const MULTISTATUS_CLOSE = `

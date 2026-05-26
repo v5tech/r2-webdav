@@ -43,7 +43,7 @@ export async function uploadFile(
 ): Promise<void> {
   const contentType = file.type || 'application/octet-stream'
   const baseHeaders: Record<string, string> = { 'Content-Type': contentType }
-  if (thumbnailHash) baseHeaders['fd-thumbnail'] = thumbnailHash
+  if (thumbnailHash) baseHeaders['x-r2-thumbnail'] = thumbnailHash
   if (file.size < UPLOAD_CHUNK_SIZE) {
     onProgress?.(0, file.size)
     const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, {

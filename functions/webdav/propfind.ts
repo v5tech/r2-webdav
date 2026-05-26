@@ -10,7 +10,7 @@ type DavProperties = {
   getetag: string | undefined
   getlastmodified: string | undefined
   resourcetype: string
-  'fd:thumbnail': string | undefined
+  'r2:thumbnail': string | undefined
 }
 
 function fromR2Object(object: R2Object | typeof ROOT_OBJECT): DavProperties {
@@ -24,7 +24,7 @@ function fromR2Object(object: R2Object | typeof ROOT_OBJECT): DavProperties {
     getlastmodified: object.uploaded.toUTCString(),
     resourcetype:
       object.httpMetadata?.contentType === 'application/x-directory' ? '<collection />' : '',
-    'fd:thumbnail': object.customMetadata?.thumbnail,
+    'r2:thumbnail': object.customMetadata?.thumbnail,
   }
 }
 

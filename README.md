@@ -82,7 +82,7 @@ npx wrangler pages secret put WEBDAV_PASSWORD --project-name=<your-project>
 ## Authentication
 
 R2 WebDAV uses a modern `/login` page (HTML form) rather than HTTP Basic Auth.
-On successful login the server sets a JWT cookie (`fd_session`) signed with
+On successful login the server sets a JWT cookie (`r2_session`) signed with
 HMAC-SHA256, derived from `WEBDAV_PASSWORD`. Changing `WEBDAV_PASSWORD` and
 redeploying invalidates all existing sessions.
 
@@ -145,7 +145,7 @@ application code or cron job needed.
 - **Theme** — Settings page → toggle Light / Dark / System
 - **Language** — Settings page → toggle 中文 / English
 
-Preferences are stored in `localStorage` (`fd_theme`, `i18nextLng`).
+Preferences are stored in `localStorage` (`r2_theme`, `i18nextLng`).
 
 ## Development
 

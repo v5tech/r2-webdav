@@ -33,6 +33,6 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const origin = new URL(request.url).origin
   const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
-  const cookie = `fd_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${DEFAULT_SESSION_TTL_SEC}`
+  const cookie = `r2_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${DEFAULT_SESSION_TTL_SEC}`
   return json({ ok: true }, 200, { 'Set-Cookie': cookie })
 }

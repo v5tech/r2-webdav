@@ -25,7 +25,7 @@ const PASSWORD = 'pw-fixed-for-tests'
 
 async function callGet(bucket: MockBucket, token: string | null) {
   const headers: Record<string, string> = {}
-  if (token) headers['Cookie'] = `fd_session=${token}`
+  if (token) headers['Cookie'] = `r2_session=${token}`
   const request = new Request(`${ORIGIN}/api/trash`, { method: 'GET', headers })
   return onRequestGet({
     request,
@@ -36,7 +36,7 @@ async function callGet(bucket: MockBucket, token: string | null) {
 async function callPost(bucket: MockBucket, token: string, body: object) {
   const request = new Request(`${ORIGIN}/api/trash`, {
     method: 'POST',
-    headers: { Cookie: `fd_session=${token}`, 'Content-Type': 'application/json' },
+    headers: { Cookie: `r2_session=${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
   return onRequestPost({
@@ -48,7 +48,7 @@ async function callPost(bucket: MockBucket, token: string, body: object) {
 async function callDelete(bucket: MockBucket, token: string, ts: string) {
   const request = new Request(`${ORIGIN}/api/trash?ts=${ts}`, {
     method: 'DELETE',
-    headers: { Cookie: `fd_session=${token}` },
+    headers: { Cookie: `r2_session=${token}` },
   })
   return onRequestDelete({
     request,
