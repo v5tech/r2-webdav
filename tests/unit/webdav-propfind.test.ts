@@ -76,7 +76,7 @@ describe('handleRequestPropfind', () => {
       })
 
       const body = await res.text()
-      expect(body).toContain('<href>/webdav/docs</href>')
+      expect(body).toContain('<href>/webdav/docs/</href>')
       expect(bucket.list).not.toHaveBeenCalled()
     })
 
@@ -156,6 +156,43 @@ describe('handleRequestPropfind', () => {
 
       expect(res.status).toBe(207)
       expect(bucket.list).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('collection href trailing slash (RFC 4918 §5.2)', () => {
+    it('root path produces /webdav/ (no double slash)', async () => {
+      const bucket = makeBucket()
+      bucket.list.mockResolvedValue({ objects: [], truncated: false })
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: '',
+        request: mkReq('', '0'),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<href>/webdav/</href>')
+      expect(body).not.toContain('/webdav//')
+    })
+
+    it('directory child gets trailing slash in href', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkDir('root'))
+      bucket.list.mockResolvedValue({
+        objects: [mkDir('root/sub'), mkFile('root/a.txt')],
+        truncated: false,
+      })
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'root',
+        request: mkReq('root', '1'),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<href>/webdav/root/sub/</href>')
+      expect(body).toContain('<href>/webdav/root/a.txt</href>')
+      expect(body).not.toContain('<href>/webdav/root/a.txt/</href>')
     })
   })
 

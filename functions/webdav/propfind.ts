@@ -71,9 +71,12 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
 
   const items = [rootObject, ...children].map((child) => {
     const properties = fromR2Object(child)
+    const isDir = child.httpMetadata?.contentType === 'application/x-directory'
+    const rawHref = `${WEBDAV_ENDPOINT}${child.key}`
+    const href = isDir && !rawHref.endsWith('/') ? `${rawHref}/` : rawHref
     return `
   <response>
-    <href>${escapeXml(encodeURI(`${WEBDAV_ENDPOINT}${child.key}`))}</href>
+    <href>${escapeXml(encodeURI(href))}</href>
     <propstat>
       <prop>
         ${Object.entries(properties)
