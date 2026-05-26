@@ -1,4 +1,4 @@
-import { escapeXml } from '../_shared/xml'
+import { escapeXml, renderMultistatus, renderPropResponse } from '../_shared/xml'
 import { listAll, RequestHandlerParams, ROOT_OBJECT, WEBDAV_ENDPOINT } from './utils'
 
 type DavProperties = {
@@ -50,11 +50,6 @@ async function findChildren({
 }
 
 export async function handleRequestPropfind({ bucket, path, request }: RequestHandlerParams) {
-  const responseTemplate = `<?xml version="1.0" encoding="utf-8" ?>
-<multistatus xmlns="DAV:" xmlns:fd="r2webdav">
-{{items}}
-</multistatus>`
-
   const requestBody = await request.text().catch(() => '')
   const isPropname = /<(?:[a-z][\w-]*:)?propname[\s/>]/i.test(requestBody)
 
@@ -89,19 +84,10 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
               : `<${key}>${escapeXml(value as string)}</${key}>`,
           )
           .join('\n')
-    return `
-  <response>
-    <href>${escapeXml(encodeURI(href))}</href>
-    <propstat>
-      <prop>
-        ${propsXml}
-      </prop>
-      <status>HTTP/1.1 200 OK</status>
-    </propstat>
-  </response>`
+    return renderPropResponse({ href: encodeURI(href), propsXml })
   })
 
-  return new Response(responseTemplate.replace('{{items}}', items.join('')), {
+  return new Response(renderMultistatus(items), {
     status: 207,
     headers: { 'Content-Type': 'application/xml' },
   })
