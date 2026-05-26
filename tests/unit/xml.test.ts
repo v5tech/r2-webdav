@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { escapeXml, renderMultistatus, renderPropResponse } from '../../functions/_shared/xml'
+import {
+  MULTISTATUS_CLOSE,
+  MULTISTATUS_OPEN,
+  escapeXml,
+  renderPropResponse,
+} from '../../functions/_shared/xml'
 
 describe('escapeXml', () => {
   it('escapes ampersand first to avoid double-encoding', () => {
@@ -38,24 +43,22 @@ describe('escapeXml', () => {
   })
 })
 
-describe('renderMultistatus', () => {
-  it('wraps responses with multistatus envelope + DAV/fd namespaces', () => {
-    const out = renderMultistatus([])
-    expect(out).toContain('<?xml version="1.0" encoding="utf-8" ?>')
-    expect(out).toContain('<multistatus xmlns="DAV:" xmlns:fd="r2webdav">')
-    expect(out).toContain('</multistatus>')
+describe('MULTISTATUS_OPEN / MULTISTATUS_CLOSE', () => {
+  it('open declares XML version and DAV/fd namespaces', () => {
+    expect(MULTISTATUS_OPEN).toContain('<?xml version="1.0" encoding="utf-8" ?>')
+    expect(MULTISTATUS_OPEN).toContain('<multistatus xmlns="DAV:" xmlns:fd="r2webdav">')
   })
 
-  it('joins multiple responses without separators', () => {
-    const out = renderMultistatus(['<response>A</response>', '<response>B</response>'])
-    expect(out).toContain('<response>A</response><response>B</response>')
+  it('close ends multistatus root element', () => {
+    expect(MULTISTATUS_CLOSE).toContain('</multistatus>')
   })
 
-  it('produces parseable XML', () => {
-    const out = renderMultistatus([
-      renderPropResponse({ href: '/webdav/a.txt', propsXml: '<getetag>x</getetag>' }),
-    ])
-    const doc = new DOMParser().parseFromString(out, 'application/xml')
+  it('concat with responses produces parseable XML', () => {
+    const body =
+      MULTISTATUS_OPEN +
+      renderPropResponse({ href: '/webdav/a.txt', propsXml: '<getetag>x</getetag>' }) +
+      MULTISTATUS_CLOSE
+    const doc = new DOMParser().parseFromString(body, 'application/xml')
     expect(doc.getElementsByTagName('parsererror').length).toBe(0)
   })
 })

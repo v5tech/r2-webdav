@@ -1,4 +1,4 @@
-import { escapeXml, renderMultistatus, renderPropResponse } from '../_shared/xml'
+import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, escapeXml, renderPropResponse } from '../_shared/xml'
 import { listAll, RequestHandlerParams, ROOT_OBJECT, WEBDAV_ENDPOINT } from './utils'
 
 type DavProperties = {
@@ -28,7 +28,7 @@ function fromR2Object(object: R2Object | typeof ROOT_OBJECT): DavProperties {
   }
 }
 
-async function findChildren({
+async function* iterChildren({
   bucket,
   path,
   depth,
@@ -36,17 +36,32 @@ async function findChildren({
   bucket: R2Bucket
   path: string
   depth: string
-}) {
-  if (!['1', 'infinity'].includes(depth)) return []
-
-  const objects: Array<R2Object> = []
-
+}): AsyncGenerator<R2Object> {
+  if (!['1', 'infinity'].includes(depth)) return
   const prefix = path === '' ? path : `${path}/`
   for await (const object of listAll(bucket, prefix, depth === 'infinity')) {
-    objects.push(object)
+    yield object
   }
+}
 
-  return objects
+function renderItem(child: R2Object | typeof ROOT_OBJECT, isPropname: boolean): string {
+  const properties = fromR2Object(child)
+  const isDir = child.httpMetadata?.contentType === 'application/x-directory'
+  const rawHref = `${WEBDAV_ENDPOINT}${child.key}`
+  const href = isDir && !rawHref.endsWith('/') ? `${rawHref}/` : rawHref
+  const propsXml = isPropname
+    ? Object.keys(properties)
+        .map((key) => `<${key}/>`)
+        .join('\n')
+    : Object.entries(properties)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) =>
+          key === 'resourcetype'
+            ? `<${key}>${value}</${key}>`
+            : `<${key}>${escapeXml(value as string)}</${key}>`,
+        )
+        .join('\n')
+  return renderPropResponse({ href: encodeURI(href), propsXml })
 }
 
 export async function handleRequestPropfind({ bucket, path, request }: RequestHandlerParams) {
@@ -59,35 +74,26 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
     rootObject === ROOT_OBJECT || rootObject.httpMetadata?.contentType === 'application/x-directory'
   const depth = request.headers.get('Depth') ?? '1'
 
-  const children = !isDirectory
-    ? []
-    : await findChildren({
-        bucket,
-        path,
-        depth,
-      })
-
-  const items = [rootObject, ...children].map((child) => {
-    const properties = fromR2Object(child)
-    const isDir = child.httpMetadata?.contentType === 'application/x-directory'
-    const rawHref = `${WEBDAV_ENDPOINT}${child.key}`
-    const href = isDir && !rawHref.endsWith('/') ? `${rawHref}/` : rawHref
-    const propsXml = isPropname
-      ? Object.keys(properties)
-          .map((key) => `<${key}/>`)
-          .join('\n')
-      : Object.entries(properties)
-          .filter(([_, value]) => value !== undefined)
-          .map(([key, value]) =>
-            key === 'resourcetype'
-              ? `<${key}>${value}</${key}>`
-              : `<${key}>${escapeXml(value as string)}</${key}>`,
-          )
-          .join('\n')
-    return renderPropResponse({ href: encodeURI(href), propsXml })
+  const encoder = new TextEncoder()
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        controller.enqueue(encoder.encode(MULTISTATUS_OPEN))
+        controller.enqueue(encoder.encode(renderItem(rootObject, isPropname)))
+        if (isDirectory) {
+          for await (const child of iterChildren({ bucket, path, depth })) {
+            controller.enqueue(encoder.encode(renderItem(child, isPropname)))
+          }
+        }
+        controller.enqueue(encoder.encode(MULTISTATUS_CLOSE))
+        controller.close()
+      } catch (err) {
+        controller.error(err)
+      }
+    },
   })
 
-  return new Response(renderMultistatus(items), {
+  return new Response(stream, {
     status: 207,
     headers: { 'Content-Type': 'application/xml' },
   })

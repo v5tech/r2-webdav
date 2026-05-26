@@ -10,12 +10,12 @@ export function escapeXml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => REPLACEMENTS[c])
 }
 
-export function renderMultistatus(responses: string[]): string {
-  return `<?xml version="1.0" encoding="utf-8" ?>
+export const MULTISTATUS_OPEN = `<?xml version="1.0" encoding="utf-8" ?>
 <multistatus xmlns="DAV:" xmlns:fd="r2webdav">
-${responses.join('')}
+`
+
+export const MULTISTATUS_CLOSE = `
 </multistatus>`
-}
 
 export function renderPropResponse(opts: {
   href: string
