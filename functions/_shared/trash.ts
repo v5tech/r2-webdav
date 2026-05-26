@@ -1,4 +1,5 @@
-const TRASH_PREFIX = '_$r2webdav$/trash/'
+import { TRASH_PREFIX } from './r2'
+
 const TRASH_TTL_MS = 14 * 24 * 60 * 60 * 1000
 const TRASH_PURGE_SAMPLE = 0.1
 

@@ -1,8 +1,7 @@
 import { notFound } from './utils'
 import { listAll, RequestHandlerParams } from './utils'
 import { maybePurgeExpiredTrash } from '../_shared/trash'
-
-const TRASH_PREFIX = '_$r2webdav$/trash/'
+import { TRASH_PREFIX } from '../_shared/r2'
 
 export async function handleRequestDelete({ bucket, path }: RequestHandlerParams) {
   const trashRoot = `${TRASH_PREFIX}${Date.now()}/`
