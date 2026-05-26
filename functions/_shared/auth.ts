@@ -143,6 +143,25 @@ export function extractSession(request: Request): string | null {
 
 export { SESSION_COOKIE_NAME, DEFAULT_SESSION_TTL_SEC }
 
+function unauthorizedJson(): Response {
+  return new Response(JSON.stringify({ error: 'unauthorized' }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export async function requireOwnerSession(
+  request: Request,
+  env: SessionEnv,
+): Promise<Response | null> {
+  const token = extractSession(request)
+  if (!token) return unauthorizedJson()
+  const origin = new URL(request.url).origin
+  const payload = await verifySessionJwt(env, token, origin)
+  if (!payload) return unauthorizedJson()
+  return null
+}
+
 export type AuthzResult = { ok: true } | { ok: false; response: Response }
 
 export interface WebdavAuthEnv extends BasicAuthEnv, SessionEnv {

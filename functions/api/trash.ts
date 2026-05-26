@@ -1,4 +1,4 @@
-import { extractSession, verifySessionJwt, type SessionEnv } from '../_shared/auth'
+import { requireOwnerSession, type SessionEnv } from '../_shared/auth'
 
 const TRASH_PREFIX = '_$r2webdav$/trash/'
 
@@ -23,25 +23,6 @@ function computeRootEntries(paths: string[]): string[] {
   return roots
 }
 
-function unauthorized(): Response {
-  return new Response(JSON.stringify({ error: 'unauthorized' }), {
-    status: 401,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
-
-async function requireAuth(
-  request: Request,
-  env: TrashEnv,
-): Promise<Response | null> {
-  const token = extractSession(request)
-  if (!token) return unauthorized()
-  const origin = new URL(request.url).origin
-  const payload = await verifySessionJwt(env, token, origin)
-  if (!payload) return unauthorized()
-  return null
-}
-
 async function listSessionObjects(
   bucket: R2Bucket,
   deletedAt: number,
@@ -58,7 +39,7 @@ async function listSessionObjects(
 }
 
 export const onRequestGet: PagesFunction<TrashEnv> = async ({ request, env }) => {
-  const authError = await requireAuth(request, env)
+  const authError = await requireOwnerSession(request, env)
   if (authError) return authError
 
   const groups = new Map<number, string[]>()
@@ -94,7 +75,7 @@ export const onRequestGet: PagesFunction<TrashEnv> = async ({ request, env }) =>
 }
 
 export const onRequestPost: PagesFunction<TrashEnv> = async ({ request, env }) => {
-  const authError = await requireAuth(request, env)
+  const authError = await requireOwnerSession(request, env)
   if (authError) return authError
 
   let body: { deletedAt?: unknown }
@@ -137,7 +118,7 @@ export const onRequestPost: PagesFunction<TrashEnv> = async ({ request, env }) =
 }
 
 export const onRequestDelete: PagesFunction<TrashEnv> = async ({ request, env }) => {
-  const authError = await requireAuth(request, env)
+  const authError = await requireOwnerSession(request, env)
   if (authError) return authError
 
   const url = new URL(request.url)
