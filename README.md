@@ -101,6 +101,13 @@ Configure your WebDAV client with:
 Files larger than that must be uploaded via the web UI, which uses chunked
 multipart upload.
 
+**COPY / MOVE limitation:** The R2 Workers binding has no server-side copy.
+COPY/MOVE streams every byte through the Worker and is bounded by the
+Workers wall-time budget. For multi-GB single files or directories with
+thousands of children, prefer doing the copy with rclone configured against
+the R2 S3 endpoint directly (bypassing this WebDAV server) — rclone retries
+client-side and scales independent of Worker limits.
+
 ## Rate limiting (recommended)
 
 To protect `/api/login` from brute-force attempts, add a Cloudflare

@@ -95,6 +95,11 @@ WebDAV 客户端配置：
 **大文件限制：** Cloudflare Workers 单次请求体上限 100 MB。超过此大小的文件
 必须通过 Web UI 上传（使用分片上传）。
 
+**COPY / MOVE 限制：** R2 Workers binding 无服务端拷贝 API，COPY/MOVE 每字节
+都流经 Worker，受 Workers wall-time 上限约束。多 GB 大文件或上千子节点目录
+的拷贝/移动，建议改用 rclone 直接对 R2 S3 端点操作（绕过本 WebDAV 服务）—
+rclone 客户端自带重试，不受 Worker 限制约束。
+
 ## 频率限制（推荐配置）
 
 为防止 `/api/login` 被暴力破解，建议在 Cloudflare 配置
