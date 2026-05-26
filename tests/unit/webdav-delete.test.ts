@@ -200,4 +200,34 @@ describe('handleRequestDelete (trash)', () => {
     // failed child NOT deleted from original (preserved)
     expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked.txt')
   })
+
+  it('returns 207 Multi-Status when single-object trash copy fails', async () => {
+    const bucket = makeBucket()
+    const file = {
+      key: 'locked.txt',
+      size: 1,
+      etag: 'l',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(file)
+    bucket.get.mockResolvedValue({ ...file, body: 'body-locked' })
+    bucket.put.mockRejectedValue(new Error('R2 quota exceeded'))
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'locked.txt',
+      request: new Request('http://x/webdav/locked.txt', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(207)
+    expect(res.headers.get('Content-Type')).toBe('application/xml')
+    const body = await res.text()
+    expect(body).toContain('<href>/webdav/locked.txt</href>')
+    expect(body).toContain('HTTP/1.1 500')
+    expect(body).toContain('R2 quota exceeded')
+    // put failed -> original must NOT have been deleted
+    expect(bucket.delete).not.toHaveBeenCalledWith('locked.txt')
+  })
 })

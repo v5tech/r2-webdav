@@ -3,6 +3,14 @@ import pLimit from 'p-limit'
 import { notFound } from './utils'
 import { listAll, RequestHandlerParams, WEBDAV_ENDPOINT } from './utils'
 
+/*
+ * COPY streams via get→put through the worker (R2 Workers binding has no
+ * server-side copy as of @cloudflare/workers-types v4.20260524.1). Recursive
+ * COPY repeats the same pattern for each child. Bounded by Cloudflare
+ * wall-time and subrequest budgets — large objects or deep trees should use
+ * rclone over R2 S3 (see README).
+ */
+
 export async function handleRequestCopy({ bucket, path, request }: RequestHandlerParams) {
   const dontOverwrite = request.headers.get('Overwrite') === 'F'
   const destinationHeader = request.headers.get('Destination')
