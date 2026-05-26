@@ -1,5 +1,6 @@
 import { notFound } from './utils'
 import { listAll, RequestHandlerParams } from './utils'
+import { maybePurgeExpiredTrash } from '../_shared/trash'
 
 const TRASH_PREFIX = '_$r2webdav$/trash/'
 
@@ -21,7 +22,10 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
       await bucket.delete(path)
     }
 
-    if (!isDirectory) return new Response(null, { status: 204 })
+    if (!isDirectory) {
+      await maybePurgeExpiredTrash(bucket)
+      return new Response(null, { status: 204 })
+    }
   }
 
   const prefix = path === '' ? undefined : `${path}/`
@@ -35,5 +39,6 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     await bucket.delete(child.key)
   }
 
+  await maybePurgeExpiredTrash(bucket)
   return new Response(null, { status: 204 })
 }
