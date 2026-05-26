@@ -4,6 +4,7 @@ import {
   MULTISTATUS_CLOSE,
   MULTISTATUS_OPEN,
   escapeXml,
+  renderErrorResponse,
   renderPropResponse,
 } from '../../functions/_shared/xml'
 
@@ -93,5 +94,27 @@ describe('renderPropResponse', () => {
       status: 'HTTP/1.1 404 Not Found',
     })
     expect(out).toContain('<status>HTTP/1.1 404 Not Found</status>')
+  })
+})
+
+describe('renderErrorResponse (RFC 4918 §9.6.2 — DELETE-style bare status)', () => {
+  it('emits <response><href/><status/></response> without propstat wrapper', () => {
+    const out = renderErrorResponse({
+      href: '/webdav/locked.txt',
+      status: 'HTTP/1.1 423 Locked',
+    })
+    expect(out).toContain('<response>')
+    expect(out).toContain('<href>/webdav/locked.txt</href>')
+    expect(out).toContain('<status>HTTP/1.1 423 Locked</status>')
+    expect(out).not.toContain('<propstat>')
+    expect(out).not.toContain('<prop>')
+  })
+
+  it('escapes XML special characters in href', () => {
+    const out = renderErrorResponse({
+      href: '/webdav/a&b<c>.txt',
+      status: 'HTTP/1.1 500 Internal Server Error',
+    })
+    expect(out).toContain('<href>/webdav/a&amp;b&lt;c&gt;.txt</href>')
   })
 })

@@ -141,4 +141,63 @@ describe('handleRequestDelete (trash)', () => {
     expect(bucket.put).not.toHaveBeenCalled()
     expect(bucket.delete).not.toHaveBeenCalled()
   })
+
+  it('returns 207 Multi-Status when some children fail to delete (RFC 4918 §9.6.1)', async () => {
+    const bucket = makeBucket()
+    const dir = {
+      key: 'docs',
+      size: 0,
+      etag: 'd',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'application/x-directory' },
+      customMetadata: undefined,
+    }
+    const ok1 = {
+      key: 'docs/ok.txt',
+      size: 1,
+      etag: 'ok',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    const failChild = {
+      key: 'docs/locked.txt',
+      size: 1,
+      etag: 'l',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(dir)
+    bucket.list.mockResolvedValue({ objects: [ok1, failChild], truncated: false })
+    bucket.get.mockImplementation((key: string) => {
+      if (key === 'docs') return Promise.resolve({ ...dir, body: 'body-docs' })
+      if (key === 'docs/ok.txt') return Promise.resolve({ ...ok1, body: 'body-ok' })
+      if (key === 'docs/locked.txt') return Promise.resolve({ ...failChild, body: 'body-locked' })
+      return Promise.resolve(null)
+    })
+    bucket.put.mockImplementation((key: string) => {
+      if (key.endsWith('/docs/locked.txt')) return Promise.reject(new Error('R2 conflict'))
+      return Promise.resolve(undefined)
+    })
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'docs',
+      request: new Request('http://x/webdav/docs', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(207)
+    expect(res.headers.get('Content-Type')).toBe('application/xml')
+    const body = await res.text()
+    expect(body).toContain('<href>/webdav/docs/locked.txt</href>')
+    expect(body).toContain('HTTP/1.1 500')
+    expect(body).toContain('R2 conflict')
+    // succeeded child must NOT appear in the failure list
+    expect(body).not.toContain('<href>/webdav/docs/ok.txt</href>')
+    // succeeded child still deleted from original location
+    expect(bucket.delete).toHaveBeenCalledWith('docs/ok.txt')
+    // failed child NOT deleted from original (preserved)
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked.txt')
+  })
 })

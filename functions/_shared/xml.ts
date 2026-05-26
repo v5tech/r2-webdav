@@ -34,3 +34,11 @@ export function renderPropResponse(opts: {
     </propstat>
   </response>`
 }
+
+export function renderErrorResponse(opts: { href: string; status: string }): string {
+  return `
+  <response>
+    <href>${escapeXml(opts.href)}</href>
+    <status>${opts.status}</status>
+  </response>`
+}
