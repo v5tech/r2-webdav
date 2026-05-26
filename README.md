@@ -97,16 +97,17 @@ Configure your WebDAV client with:
 - **Username:** `WEBDAV_USERNAME`
 - **Password:** `WEBDAV_PASSWORD`
 
-**Large file limitation:** Cloudflare Workers caps request bodies at 100 MB.
-Files larger than that must be uploaded via the web UI, which uses chunked
-multipart upload.
+**Large file upload limit:** Cloudflare Free / Pro plans cap incoming
+request bodies at **100 MB** (Business 200 MB, Enterprise 500 MB). Files
+larger than that must be uploaded via the web UI, which automatically
+uses chunked multipart upload.
 
-**COPY / MOVE limitation:** The R2 Workers binding has no server-side copy.
-COPY/MOVE streams every byte through the Worker and is bounded by the
-Workers wall-time budget. For multi-GB single files or directories with
-thousands of children, prefer doing the copy with rclone configured against
-the R2 S3 endpoint directly (bypassing this WebDAV server) — rclone retries
-client-side and scales independent of Worker limits.
+**COPY / MOVE limit (plan-independent):** A single object is capped at
+**5 GiB** (R2 single-PUT hard limit; the Workers binding does not expose
+server-side multipart copy). Recursive COPY/MOVE is also bound by the
+Workers subrequest budget per request (~50 on Free, i.e. ~25 children
+per request). For larger objects or directories, prefer rclone against
+the R2 S3 endpoint directly.
 
 ## Rate limiting (recommended)
 
