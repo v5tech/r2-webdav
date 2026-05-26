@@ -285,4 +285,102 @@ describe('handleRequestPropfind', () => {
     const body = await res.text()
     expect(body).toContain('/webdav/docs/%E4%B8%AD%E6%96%87%20file.txt')
   })
+
+  describe('request body parsing (RFC 4918 §9.1)', () => {
+    function mkBodyReq(path: string, body: string, depth = '0'): Request {
+      return new Request(`http://x/webdav/${path}`, {
+        method: 'PROPFIND',
+        headers: { Depth: depth },
+        body,
+      })
+    }
+
+    it('returns property names without values for <propname/> body', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkFile('a.txt'))
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'a.txt',
+        request: mkBodyReq(
+          'a.txt',
+          '<?xml version="1.0"?><propfind xmlns="DAV:"><propname/></propfind>',
+        ),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<getetag/>')
+      expect(body).toContain('<getcontentlength/>')
+      expect(body).toContain('<resourcetype/>')
+      expect(body).not.toContain('etag-a.txt')
+      expect(body).not.toContain('<getetag>')
+    })
+
+    it('detects namespaced <D:propname/>', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkFile('a.txt'))
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'a.txt',
+        request: mkBodyReq(
+          'a.txt',
+          '<?xml version="1.0"?><D:propfind xmlns:D="DAV:"><D:propname/></D:propfind>',
+        ),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<getetag/>')
+      expect(body).not.toContain('etag-a.txt')
+    })
+
+    it('returns values for <allprop/> body (current behavior)', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkFile('a.txt'))
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'a.txt',
+        request: mkBodyReq(
+          'a.txt',
+          '<?xml version="1.0"?><propfind xmlns="DAV:"><allprop/></propfind>',
+        ),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<getetag>etag-a.txt</getetag>')
+    })
+
+    it('falls back to allprop for <prop> selection body', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkFile('a.txt'))
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'a.txt',
+        request: mkBodyReq(
+          'a.txt',
+          '<?xml version="1.0"?><propfind xmlns="DAV:"><prop><displayname/></prop></propfind>',
+        ),
+      })
+
+      const body = await res.text()
+      expect(body).toContain('<getetag>etag-a.txt</getetag>')
+    })
+
+    it('falls back to allprop for malformed body', async () => {
+      const bucket = makeBucket()
+      bucket.head.mockResolvedValue(mkFile('a.txt'))
+
+      const res = await handleRequestPropfind({
+        bucket: bucket as unknown as R2Bucket,
+        path: 'a.txt',
+        request: mkBodyReq('a.txt', '<not-xml-just-garbage'),
+      })
+
+      expect(res.status).toBe(207)
+      const body = await res.text()
+      expect(body).toContain('<getetag>etag-a.txt</getetag>')
+    })
+  })
 })

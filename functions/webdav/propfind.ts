@@ -55,6 +55,9 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
 {{items}}
 </multistatus>`
 
+  const requestBody = await request.text().catch(() => '')
+  const isPropname = /<(?:[a-z][\w-]*:)?propname[\s/>]/i.test(requestBody)
+
   const rootObject = path === '' ? ROOT_OBJECT : await bucket.head(path)
   if (!rootObject) return new Response('Not found', { status: 404 })
   const isDirectory =
@@ -74,19 +77,24 @@ export async function handleRequestPropfind({ bucket, path, request }: RequestHa
     const isDir = child.httpMetadata?.contentType === 'application/x-directory'
     const rawHref = `${WEBDAV_ENDPOINT}${child.key}`
     const href = isDir && !rawHref.endsWith('/') ? `${rawHref}/` : rawHref
-    return `
-  <response>
-    <href>${escapeXml(encodeURI(href))}</href>
-    <propstat>
-      <prop>
-        ${Object.entries(properties)
+    const propsXml = isPropname
+      ? Object.keys(properties)
+          .map((key) => `<${key}/>`)
+          .join('\n')
+      : Object.entries(properties)
           .filter(([_, value]) => value !== undefined)
           .map(([key, value]) =>
             key === 'resourcetype'
               ? `<${key}>${value}</${key}>`
               : `<${key}>${escapeXml(value as string)}</${key}>`,
           )
-          .join('\n')}
+          .join('\n')
+    return `
+  <response>
+    <href>${escapeXml(encodeURI(href))}</href>
+    <propstat>
+      <prop>
+        ${propsXml}
       </prop>
       <status>HTTP/1.1 200 OK</status>
     </propstat>
