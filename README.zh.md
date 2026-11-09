@@ -19,6 +19,9 @@ For English documentation, see [README.md](./README.md).
 - **多类型预览** — 图片 (`<img>`)、视频 / 音频（原生控件）、PDF
   (pdfjs-dist 含分页器)、代码 (Shiki 按需注册语言)、纯文本（1 MB 上限）
 - **TextPad** — 快捷 `.txt` / `.md` 上传抽屉，直接保存到当前目录
+- **回收站** — 删除的文件先软删除到内部命名空间（保留 14 天），可在
+  `/trash` 页面查看 / 恢复 / 彻底删除。过期条目仅在后续 DELETE 请求中
+  按约 10% 概率清理，无定时任务
 - **中英双语** — Zh-CN / English 自动检测（浏览器语言 + 用户切换持久化）
 - **暗色模式** — 浅色 / 深色 / 跟随系统，持久化到 localStorage
 - **设置页面** — `/settings` 主题 + 语言切换
@@ -93,13 +96,15 @@ WebDAV 客户端配置：
 - **密码：** `WEBDAV_PASSWORD`
 
 **大文件直传限制：** Cloudflare 免费 / Pro 套餐入站请求体上限 **100 MB**
-（Business 200 MB，Enterprise 500 MB）。超过此大小的文件必须通过 Web UI
-上传（自动走分片上传）。
+（Business 200 MB，Enterprise 最高 5 GB 可自助调整）。超过此大小的文件必须
+通过 Web UI 上传（自动走分片上传）。
 
 **COPY / MOVE 限制（与套餐无关）：** 单对象上限 **5 GiB**（R2 单次 PUT
 硬限，binding 不支持服务端 multipart copy）。批量 COPY/MOVE 的递归操作
-还受 Workers subrequest 上限约束（免费套餐每请求约 50 次 subrequest，
-即约 25 个子节点）。超出建议改用 rclone 直接对 R2 S3 端点操作。
+还受 Workers subrequest 上限约束 —— R2 调用计入对 Cloudflare
+服务的 subrequest（免费套餐每请求约 1000 次，付费 10000 次；每个子节点
+约消耗 2–3 次调用，MOVE 约 5 次 = 复制 + 软删除）。超出建议改用 rclone
+直接对 R2 S3 端点操作。
 
 ## 频率限制（推荐配置）
 

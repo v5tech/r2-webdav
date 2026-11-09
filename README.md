@@ -22,6 +22,10 @@ authentication, dark mode, and i18n.
   registration), plain text (1 MB cap)
 - **TextPad** — Quick `.txt` / `.md` upload drawer for note-taking directly
   into the current directory
+- **Trash** — Deletes are soft-deleted to an internal namespace (14-day
+  retention); view / restore / permanently delete via the `/trash` page.
+  Expired entries are purged opportunistically on later DELETE requests
+  (~10% sampling) — there is no scheduled cleanup
 - **i18n** — Zh-CN / English with auto language detection (browser language +
   user override persisted to localStorage)
 - **Dark mode** — Light / dark / follow-system, persisted to localStorage
@@ -98,16 +102,18 @@ Configure your WebDAV client with:
 - **Password:** `WEBDAV_PASSWORD`
 
 **Large file upload limit:** Cloudflare Free / Pro plans cap incoming
-request bodies at **100 MB** (Business 200 MB, Enterprise 500 MB). Files
-larger than that must be uploaded via the web UI, which automatically
-uses chunked multipart upload.
+request bodies at **100 MB** (Business 200 MB, Enterprise up to 5 GB,
+self-serve adjustable). Files larger than that must be uploaded via the web
+UI, which automatically uses chunked multipart upload.
 
 **COPY / MOVE limit (plan-independent):** A single object is capped at
 **5 GiB** (R2 single-PUT hard limit; the Workers binding does not expose
 server-side multipart copy). Recursive COPY/MOVE is also bound by the
-Workers subrequest budget per request (~50 on Free, i.e. ~25 children
-per request). For larger objects or directories, prefer rclone against
-the R2 S3 endpoint directly.
+Workers subrequest budget per request — R2 calls count as subrequests to
+Cloudflare services (~1,000 on Free, 10,000 on Paid; each child
+costs ~2–3 calls for COPY/DELETE, ~5 for MOVE = copy + trash-delete). For
+larger objects or directories, prefer rclone against the R2 S3 endpoint
+directly.
 
 ## Rate limiting (recommended)
 
