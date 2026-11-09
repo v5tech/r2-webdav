@@ -161,7 +161,7 @@ describe('handleRequestDelete (trash)', () => {
       customMetadata: undefined,
     }
     const failChild = {
-      key: 'docs/locked.txt',
+      key: 'docs/locked#file.txt',
       size: 1,
       etag: 'l',
       uploaded: new Date(),
@@ -173,11 +173,11 @@ describe('handleRequestDelete (trash)', () => {
     bucket.get.mockImplementation((key: string) => {
       if (key === 'docs') return Promise.resolve({ ...dir, body: 'body-docs' })
       if (key === 'docs/ok.txt') return Promise.resolve({ ...ok1, body: 'body-ok' })
-      if (key === 'docs/locked.txt') return Promise.resolve({ ...failChild, body: 'body-locked' })
+      if (key === 'docs/locked#file.txt') return Promise.resolve({ ...failChild, body: 'body-locked' })
       return Promise.resolve(null)
     })
     bucket.put.mockImplementation((key: string) => {
-      if (key.endsWith('/docs/locked.txt')) return Promise.reject(new Error('R2 conflict'))
+      if (key.endsWith('/docs/locked#file.txt')) return Promise.reject(new Error('R2 conflict'))
       return Promise.resolve(undefined)
     })
 
@@ -190,7 +190,7 @@ describe('handleRequestDelete (trash)', () => {
     expect(res.status).toBe(207)
     expect(res.headers.get('Content-Type')).toBe('application/xml')
     const body = await res.text()
-    expect(body).toContain('<href>/webdav/docs/locked.txt</href>')
+    expect(body).toContain('<href>/webdav/docs/locked%23file.txt</href>')
     expect(body).toContain('HTTP/1.1 500')
     expect(body).toContain('R2 conflict')
     // succeeded child must NOT appear in the failure list
@@ -198,7 +198,7 @@ describe('handleRequestDelete (trash)', () => {
     // succeeded child still deleted from original location
     expect(bucket.delete).toHaveBeenCalledWith('docs/ok.txt')
     // failed child NOT deleted from original (preserved)
-    expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked.txt')
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked#file.txt')
   })
 
   it('returns 207 Multi-Status when single-object trash copy fails', async () => {

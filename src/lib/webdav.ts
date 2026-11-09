@@ -130,7 +130,11 @@ export async function fetchPath(path: string): Promise<FileItem[]> {
   return Array.from(document.querySelectorAll('response'))
     .filter((response) => {
       const href = response.querySelector('href')?.textContent ?? ''
-      return decodeURIComponent(href).slice(WEBDAV_ENDPOINT.length) !== trimmedPath
+      // collection hrefs carry a trailing slash (RFC 4918 §5.2); normalize both sides
+      const self = decodeURIComponent(href)
+        .slice(WEBDAV_ENDPOINT.length)
+        .replace(/\/$/, '')
+      return self !== trimmedPath
     })
     .map((response) => {
       const href = response.querySelector('href')?.textContent
@@ -141,7 +145,7 @@ export async function fetchPath(path: string): Promise<FileItem[]> {
       const thumbnail =
         response.getElementsByTagNameNS('r2webdav', 'thumbnail')[0]?.textContent ?? undefined
       return {
-        key: decodeURI(href).replace(/^\/webdav\//, ''),
+        key: decodeURIComponent(href).replace(/^\/webdav\//, ''),
         size: size ? Number(size) : 0,
         uploaded: lastModified ?? '',
         httpMetadata: { contentType: contentType ?? '' },

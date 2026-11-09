@@ -1,7 +1,7 @@
 import pLimit from 'p-limit'
 
 import { notFound } from './utils'
-import { listAll, RequestHandlerParams, WEBDAV_ENDPOINT } from './utils'
+import { listAll, RequestHandlerParams, WEBDAV_ENDPOINT, encodeKey } from './utils'
 import { maybePurgeExpiredTrash } from '../_shared/trash'
 import { TRASH_PREFIX } from '../_shared/r2'
 import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, renderErrorResponse } from '../_shared/xml'
@@ -81,7 +81,7 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     failures
       .map((f) =>
         renderErrorResponse({
-          href: encodeURI(`${WEBDAV_ENDPOINT}${f.key}`),
+          href: `${WEBDAV_ENDPOINT}${encodeKey(f.key)}`,
           status: f.status,
         }),
       )

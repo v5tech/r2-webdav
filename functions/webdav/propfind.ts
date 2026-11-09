@@ -1,5 +1,5 @@
 import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, escapeXml, renderPropResponse } from '../_shared/xml'
-import { listAll, RequestHandlerParams, ROOT_OBJECT, WEBDAV_ENDPOINT } from './utils'
+import { listAll, RequestHandlerParams, ROOT_OBJECT, WEBDAV_ENDPOINT, encodeKey } from './utils'
 
 type DavProperties = {
   creationdate: string | undefined
@@ -47,7 +47,7 @@ async function* iterChildren({
 function renderItem(child: R2Object | typeof ROOT_OBJECT, isPropname: boolean): string {
   const properties = fromR2Object(child)
   const isDir = child.httpMetadata?.contentType === 'application/x-directory'
-  const rawHref = `${WEBDAV_ENDPOINT}${child.key}`
+  const rawHref = `${WEBDAV_ENDPOINT}${encodeKey(child.key)}`
   const href = isDir && !rawHref.endsWith('/') ? `${rawHref}/` : rawHref
   const propsXml = isPropname
     ? Object.keys(properties)
@@ -61,7 +61,7 @@ function renderItem(child: R2Object | typeof ROOT_OBJECT, isPropname: boolean): 
             : `<${key}>${escapeXml(value as string)}</${key}>`,
         )
         .join('\n')
-  return renderPropResponse({ href: encodeURI(href), propsXml })
+  return renderPropResponse({ href, propsXml })
 }
 
 export async function handleRequestPropfind({ bucket, path, request }: RequestHandlerParams) {

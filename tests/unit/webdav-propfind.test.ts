@@ -286,6 +286,27 @@ describe('handleRequestPropfind', () => {
     expect(body).toContain('/webdav/docs/%E4%B8%AD%E6%96%87%20file.txt')
   })
 
+  it('percent-encodes # and ? in href path segments (encodeURI would leave them raw)', async () => {
+    const bucket = makeBucket()
+    bucket.head.mockResolvedValue(mkDir('docs'))
+    bucket.list.mockResolvedValue({
+      objects: [mkFile('docs/a#b?c.txt'), mkDir('docs/d#e')],
+      truncated: false,
+    })
+
+    const res = await handleRequestPropfind({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'docs',
+      request: mkReq('docs', '1'),
+    })
+
+    const body = await res.text()
+    expect(body).toContain('/webdav/docs/a%23b%3Fc.txt')
+    expect(body).toContain('/webdav/docs/d%23e/')
+    expect(body).not.toContain('<href>/webdav/docs/a#b')
+    expect(body).not.toContain('<href>/webdav/docs/d#e')
+  })
+
   describe('request body parsing (RFC 4918 §9.1)', () => {
     function mkBodyReq(path: string, body: string, depth = '0'): Request {
       return new Request(`http://x/webdav/${path}`, {

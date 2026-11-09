@@ -6,6 +6,11 @@ export interface RequestHandlerParams {
 
 export const WEBDAV_ENDPOINT = '/webdav/'
 
+// per-segment encoding: encodeURI leaves # and ? raw, which breaks hrefs
+export function encodeKey(key: string): string {
+  return key.split('/').map(encodeURIComponent).join('/')
+}
+
 export const ROOT_OBJECT = {
   key: '',
   uploaded: new Date(),
