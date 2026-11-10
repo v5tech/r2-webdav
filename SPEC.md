@@ -81,7 +81,8 @@
 │   ├── 0003-simplify-to-single-credential-jwt-cookie.md (Active)
 │   ├── 0004-tailwind-v4-shadcn-4.md (Active)
 │   ├── 0005-rename-session-cookie-to-r2-session.md (Active)
-│   └── 0006-include-trash-in-scope-b.md (Active)
+│   ├── 0006-include-trash-in-scope-b.md (Active)
+│   └── 0007-delete-failure-status-semantics.md (Active)
 ├── functions/                  # Cloudflare Pages Functions
 │   ├── webdav/                 # WebDAV 协议层, 现有保留
 │   │   ├── [[path]].ts         # 入口 + 双重鉴权 (cookie or Basic)
@@ -286,7 +287,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ### 文件 UI
 
 - **S10**: 上传 1MB / 99MB / 200MB 文件成功 (multipart 在 100MB 阈值切换).
-- **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006). 单文件软删除失败返回 500; 集合部分失败返回 207 Multi-Status.
+- **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006). 单文件或集合目标自身失败返回 500; 集合成员部分失败返回 207 Multi-Status (ADR-0007).
 - **S12**: 客户端搜索仅过滤当前目录, 跨目录搜索不支持 (与现状一致).
 - **S13**: 缩略图: jpg/png/gif/webp/mp4/pdf 生成, 其它显默认 mime 图标.
 - **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.

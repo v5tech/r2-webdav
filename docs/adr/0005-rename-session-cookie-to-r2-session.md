@@ -24,4 +24,4 @@ ADR-0003 制定时沿用 FlareDrive 时代的命名: cookie 为 `fd_session`, �
 
 - 现有浏览器会话失效, 需重新登录; WebDAV Basic auth 不受影响.
 - 回归测试覆盖 `r2_session` 的登录、验签、logout、`/api/me`、`/api/trash`.
-- 后续若再改名, 生产代码只需更新 `SESSION_COOKIE_NAME`; 测试与 SPEC 中的 `r2_session` 字面量仍需同步.
+- 后续若再改名, 生产代码需同步 `SESSION_COOKIE_NAME`; 若同时变更派生常量, 还要更新 `SESSION_DERIVATION_MSG`. 测试、SPEC、README、PLAN、TASKS 中的 `r2_session*` 字面量也需同步.

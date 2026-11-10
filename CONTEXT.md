@@ -37,6 +37,12 @@
 - **文件/对象 (File / Object)** — 用户命名空间内的非目录 R2 对象.
 - **目录 (Directory / Collection)** — 以 `contentType: application/x-directory` 标记的零字节占位对象 (`mkcol.ts`). 不存在真正的"目录"实体, 只是 R2 key 前缀的约定.
 
+## DELETE 失败语义
+
+- **成员失败 (Member failure)** — 集合内的文件或嵌套目录标记删除失败.
+- **目标失败 (Target failure)** — Request-URI 指向的资源自身删除失败; 包括单文件和集合标记.
+- **部分失败 (Partial failure)** — 至少一个成员失败; 返回 207 Multi-Status, 失败成员的祖先与集合目标保留.
+
 ## 持久化
 
 - **R2** — 文件主体与缩略图. 唯一持久化层.
