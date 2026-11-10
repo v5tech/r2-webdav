@@ -95,6 +95,15 @@ describe('renderPropResponse', () => {
     })
     expect(out).toContain('<status>HTTP/1.1 404 Not Found</status>')
   })
+
+  it('escapes XML special characters in status', () => {
+    const out = renderPropResponse({
+      href: '/webdav/a.txt',
+      propsXml: '',
+      status: 'HTTP/1.1 500 a & b <c>',
+    })
+    expect(out).toContain('<status>HTTP/1.1 500 a &amp; b &lt;c&gt;</status>')
+  })
 })
 
 describe('renderErrorResponse (RFC 4918 §9.6.2 — DELETE-style bare status)', () => {

@@ -30,7 +30,7 @@ export function renderPropResponse(opts: {
       <prop>
         ${opts.propsXml}
       </prop>
-      <status>${status}</status>
+      <status>${escapeXml(status)}</status>
     </propstat>
   </response>`
 }
