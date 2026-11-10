@@ -20,20 +20,23 @@ export async function createFolder(key: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to create folder: ${res.status}`)
 }
 
+function assertComplete(res: Response, action: string): void {
+  if (res.status === 207) throw new Error(`${action}: 207 (partial failure)`)
+  if (!res.ok) throw new Error(`${action}: ${res.status}`)
+}
+
 export async function moveFile(source: string, target: string): Promise<void> {
   const dest = new URL(`${WEBDAV_ENDPOINT}${encodeKey(target)}`, window.location.href)
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(source)}`, {
     method: 'MOVE',
     headers: { Destination: dest.href },
   })
-  if (res.status === 207) throw new Error('Failed to move: 207 (partial failure)')
-  if (!res.ok) throw new Error(`Failed to move: ${res.status}`)
+  assertComplete(res, 'Failed to move')
 }
 
 export async function deleteFile(key: string): Promise<void> {
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'DELETE' })
-  if (res.status === 207) throw new Error('Failed to delete: 207 (partial failure)')
-  if (!res.ok) throw new Error(`Failed to delete: ${res.status}`)
+  assertComplete(res, 'Failed to delete')
 }
 
 export async function uploadFile(
@@ -133,9 +136,7 @@ export async function fetchPath(path: string): Promise<FileItem[]> {
     .filter((response) => {
       const href = response.querySelector('href')?.textContent ?? ''
       // collection hrefs carry a trailing slash (RFC 4918 §5.2); normalize both sides
-      const self = decodeURIComponent(href)
-        .slice(WEBDAV_ENDPOINT.length)
-        .replace(/\/$/, '')
+      const self = decodeURIComponent(href).slice(WEBDAV_ENDPOINT.length).replace(/\/$/, '')
       return self !== trimmedPath
     })
     .map((response) => {
