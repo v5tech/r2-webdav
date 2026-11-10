@@ -329,4 +329,61 @@ describe('handleRequestDelete (trash)', () => {
     expect(bucket.delete).not.toHaveBeenCalledWith('docs')
     expect(bucket.delete).not.toHaveBeenCalledWith('docs/sub/locked.txt')
   })
+
+  it('returns 500 when the collection marker itself cannot be trashed', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1)
+    const bucket = makeBucket()
+    const dir = {
+      key: 'docs',
+      size: 0,
+      etag: 'd',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'application/x-directory' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(dir)
+    bucket.list.mockResolvedValue({ objects: [], truncated: false })
+    bucket.get.mockResolvedValue({ ...dir, body: 'body-docs' })
+    bucket.put.mockRejectedValue(new Error('R2 quota exceeded'))
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'docs',
+      request: new Request('http://x/webdav/docs', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(500)
+    const body = await res.text()
+    expect(body).toContain('R2 quota exceeded')
+    expect(body).not.toContain('<multistatus')
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs')
+  })
+
+  it('still samples trash purge when a single-object delete fails', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0)
+    const bucket = makeBucket()
+    const file = {
+      key: 'locked.txt',
+      size: 1,
+      etag: 'l',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(file)
+    bucket.get.mockResolvedValue({ ...file, body: 'body-locked' })
+    bucket.put.mockRejectedValue(new Error('R2 quota exceeded'))
+    bucket.list.mockResolvedValue({ objects: [], truncated: false })
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'locked.txt',
+      request: new Request('http://x/webdav/locked.txt', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(500)
+    expect(bucket.list).toHaveBeenCalledWith(
+      expect.objectContaining({ prefix: '_$r2webdav$/trash/' }),
+    )
+  })
 })

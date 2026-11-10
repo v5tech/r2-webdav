@@ -284,4 +284,31 @@ describe('handleRequestMove', () => {
     )
     expect(bucket.delete).toHaveBeenCalledWith('a.txt')
   })
+
+  it('returns 500 when the source cannot be trashed after copy', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1)
+    const bucket = makeBucket()
+    const src = mkFile('a.txt')
+    bucket.get.mockImplementation((key: string) => {
+      if (key === 'a.txt') return Promise.resolve(src)
+      return Promise.resolve(null)
+    })
+    bucket.head.mockImplementation((key: string) => {
+      if (key === 'a.txt') return Promise.resolve(src) // delete-phase head
+      return Promise.resolve(null) // copy-phase dest head
+    })
+    bucket.put.mockImplementation((key: string) =>
+      key === 'b.txt' ? Promise.resolve({}) : Promise.reject(new Error('R2 quota')),
+    )
+
+    const res = await handleRequestMove({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'a.txt',
+      request: mkReq('MOVE', 'a.txt', 'http://x/webdav/b.txt'),
+    })
+
+    expect(res.status).toBe(500)
+    expect(bucket.put).toHaveBeenCalledWith('b.txt', src.body, expect.anything())
+    expect(bucket.delete).not.toHaveBeenCalledWith('a.txt')
+  })
 })

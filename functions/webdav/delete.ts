@@ -14,10 +14,10 @@ import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, renderErrorResponse } from '../_sh
  * bounded by wall-time and subrequest budgets. Large objects approaching R2's
  * 5 GiB single-object cap should use rclone over R2 S3 (see README).
  *
- * Collection partial failures report 207 Multi-Status (RFC 4918 §9.6.1); a
- * single non-collection object failure is a plain 500. Collection members are
- * trashed before their markers; directory markers are processed deepest-first
- * so a failed member leaves every ancestor intact.
+ * Collection member failures report 207 Multi-Status (RFC 4918 §9.6.1); a
+ * single non-collection object or collection-target failure is a plain 500.
+ * Collection members are trashed before their markers; directory markers are
+ * processed deepest-first so a failed member leaves every ancestor intact.
  */
 
 async function moveChildToTrash(
@@ -62,6 +62,7 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     try {
       await moveChildToTrash(bucket, target, trashRoot)
     } catch (err) {
+      await maybePurgeExpiredTrash(bucket)
       return new Response(errorMessage(err), { status: 500 })
     }
     await maybePurgeExpiredTrash(bucket)
@@ -119,7 +120,8 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     try {
       await moveChildToTrash(bucket, target, trashRoot)
     } catch (err) {
-      failures.push(failureFor(target.key, err))
+      await maybePurgeExpiredTrash(bucket)
+      return new Response(errorMessage(err), { status: 500 })
     }
   }
 
