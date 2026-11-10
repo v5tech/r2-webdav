@@ -1,7 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import i18n from '@/lib/i18n'
 
 import { TextPadDrawer } from '../../src/components/textpad/TextPadDrawer'
+
+beforeEach(() => {
+  void i18n.changeLanguage('en')
+})
 
 describe('TextPadDrawer', () => {
   it('does not render form when open is false', () => {
@@ -59,5 +65,33 @@ describe('TextPadDrawer', () => {
     const file = onSave.mock.calls[0][0] as File
     const text = await file.text()
     expect(text).toBe(tricky)
+  })
+
+  it('keeps the drawer open and preserves content when save reports a conflict', () => {
+    const onSave = vi.fn(() => true)
+    const onOpenChange = vi.fn()
+    render(<TextPadDrawer open onOpenChange={onOpenChange} cwd="" onSave={onSave} />)
+    fireEvent.change(screen.getByTestId('textpad-body'), { target: { value: 'draft' } })
+    fireEvent.click(screen.getByTestId('textpad-save'))
+    expect(onOpenChange).not.toHaveBeenCalledWith(false)
+    expect(screen.getByTestId('textpad-body')).toHaveValue('draft')
+  })
+
+  it('localizes the text file type label', async () => {
+    render(<TextPadDrawer open onOpenChange={vi.fn()} cwd="" onSave={vi.fn()} />)
+    expect(screen.getByText('Text', { exact: true })).toBeInTheDocument()
+    await act(async () => {
+      await i18n.changeLanguage('zh')
+    })
+    expect(screen.getByText('文本', { exact: true })).toBeInTheDocument()
+  })
+
+  it('asks before discarding unsaved changes', () => {
+    const onOpenChange = vi.fn()
+    render(<TextPadDrawer open onOpenChange={onOpenChange} cwd="" onSave={vi.fn()} />)
+    fireEvent.change(screen.getByTestId('textpad-body'), { target: { value: 'draft' } })
+    fireEvent.click(screen.getByRole('button', { name: /close/i }))
+    expect(screen.getByText(/unsaved changes|未保存的更改/i)).toBeInTheDocument()
+    expect(onOpenChange).not.toHaveBeenCalledWith(false)
   })
 })

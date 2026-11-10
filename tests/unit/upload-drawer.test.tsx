@@ -18,9 +18,7 @@ function task(over: Partial<UploadTask>): UploadTask {
 
 describe('UploadDrawer', () => {
   it('renders nothing when tasks empty', () => {
-    const { container } = render(
-      <UploadDrawer tasks={[]} onClearCompleted={() => {}} />,
-    )
+    const { container } = render(<UploadDrawer tasks={[]} onClearCompleted={() => {}} />)
     expect(container).toBeEmptyDOMElement()
   })
 
@@ -73,10 +71,7 @@ describe('UploadDrawer', () => {
   it('Clear completed button calls onClearCompleted', () => {
     const onClearCompleted = vi.fn()
     render(
-      <UploadDrawer
-        tasks={[task({ status: 'completed' })]}
-        onClearCompleted={onClearCompleted}
-      />,
+      <UploadDrawer tasks={[task({ status: 'completed' })]} onClearCompleted={onClearCompleted} />,
     )
     fireEvent.click(screen.getByRole('button', { name: /clear completed/i }))
     expect(onClearCompleted).toHaveBeenCalled()
@@ -106,6 +101,21 @@ describe('UploadDrawer', () => {
     expect(screen.queryByRole('button', { name: /cancel c\.txt/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /cancel f\.txt/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /cancel x\.txt/i })).not.toBeInTheDocument()
+  })
+
+  it('clicking retry calls onRetry for a failed task', () => {
+    const onRetry = vi.fn()
+    render(
+      <UploadDrawer
+        tasks={[
+          task({ id: 'failed-1', file: new File(['x'], 'f.txt'), status: 'failed', error: 'boom' }),
+        ]}
+        onClearCompleted={() => {}}
+        onRetry={onRetry}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /retry f\.txt/i }))
+    expect(onRetry).toHaveBeenCalledWith('failed-1')
   })
 
   it('clicking cancel button calls onCancel with task id', () => {

@@ -39,7 +39,7 @@ describe('FileRow', () => {
         onDelete={() => {}}
       />,
     )
-    expect(screen.getByText('c.txt')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open c\.txt/i })).toBeInTheDocument()
   })
 
   it('clicking directory row calls onCwdChange', () => {
@@ -67,11 +67,7 @@ describe('FileRow', () => {
       />,
     )
     fireEvent.click(screen.getByRole('button', { name: /c d\.txt/i }))
-    expect(openSpy).toHaveBeenCalledWith(
-      '/webdav/a%20b/c%20d.txt',
-      '_blank',
-      'noopener,noreferrer',
-    )
+    expect(openSpy).toHaveBeenCalledWith('/webdav/a%20b/c%20d.txt', '_blank', 'noopener,noreferrer')
     openSpy.mockRestore()
   })
 
@@ -138,14 +134,7 @@ describe('FileRow', () => {
     const onRename = vi.fn()
     const onDelete = vi.fn()
     const file = makeFile()
-    render(
-      <FileRow
-        file={file}
-        onCwdChange={() => {}}
-        onRename={onRename}
-        onDelete={onDelete}
-      />,
-    )
+    render(<FileRow file={file} onCwdChange={() => {}} onRename={onRename} onDelete={onDelete} />)
     openMenu(screen.getByRole('button', { name: /more actions/i }))
     fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }))
     expect(onRename).toHaveBeenCalledWith(file)

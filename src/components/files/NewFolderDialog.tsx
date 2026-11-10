@@ -30,6 +30,7 @@ interface NewFolderDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   cwd: string
+  existingNames?: string[]
   onCreated?: () => void
 }
 
@@ -37,6 +38,7 @@ export function NewFolderDialog({
   open,
   onOpenChange,
   cwd,
+  existingNames = [],
   onCreated,
 }: NewFolderDialogProps) {
   const { t } = useTranslation()
@@ -61,6 +63,10 @@ export function NewFolderDialog({
 
   async function onSubmit(values: FormValues) {
     setSubmitError(null)
+    if (existingNames.includes(values.name)) {
+      setSubmitError(t('files.newFolder.error.duplicate'))
+      return
+    }
     try {
       await createFolder(`${cwd}${values.name}`)
       onCreated?.()
@@ -84,9 +90,7 @@ export function NewFolderDialog({
               name="name"
               render={({ field: { ref: _ref, ...field }, fieldState }) => (
                 <Field data-invalid={fieldState.invalid || undefined}>
-                  <FieldLabel htmlFor="folder-name">
-                    {t('files.newFolder.label')}
-                  </FieldLabel>
+                  <FieldLabel htmlFor="folder-name">{t('files.newFolder.label')}</FieldLabel>
                   <Input
                     {...field}
                     id="folder-name"

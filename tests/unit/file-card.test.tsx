@@ -39,7 +39,7 @@ describe('FileCard', () => {
         onDelete={() => {}}
       />,
     )
-    expect(screen.getByText('c.txt')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open c\.txt/i })).toBeInTheDocument()
   })
 
   it('clicking directory card calls onCwdChange with key+/', () => {
@@ -67,11 +67,7 @@ describe('FileCard', () => {
       />,
     )
     fireEvent.click(screen.getByRole('button', { name: /c d\.png/i }))
-    expect(openSpy).toHaveBeenCalledWith(
-      '/webdav/a%20b/c%20d.png',
-      '_blank',
-      'noopener,noreferrer',
-    )
+    expect(openSpy).toHaveBeenCalledWith('/webdav/a%20b/c%20d.png', '_blank', 'noopener,noreferrer')
     openSpy.mockRestore()
   })
 
@@ -156,14 +152,7 @@ describe('FileCard', () => {
   it('Rename menu item calls onRename(file)', () => {
     const onRename = vi.fn()
     const file = makeFile()
-    render(
-      <FileCard
-        file={file}
-        onCwdChange={() => {}}
-        onRename={onRename}
-        onDelete={() => {}}
-      />,
-    )
+    render(<FileCard file={file} onCwdChange={() => {}} onRename={onRename} onDelete={() => {}} />)
     openMenu(screen.getByRole('button', { name: /more actions/i }))
     fireEvent.click(screen.getByRole('menuitem', { name: 'Rename' }))
     expect(onRename).toHaveBeenCalledWith(file)
@@ -172,14 +161,7 @@ describe('FileCard', () => {
   it('Delete menu item calls onDelete(file)', () => {
     const onDelete = vi.fn()
     const file = makeFile()
-    render(
-      <FileCard
-        file={file}
-        onCwdChange={() => {}}
-        onRename={() => {}}
-        onDelete={onDelete}
-      />,
-    )
+    render(<FileCard file={file} onCwdChange={() => {}} onRename={() => {}} onDelete={onDelete} />)
     openMenu(screen.getByRole('button', { name: /more actions/i }))
     fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }))
     expect(onDelete).toHaveBeenCalledWith(file)

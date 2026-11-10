@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import {
   Dialog,
   DialogContent,
@@ -5,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { formatFileSize, formatFileTime } from '@/lib/format'
 import type { FileItem } from '@/lib/types'
 
 import { AudioPreview } from './AudioPreview'
@@ -26,33 +29,123 @@ function extractFilename(key: string) {
 }
 
 const KNOWN_BINARY_EXTENSIONS = new Set([
-  'zip', 'tar', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar',
-  'exe', 'dmg', 'iso', 'bin', 'pkg', 'msi', 'apk', 'deb', 'rpm', 'jar', 'war',
+  'zip',
+  'tar',
+  'gz',
+  'tgz',
+  'bz2',
+  'xz',
+  '7z',
+  'rar',
+  'exe',
+  'dmg',
+  'iso',
+  'bin',
+  'pkg',
+  'msi',
+  'apk',
+  'deb',
+  'rpm',
+  'jar',
+  'war',
 ])
 
 const CODE_EXTENSIONS = new Set([
-  'ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs',
-  'py', 'rb', 'rs', 'go', 'java', 'kt', 'kts', 'swift', 'php', 'cs',
-  'cpp', 'cc', 'c', 'h', 'hpp',
-  'json', 'jsonc', 'yaml', 'yml', 'toml',
-  'xml', 'html', 'htm', 'css', 'scss', 'sass', 'less',
-  'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat',
-  'sql', 'graphql', 'gql',
-  'md', 'mdx',
-  'vue', 'svelte',
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'mjs',
+  'cjs',
+  'py',
+  'rb',
+  'rs',
+  'go',
+  'java',
+  'kt',
+  'kts',
+  'swift',
+  'php',
+  'cs',
+  'cpp',
+  'cc',
+  'c',
+  'h',
+  'hpp',
+  'json',
+  'jsonc',
+  'yaml',
+  'yml',
+  'toml',
+  'xml',
+  'html',
+  'htm',
+  'css',
+  'scss',
+  'sass',
+  'less',
+  'sh',
+  'bash',
+  'zsh',
+  'fish',
+  'ps1',
+  'bat',
+  'sql',
+  'graphql',
+  'gql',
+  'md',
+  'mdx',
+  'vue',
+  'svelte',
 ])
 
 const EXT_TO_SHIKI_LANG: Record<string, string> = {
-  ts: 'typescript', tsx: 'tsx', js: 'javascript', jsx: 'jsx', mjs: 'javascript', cjs: 'javascript',
-  py: 'python', rb: 'ruby', rs: 'rust', go: 'go', java: 'java', kt: 'kotlin', kts: 'kotlin',
-  swift: 'swift', php: 'php', cs: 'csharp',
-  cpp: 'cpp', cc: 'cpp', c: 'c', h: 'c', hpp: 'cpp',
-  json: 'json', jsonc: 'jsonc', yaml: 'yaml', yml: 'yaml', toml: 'toml',
-  xml: 'xml', html: 'html', htm: 'html', css: 'css', scss: 'scss', sass: 'sass', less: 'less',
-  sh: 'bash', bash: 'bash', zsh: 'bash', fish: 'fish', ps1: 'powershell', bat: 'shellscript',
-  sql: 'sql', graphql: 'graphql', gql: 'graphql',
-  md: 'markdown', mdx: 'mdx',
-  vue: 'vue', svelte: 'svelte',
+  ts: 'typescript',
+  tsx: 'tsx',
+  js: 'javascript',
+  jsx: 'jsx',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  py: 'python',
+  rb: 'ruby',
+  rs: 'rust',
+  go: 'go',
+  java: 'java',
+  kt: 'kotlin',
+  kts: 'kotlin',
+  swift: 'swift',
+  php: 'php',
+  cs: 'csharp',
+  cpp: 'cpp',
+  cc: 'cpp',
+  c: 'c',
+  h: 'c',
+  hpp: 'cpp',
+  json: 'json',
+  jsonc: 'jsonc',
+  yaml: 'yaml',
+  yml: 'yaml',
+  toml: 'toml',
+  xml: 'xml',
+  html: 'html',
+  htm: 'html',
+  css: 'css',
+  scss: 'scss',
+  sass: 'sass',
+  less: 'less',
+  sh: 'bash',
+  bash: 'bash',
+  zsh: 'bash',
+  fish: 'fish',
+  ps1: 'powershell',
+  bat: 'shellscript',
+  sql: 'sql',
+  graphql: 'graphql',
+  gql: 'graphql',
+  md: 'markdown',
+  mdx: 'mdx',
+  vue: 'vue',
+  svelte: 'svelte',
 }
 
 function getExt(key: string): string {
@@ -100,6 +193,7 @@ function dispatchBody(file: FileItem) {
 }
 
 export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) {
+  const { t } = useTranslation()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -108,6 +202,37 @@ export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) 
           <DialogDescription className="sr-only">{file?.key ?? ''}</DialogDescription>
         </DialogHeader>
         <div className="max-h-[80vh] overflow-auto">{file ? dispatchBody(file) : null}</div>
+        {file ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-3 border-t px-4 py-3 text-[11px] text-muted-foreground">
+            <span>
+              {t('preview.fileSize')}
+              <strong className="ml-2 font-medium text-foreground">
+                {formatFileSize(file.size)}
+              </strong>
+              <small className="mt-1 block">
+                {t('files.bytes', { value: file.size.toLocaleString() })}
+              </small>
+            </span>
+            <span>
+              {t('preview.modified')}
+              <strong className="ml-2 font-medium text-foreground tabular-nums">
+                {formatFileTime(file.uploaded)}
+              </strong>
+              <small className="mt-1 block">
+                {t('preview.utcTime', { time: formatFileTime(file.uploaded, undefined, 'UTC') })}
+              </small>
+            </span>
+            <span>
+              {t('preview.location')}
+              <strong
+                className="ml-2 block max-w-64 truncate font-medium text-foreground"
+                title={file.key}
+              >
+                /{file.key}
+              </strong>
+            </span>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   )

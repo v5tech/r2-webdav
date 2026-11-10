@@ -9,7 +9,7 @@ interface FileGridProps {
 
 export function FileGrid({ items, renderItem }: FileGridProps) {
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3 p-3">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-3 p-3">
       {items.map(renderItem)}
     </div>
   )

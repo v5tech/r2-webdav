@@ -1,8 +1,14 @@
-import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react'
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, ChevronDownIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export type SortKey = 'name' | 'size' | 'modified'
 export type SortDir = 'asc' | 'desc'
@@ -30,30 +36,34 @@ const SORT_LABEL_KEY: Record<SortKey, string> = {
 export function SortControls({ sortKey, sortDir, onSortChange }: SortControlsProps) {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-2">
-      <ToggleGroup
-        type="single"
-        value={sortKey}
-        size="sm"
-        onValueChange={(v) => {
-          if (v === 'name' || v === 'size' || v === 'modified') {
-            onSortChange(v, sortDir)
-          }
-        }}
-        aria-label={t('files.sort.key')}
-      >
-        {KEYS.map((k) => (
-          <ToggleGroupItem key={k} value={k} aria-label={t(SORT_BY_KEY[k])}>
-            <span>{t(SORT_LABEL_KEY[k])}</span>
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+    <div className="flex items-center gap-1">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" aria-label={t('files.sort.key')}>
+            <ArrowUpDownIcon />
+            <span>{t(SORT_LABEL_KEY[sortKey])}</span>
+            <ChevronDownIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuRadioGroup
+            value={sortKey}
+            onValueChange={(value) => {
+              if (KEYS.includes(value as SortKey)) onSortChange(value as SortKey, sortDir)
+            }}
+          >
+            {KEYS.map((key) => (
+              <DropdownMenuRadioItem key={key} value={key} aria-label={t(SORT_BY_KEY[key])}>
+                {t(SORT_LABEL_KEY[key])}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label={
-          sortDir === 'asc' ? t('files.sort.directionAsc') : t('files.sort.directionDesc')
-        }
+        aria-label={sortDir === 'asc' ? t('files.sort.directionAsc') : t('files.sort.directionDesc')}
         onClick={() => onSortChange(sortKey, sortDir === 'asc' ? 'desc' : 'asc')}
       >
         {sortDir === 'asc' ? <ArrowUpIcon /> : <ArrowDownIcon />}

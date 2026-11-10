@@ -29,6 +29,7 @@ export interface UploadQueue {
   enqueue: (cwd: string, files: File[]) => void
   clearCompleted: () => void
   cancel: (id: string) => void
+  retry: (id: string) => void
 }
 
 export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue {
@@ -59,6 +60,17 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
     setTasks((prev) => prev.filter((t) => t.status !== 'completed'))
   }, [])
 
+  const retry = useCallback((id: string) => {
+    controllers.current.delete(id)
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === id && (t.status === 'failed' || t.status === 'cancelled')
+          ? { ...t, status: 'pending' as const, loaded: 0, error: undefined }
+          : t,
+      ),
+    )
+  }, [])
+
   const cancel = useCallback((id: string) => {
     const controller = controllers.current.get(id)
     if (controller) controller.abort()
@@ -80,9 +92,7 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
     processing.current = true
     const controller = new AbortController()
     controllers.current.set(next.id, controller)
-    setTasks((prev) =>
-      prev.map((t) => (t.id === next.id ? { ...t, status: 'uploading' } : t)),
-    )
+    setTasks((prev) => prev.map((t) => (t.id === next.id ? { ...t, status: 'uploading' } : t)))
     void (async () => {
       let thumbnailHash: string | undefined
       if (next.file.type.startsWith('image/')) {
@@ -135,5 +145,5 @@ export function useUploadQueue(options: UseUploadQueueOptions = {}): UploadQueue
   }, [tasks, upload])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  return { tasks, enqueue, clearCompleted, cancel }
+  return { tasks, enqueue, clearCompleted, cancel, retry }
 }

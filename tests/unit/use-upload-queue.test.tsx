@@ -44,10 +44,7 @@ describe('useUploadQueue', () => {
     const upload = vi.fn(() => d.promise)
     const { result } = renderHook(() => useUploadQueue({ upload }))
     act(() => {
-      result.current.enqueue('docs/', [
-        new File(['x'], 'a.txt'),
-        new File(['y'], 'b.txt'),
-      ])
+      result.current.enqueue('docs/', [new File(['x'], 'a.txt'), new File(['y'], 'b.txt')])
     })
     expect(result.current.tasks).toHaveLength(2)
     expect(result.current.tasks[1].status).toBe('pending')
@@ -101,6 +98,26 @@ describe('useUploadQueue', () => {
       expect(result.current.tasks[0].status).toBe('failed')
       expect(result.current.tasks[0].error).toBe('boom')
     })
+  })
+
+  it('retries a failed task and clears its error', async () => {
+    const d = deferred<void>()
+    const upload = vi.fn(() => d.promise)
+    const { result } = renderHook(() => useUploadQueue({ upload }))
+    act(() => {
+      result.current.enqueue('', [new File(['x'], 'bad.txt')])
+    })
+    await waitFor(() => expect(result.current.tasks[0].status).toBe('uploading'))
+    await act(async () => {
+      d.reject(new Error('boom'))
+      await d.promise.catch(() => {})
+    })
+    await waitFor(() => expect(result.current.tasks[0].status).toBe('failed'))
+    const id = result.current.tasks[0].id
+    act(() => result.current.retry(id))
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(2))
+    expect(result.current.tasks[0].status).toBe('uploading')
+    expect(result.current.tasks[0].error).toBeUndefined()
   })
 
   it('processes 2nd pending only after 1st completes', async () => {
@@ -185,10 +202,7 @@ describe('useUploadQueue', () => {
     const upload = vi.fn(() => d.promise)
     const { result } = renderHook(() => useUploadQueue({ upload }))
     act(() => {
-      result.current.enqueue('', [
-        new File(['1'], 'a.txt'),
-        new File(['2'], 'b.txt'),
-      ])
+      result.current.enqueue('', [new File(['1'], 'a.txt'), new File(['2'], 'b.txt')])
     })
     await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
     const secondId = result.current.tasks[1].id
@@ -235,7 +249,11 @@ describe('useUploadQueue', () => {
     })
     await waitFor(() => expect(upload).toHaveBeenCalled())
     expect(generateThumbMock).toHaveBeenCalledTimes(1)
-    expect(uploadThumbMock).toHaveBeenCalledWith(expect.any(Blob), 'sha1hex', expect.any(AbortSignal))
+    expect(uploadThumbMock).toHaveBeenCalledWith(
+      expect.any(Blob),
+      'sha1hex',
+      expect.any(AbortSignal),
+    )
     expect(upload.mock.calls[0][4]).toBe('sha1hex')
   })
 
