@@ -15,8 +15,10 @@ import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, renderErrorResponse } from '../_sh
  * 5 GiB single-object cap should use rclone over R2 S3 (see README).
  *
  * Both single-object and recursive paths report partial failures via 207
- * Multi-Status. RFC 4918 §9.6.1 mandates 207 for collections; single objects
- * reuse the same shape so clients have one error-parsing path.
+ * Multi-Status. RFC 4918 §9.6.1 uses 207 for member-resource failures; single
+ * objects reuse the same shape so clients have one error-parsing path.
+ * Collection children are trashed before the marker so a failed member leaves
+ * its ancestors intact (RFC 4918 §9.6.1).
  */
 
 async function moveChildToTrash(
@@ -33,25 +35,25 @@ async function moveChildToTrash(
   await bucket.delete(child.key)
 }
 
+function failureFor(key: string, err: unknown): { key: string; status: string } {
+  const msg = err instanceof Error ? err.message : 'Internal Server Error'
+  return { key, status: `HTTP/1.1 500 ${msg}` }
+}
+
 export async function handleRequestDelete({ bucket, path }: RequestHandlerParams) {
   const trashRoot = `${TRASH_PREFIX}${Date.now()}/`
   const failures: Array<{ key: string; status: string }> = []
 
-  let isDirectory = false
+  let target: R2Object | null = null
   if (path !== '') {
-    const obj = await bucket.head(path)
-    if (obj === null) return notFound()
-    isDirectory = obj.httpMetadata?.contentType === 'application/x-directory'
-
-    try {
-      await moveChildToTrash(bucket, obj, trashRoot)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Internal Server Error'
-      failures.push({ key: path, status: `HTTP/1.1 500 ${msg}` })
-    }
+    target = await bucket.head(path)
+    if (target === null) return notFound()
   }
 
-  if (isDirectory || path === '') {
+  const isCollection =
+    path === '' || target?.httpMetadata?.contentType === 'application/x-directory'
+
+  if (isCollection) {
     const prefix = path === '' ? undefined : `${path}/`
     const limit = pLimit(5)
     const tasks: Array<Promise<void>> = []
@@ -61,13 +63,22 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
           try {
             await moveChildToTrash(bucket, child, trashRoot)
           } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Internal Server Error'
-            failures.push({ key: child.key, status: `HTTP/1.1 500 ${msg}` })
+            failures.push(failureFor(child.key, err))
           }
         }),
       )
     }
     await Promise.all(tasks)
+  }
+
+  // Delete the collection target last: RFC 4918 §9.6.1 requires ancestors
+  // to survive when a member cannot be deleted.
+  if (target && (!isCollection || failures.length === 0)) {
+    try {
+      await moveChildToTrash(bucket, target, trashRoot)
+    } catch (err) {
+      failures.push(failureFor(path, err))
+    }
   }
 
   await maybePurgeExpiredTrash(bucket)
