@@ -39,6 +39,6 @@ export function renderErrorResponse(opts: { href: string; status: string }): str
   return `
   <response>
     <href>${escapeXml(opts.href)}</href>
-    <status>${opts.status}</status>
+    <status>${escapeXml(opts.status)}</status>
   </response>`
 }

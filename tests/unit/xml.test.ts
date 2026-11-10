@@ -117,4 +117,17 @@ describe('renderErrorResponse (RFC 4918 §9.6.2 — DELETE-style bare status)', 
     })
     expect(out).toContain('<href>/webdav/a&amp;b&lt;c&gt;.txt</href>')
   })
+
+  it('escapes XML special characters in status', () => {
+    const out = renderErrorResponse({
+      href: '/webdav/a.txt',
+      status: 'HTTP/1.1 500 a & b <c>',
+    })
+    expect(out).toContain('<status>HTTP/1.1 500 a &amp; b &lt;c&gt;</status>')
+    const doc = new DOMParser().parseFromString(
+      MULTISTATUS_OPEN + out + MULTISTATUS_CLOSE,
+      'application/xml',
+    )
+    expect(doc.getElementsByTagName('parsererror').length).toBe(0)
+  })
 })
