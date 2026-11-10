@@ -1,6 +1,6 @@
 # Plan: FlareDrive Scope B 实施计划
 
-> 与 [SPEC.md](./SPEC.md) / [CONTEXT.md](./CONTEXT.md) 配对. 本文不重复需求, 只回答 "怎么按何顺序、怕什么、怎么知道走对了". 当前生效 ADR: 0003 (取代 0001/0002).
+> 与 [SPEC.md](./SPEC.md) / [CONTEXT.md](./CONTEXT.md) 配对. 本文不重复需求, 只回答 "怎么按何顺序、怕什么、怎么知道走对了". 当前生效 ADR 见 [docs/adr/](./docs/adr/); ADR-0003 的会话命名与范围判断分别由 [ADR-0005](./docs/adr/0005-rename-session-cookie-to-r2-session.md) / [ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md) 修订.
 
 ## 1. 组件依赖图
 
@@ -17,7 +17,7 @@
 │   Phase 1 — Bug 修复 & 鉴权升级 (~1 天)                   │
 │   常量时间 Basic · PROPFIND XML 转义 · driveid 去除       │
 │   pdfjs 本地化 · README 阈值 · /api/login /logout /me     │
-│   JWT 工具 (HMAC-SHA256, msg='fd_session_v1', iss=origin) │
+│   JWT 工具 (HMAC-SHA256, msg='r2_session_v1', iss=origin) │
 │   WebDAV [[path]].ts 双重鉴权 · 登录页 + 路由守卫         │
 └──────────────────────┬──────────────────────────────────┘
                        │ 鉴权打通才能在 UI 调用 API
@@ -87,10 +87,10 @@
 - `_shared/auth.ts`:
   - `constantTimeEqual(a, b): boolean` — 等长 XOR 短路安全比较.
   - `verifyBasic(authHeader, env): boolean` — Basic auth 解码 + 常量时间比较, 替代 `[[path]].ts:65-69` 的 `===`.
-  - `deriveSessionSecret(password): Promise<CryptoKey>` — `HMAC-SHA256(key = password, msg = "fd_session_v1")` 派生 256-bit 密钥. `msg` 是版本化常量, 未来若需"主动让全会话失效"可升 `v2`.
+  - `deriveSessionSecret(password): Promise<CryptoKey>` — `HMAC-SHA256(key = password, msg = "r2_session_v1")` 派生 256-bit 密钥. `msg` 是版本化常量, 未来若需"主动让全会话失效"可升 `v2`.
   - `signSessionJwt(env, payload, ttlSec): Promise<string>` — HS256, payload 含 `sub`/`iss`/`iat`/`exp`, `iss` 取请求 origin.
   - `verifySessionJwt(env, token, origin): Promise<payload | null>` — 校验签名 + `iss` 匹配当前 origin + 未过期.
-  - `extractSession(request): string | null` — 从 cookie 提取 `fd_session`.
+  - `extractSession(request): string | null` — 从 cookie 提取 `r2_session`.
 - `_shared/xml.ts`:
   - `escapeXml(s): string` — `& < > " '` 转义.
 - `api/login.ts` — POST: 接 `{username, password}`, 校验, 签 JWT, set-cookie.
@@ -126,7 +126,7 @@
 
 **验证关 ✅**:
 
-- 浏览器访问 `/` 跳 `/login`; 表单错误密码返红字; 正确登录跳 `/files-legacy` (老 UI), 浏览器持有 fd_session cookie. JWT 含 `iss` 等于 origin.
+- 浏览器访问 `/` 跳 `/login`; 表单错误密码返红字; 正确登录跳 `/files-legacy` (老 UI), 浏览器持有 r2_session cookie. JWT 含 `iss` 等于 origin.
 - 改 `.dev.vars` `WEBDAV_PASSWORD` 重启 wrangler dev 后旧 cookie 被踢 (验签失败 → 401, 不回退 Basic).
 - `curl -u user:pass /webdav/` 200 列目录; 不带 auth 401 (写操作返 401 不发 `WWW-Authenticate`).
 - 含特殊字符文件名的 PROPFIND 经 `xmllint` 解析通过.
@@ -254,9 +254,11 @@
 
 ## 5. 不在本计划内 (按 SPEC §1 / §7 边界)
 
+> 2026-11-10 更新: 回收站已纳入 Scope B ([ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md)), 不再属于本清单.
+
 - 多用户、用户管理、应用令牌、可吊销凭据.
 - D1 / KV / 任何新数据库.
-- 回收站、公开分享链接、审计日志、存储看板.
+- 公开分享链接、审计日志、存储看板.
 - 服务端递归搜索.
 - 键盘快捷键.
 - PWA / 原生 App.

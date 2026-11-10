@@ -68,7 +68,7 @@
 
 ### T1.2 — `_shared/auth.ts` JWT 工具
 
-- **Acceptance**: 新增 `deriveSessionSecret(password)`, `signSessionJwt(env, payload, ttlSec)`, `verifySessionJwt(env, token, origin)`. HS256, 派生密钥公式 **`HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "fd_session_v1")`**. JWT payload 含 `sub='owner'` / `iss=<origin>` / `iat` / `exp`. `extractSession(request)` 从 cookie 取 `fd_session`.
+- **Acceptance**: 新增 `deriveSessionSecret(password)`, `signSessionJwt(env, payload, ttlSec)`, `verifySessionJwt(env, token, origin)`. HS256, 派生密钥公式 **`HMAC-SHA256(key = WEBDAV_PASSWORD, msg = "r2_session_v1")`**. JWT payload 含 `sub='owner'` / `iss=<origin>` / `iat` / `exp`. `extractSession(request)` 从 cookie 取 `r2_session`.
 - **Verify**: 单元: sign → verify 圆桌通过; 过期 / 错签 / 篡改 token / iss mismatch 各返 null.
 - **Files**: 2.
 
@@ -115,7 +115,7 @@
 
 ### T1.9 — `/api/login` 端点
 
-- **Acceptance**: `functions/api/login.ts` POST: 解 JSON `{username, password}`, 调 `verifyBasic` 风格的明文比较, 通过则签 JWT 并 Set-Cookie `fd_session` (HttpOnly Secure SameSite=Lax Max-Age=604800).
+- **Acceptance**: `functions/api/login.ts` POST: 解 JSON `{username, password}`, 调 `verifyBasic` 风格的明文比较, 通过则签 JWT 并 Set-Cookie `r2_session` (HttpOnly Secure SameSite=Lax Max-Age=604800).
 - **Verify**: curl POST 正确密码返 200 + cookie; 错误密码返 401.
 - **Files**: 1.
 

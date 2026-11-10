@@ -106,11 +106,13 @@ request bodies at **100 MB** (Business 200 MB, Enterprise up to 5 GB,
 self-serve adjustable). Files larger than that must be uploaded via the web
 UI, which automatically uses chunked multipart upload.
 
-**COPY / MOVE limit (plan-independent):** A single object is capped at
-**5 GiB** (R2 single-PUT hard limit; the Workers binding does not expose
-server-side multipart copy). Recursive COPY/MOVE is also bound by the
-Workers subrequest budget per request — R2 calls count as subrequests to
-Cloudflare services (~1,000 on Free, 10,000 on Paid; each child
+**COPY / MOVE / DELETE limit (plan-independent):** A single object is capped
+at **5 GiB** (R2 single-PUT hard limit; the Workers binding does not expose
+server-side multipart copy). DELETE is also a copy — the object is streamed
+to the trash namespace — so the same 5 GiB cap applies; larger objects must
+be deleted via rclone against the R2 S3 endpoint. Recursive COPY/MOVE is also
+bound by the Workers subrequest budget per request — R2 calls count as
+subrequests to Cloudflare services (~1,000 on Free, 10,000 on Paid; each child
 costs ~2–3 calls for COPY/DELETE, ~5 for MOVE = copy + trash-delete). For
 larger objects or directories, prefer rclone against the R2 S3 endpoint
 directly.

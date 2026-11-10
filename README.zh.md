@@ -99,12 +99,13 @@ WebDAV 客户端配置：
 （Business 200 MB，Enterprise 最高 5 GB 可自助调整）。超过此大小的文件必须
 通过 Web UI 上传（自动走分片上传）。
 
-**COPY / MOVE 限制（与套餐无关）：** 单对象上限 **5 GiB**（R2 单次 PUT
-硬限，binding 不支持服务端 multipart copy）。批量 COPY/MOVE 的递归操作
-还受 Workers subrequest 上限约束 —— R2 调用计入对 Cloudflare
-服务的 subrequest（免费套餐每请求约 1000 次，付费 10000 次；每个子节点
-约消耗 2–3 次调用，MOVE 约 5 次 = 复制 + 软删除）。超出建议改用 rclone
-直接对 R2 S3 端点操作。
+**COPY / MOVE / DELETE 限制（与套餐无关）：** 单对象上限 **5 GiB**（R2 单次 PUT
+硬限，binding 不支持服务端 multipart copy）。DELETE 同样需要先把对象复制到
+回收站，因此 5 GiB 上限同样适用；超过上限的对象无法通过 WebDAV 删除，请改用
+rclone 直接对 R2 S3 端点操作。批量 COPY/MOVE 的递归操作还受 Workers
+subrequest 上限约束 —— R2 调用计入对 Cloudflare 服务的 subrequest（免费套餐
+每请求约 1000 次，付费 10000 次；每个子节点约消耗 2–3 次调用，MOVE 约 5 次 =
+复制 + 软删除）。目录规模较大时同样建议使用 rclone。
 
 ## 频率限制（推荐配置）
 

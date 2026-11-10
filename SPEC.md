@@ -1,16 +1,17 @@
 # Spec: FlareDrive 二次开发 — Scope B (单口令 + UI 现代化)
 
-> 与 [CONTEXT.md](./CONTEXT.md) 和 [docs/adr/](./docs/adr/) 共同构成项目契约. 术语以 CONTEXT.md 为准, 不可逆架构决策见 ADR (当前生效 ADR-0003, 取代 ADR-0001 / 0002).
+> 与 [CONTEXT.md](./CONTEXT.md) 和 [docs/adr/](./docs/adr/) 共同构成项目契约. 术语以 CONTEXT.md 为准, 不可逆架构决策见 ADR. ADR-0003 的会话命名与范围判断分别由 [ADR-0005](./docs/adr/0005-rename-session-cookie-to-r2-session.md) / [ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md) 修订.
 
 ## 1. Objective
 
 ### 我们在建什么
 
-在保持 FlareDrive 原有 WebDAV 协议能力与现有部署体验的前提下做三件事:
+在保持 FlareDrive 原有 WebDAV 协议能力与现有部署体验的前提下做四件事:
 
 1. **修缺陷** — 上手地图标记的 6 项安全/正确性 bug (Basic auth 时序攻击、PROPFIND XML 转义、`driveid` 多桶后门、cdnjs pdf.js、根目录死代码、`utils/s3.ts`、README 阈值文档).
 2. **UI 现代化** — 把现有 CRA + MUI v5 的桌面端 UI 重写为基于 shadcn/ui + Tailwind 的响应式 SPA, 覆盖桌面/平板/移动浏览器, 含暗色模式、中/英 i18n、图片/视频/PDF 在线预览.
 3. **登录页替换 Basic 弹窗** — 用自定义登录页 + JWT cookie 会话取代浏览器原生 Basic auth 弹窗 UX, 同时 WebDAV 协议层继续接受 Basic auth (双重鉴权), 保证第三方客户端零重配.
+4. **回收站** — DELETE 软删除到内部命名空间, 14 天保留, 支持查看/恢复/彻底删除; 见 [ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md).
 
 ### 用户
 
@@ -77,7 +78,10 @@
 ├── docs/adr/
 │   ├── 0001-...md (Superseded)
 │   ├── 0002-...md (Superseded)
-│   └── 0003-simplify-to-single-credential-jwt-cookie.md (Active)
+│   ├── 0003-simplify-to-single-credential-jwt-cookie.md (Active)
+│   ├── 0004-tailwind-v4-shadcn-4.md (Active)
+│   ├── 0005-rename-session-cookie-to-r2-session.md (Active)
+│   └── 0006-include-trash-in-scope-b.md (Active)
 ├── functions/                  # Cloudflare Pages Functions
 │   ├── webdav/                 # WebDAV 协议层, 现有保留
 │   │   ├── [[path]].ts         # 入口 + 双重鉴权 (cookie or Basic)
@@ -187,19 +191,22 @@ export function FileGrid({ path, selection, onSelectionChange, className }: File
 
 ```ts
 // functions/api/login.ts
-import { verifyCredentials, signSessionJwt } from '@functions/_shared/auth'
+import { constantTimeEqual, signSessionJwt } from '@functions/_shared/auth'
 
 export const onRequestPost: PagesFunction<Env> = async (ctx) => {
   const { username, password } = await ctx.request.json<{ username: string; password: string }>()
-  if (!verifyCredentials(username, password, ctx.env)) {
+  const userMatch = constantTimeEqual(username, ctx.env.WEBDAV_USERNAME ?? '')
+  const passMatch = constantTimeEqual(password, ctx.env.WEBDAV_PASSWORD ?? '')
+  if (!userMatch || !passMatch) {
     return new Response(JSON.stringify({ error: 'invalid_credentials' }), { status: 401 })
   }
-  const token = await signSessionJwt(ctx.env.WEBDAV_PASSWORD, { sub: 'owner' })
+  const origin = new URL(ctx.request.url).origin
+  const token = await signSessionJwt(ctx.env, { sub: 'owner', iss: origin })
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Set-Cookie': `fd_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`,
+      'Set-Cookie': `r2_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`,
     },
   })
 }
@@ -255,7 +262,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ### 部署与鉴权
 
 - **S1**: 全新部署后, 访问任意非 `/login` 路径自动跳 `/login`.
-- **S2**: `/login` 表单输入正确 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 后, 重定向到 `/`, 浏览器持有 `fd_session` HttpOnly cookie. cookie 内 JWT payload 含 `sub=owner` + `iss=<origin>` + `iat` + `exp`.
+- **S2**: `/login` 表单输入正确 `WEBDAV_USERNAME` + `WEBDAV_PASSWORD` 后, 重定向到 `/`, 浏览器持有 `r2_session` HttpOnly cookie. cookie 内 JWT payload 含 `sub=owner` + `iss=<origin>` + `iat` + `exp`.
 - **S3**: 在 Cloudflare 仪表盘修改 `WEBDAV_PASSWORD` 并重新部署后, 持原 cookie 的浏览器下次请求被踢回 `/login` (JWT 签名验证失败, **不回退 Basic**).
 - **S4**: `curl -u user:pass https://.../webdav/` 仍可成功 (Basic auth 协议层未受影响).
 - **S5**: Basic auth 比较用常量时间, 不再有原 `===` 字符串等值的时序差异.
@@ -274,7 +281,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ### 文件 UI
 
 - **S10**: 上传 1MB / 99MB / 200MB 文件成功 (multipart 在 100MB 阈值切换).
-- **S11**: 删除文件直接调 R2 delete, 不进任何回收站 (本期不做回收站).
+- **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006).
 - **S12**: 客户端搜索仅过滤当前目录, 跨目录搜索不支持 (与现状一致).
 - **S13**: 缩略图: jpg/png/gif/webp/mp4/pdf 生成, 其它显默认 mime 图标.
 - **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.
@@ -303,4 +310,4 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
 ---
 
-> 文档收口于 2026-05-22 (Scope B 锁定). 实施期若发生与本 spec 冲突的决策, **先更新本 spec, 再写代码**.
+> 文档收口于 2026-05-22 (Scope B 锁定). 2026-11-10 更新: 回收站纳入 Scope B ([ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md)); 会话命名同步为 `r2_session` ([ADR-0005](./docs/adr/0005-rename-session-cookie-to-r2-session.md)). 实施期若发生与本 spec 冲突的决策, **先更新本 spec, 再写代码**.

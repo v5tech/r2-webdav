@@ -30,7 +30,7 @@
 ## 存储命名空间
 
 - **用户命名空间 (User namespace)** — 所有不带 `_$r2webdav$/` 前缀的 R2 key. 在目录列表中可见, 由所有者拥有, 启用公共读取时可被公共读取者看到.
-- **内部命名空间 (Internal namespace)** — `_$r2webdav$/` 前缀下的 key. 对 `PROPFIND` 不可见 (`functions/webdav/utils.ts:44`). 视作实现层, 绝不在用户界面中暴露. 当前子前缀: `_$r2webdav$/thumbnails/<sha1>.png` (缩略图), `_$r2webdav$/trash/<timestamp>/<original-key>` (DELETE 软删除回收站).
+- **内部命名空间 (Internal namespace)** — `_$r2webdav$/` 前缀下的 key. 对 `PROPFIND` 不可见 (`functions/_shared/r2.ts:20`). 视作实现层, 绝不在用户界面中暴露. 当前子前缀: `_$r2webdav$/thumbnails/<sha1>.png` (缩略图), `_$r2webdav$/trash/<timestamp>/<original-key>` (DELETE 软删除回收站).
 
 ## 资源类型
 
@@ -43,7 +43,7 @@
 - **环境变量** — `WEBDAV_USERNAME`, `WEBDAV_PASSWORD`, `WEBDAV_PUBLIC_READ` 经 Cloudflare Pages 仪表盘配置. 不在 git 里, 不在 D1 里.
 - **不引入** D1、KV、Durable Objects、外部数据库.
 
-## "二次开发" 范围 (Scope B, 2026-05-22 锁定)
+## "二次开发" 范围 (Scope B, 2026-05-22 锁定; 回收站于 2026-11-10 纳入, 见 ADR-0006)
 
 ### 在范围内
 
@@ -53,6 +53,7 @@
 - 自定义登录页 + JWT cookie 会话, 替代浏览器 Basic auth 弹窗.
 - WebDAV `/webdav/*` 双重鉴权 (cookie 或 Basic auth 二选一通过).
 - 文件操作功能集 (与现有持平 + 在线预览): 浏览/上传/下载/重命名/移动/删除/多选批操作/缩略图.
+- 回收站 (软删除 + 还原): DELETE 软删除到内部命名空间, 14 天保留, 机会式清理; 见 ADR-0006.
 - 在线预览 (图片/视频/PDF).
 - 文本笔记 (TextPad, 保留).
 - 暗色模式.
@@ -63,7 +64,6 @@
 - 多用户、用户管理界面、逐用户配额.
 - 应用令牌 / 可吊销凭据 / 多客户端独立凭据.
 - D1 / KV / 任何新数据库依赖.
-- 回收站 (软删除 + 还原).
 - 公开分享链接 (细粒度文件分享).
 - 审计日志.
 - 存储占用看板.
