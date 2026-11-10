@@ -15,6 +15,7 @@ import i18n from '@/lib/i18n'
 import { applyTheme, setStoredTheme } from '@/lib/theme'
 
 import SettingsPage from '../../src/pages/settings'
+import { AuthProvider } from '../../src/hooks/use-auth'
 
 const applyThemeMock = vi.mocked(applyTheme)
 const setStoredThemeMock = vi.mocked(setStoredTheme)
@@ -29,7 +30,9 @@ beforeEach(() => {
 function renderPage() {
   return render(
     <MemoryRouter>
-      <SettingsPage />
+      <AuthProvider value={{ status: 'authenticated', username: 'admin' }}>
+        <SettingsPage />
+      </AuthProvider>
     </MemoryRouter>,
   )
 }
@@ -59,13 +62,13 @@ describe('SettingsPage language section', () => {
     renderPage()
     const group = screen.getByRole('group', { name: /language|语言/i })
     expect(group).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: '中文' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: /中文|Simplified Chinese/ })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: 'English' })).toBeInTheDocument()
   })
 
   it('selecting 中文 changes i18n.language to zh', async () => {
     renderPage()
-    fireEvent.click(screen.getByRole('radio', { name: '中文' }))
+    fireEvent.click(screen.getByRole('radio', { name: /中文|Simplified Chinese/ }))
     await waitFor(() => {
       expect(i18n.language).toBe('zh')
     })

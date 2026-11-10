@@ -14,12 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
 export default function LoginPage() {
@@ -67,10 +62,21 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-full items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+    <main className="login-page flex min-h-full items-center justify-center p-4">
+      <Card className="login-card w-full max-w-sm border shadow-xl">
         <CardHeader>
-          <CardTitle>{t('login.title')}</CardTitle>
+          <div className="mb-4 flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10">
+              <img src="/logo144.png" alt="R2 WebDAV" className="size-6" />
+            </span>
+            <span>
+              <span className="block text-sm font-semibold tracking-tight">{t('nav.brand')}</span>
+              <span className="block text-[11px] text-muted-foreground">
+                {t('nav.personalSpace')}
+              </span>
+            </span>
+          </div>
+          <CardTitle className="text-2xl tracking-tight">{t('login.title')}</CardTitle>
           <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>

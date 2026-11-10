@@ -89,14 +89,14 @@ describe('/api/logout POST', () => {
 })
 
 describe('/api/me GET', () => {
-  it('returns 200 + {ok:true} on valid cookie', async () => {
+  it('returns 200 and the authenticated username on valid cookie', async () => {
     const token = await signSessionJwt(env, { sub: 'owner', iss: origin })
     const req = new Request(`${origin}/api/me`, {
       headers: { Cookie: `r2_session=${token}` },
     })
     const res = await meHandler(ctx(req))
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ ok: true })
+    expect(await res.json()).toEqual({ ok: true, username: 'admin' })
   })
 
   it('returns 401 on no cookie', async () => {

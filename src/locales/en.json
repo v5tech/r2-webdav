@@ -5,6 +5,7 @@
       "delete": "Delete",
       "download": "Download"
     },
+    "create": "New",
     "newFolder": {
       "title": "New folder",
       "description": "Create a folder in the current location.",
@@ -12,7 +13,8 @@
       "create": "Create",
       "cancel": "Cancel",
       "error": {
-        "submit": "Failed to create folder"
+        "submit": "Failed to create folder",
+        "duplicate": "An item with this name already exists in this folder. Choose another name."
       }
     },
     "rename": {
@@ -36,6 +38,7 @@
       "button": "Upload files",
       "queueTitle": "Uploads",
       "clearCompleted": "Clear completed",
+      "close": "Collapse upload queue",
       "status": {
         "pending": "Pending",
         "uploading": "Uploading",
@@ -66,6 +69,31 @@
       "list": "List view"
     },
     "moreActions": "More actions",
+    "count": "{{count}} items",
+    "showing": "Showing {{visible}} / {{total}} items",
+    "timeZone": "Browser time zone · {{zone}}",
+    "bytes": "{{value}} bytes",
+    "select": "Select {{name}}",
+    "open": "Open {{name}}",
+    "selectAll": "Select all items in this folder",
+    "folder": "Folder",
+    "unknownType": "Unknown type",
+    "empty": "This folder is empty",
+    "emptyDescription": "Upload files or create a folder to get started.",
+    "searchEmpty": "No matching files",
+    "searchEmptyDescription": "Try another keyword or clear the search.",
+    "loadError": "Unable to load this folder",
+    "loadErrorDescription": "The request failed. Check your connection and retry.",
+    "viewTrash": "View Trash",
+    "deletedSuccess": "{{name}} moved to Trash",
+    "conflict": {
+      "title": "File name conflict",
+      "description": "A file with this name already exists. Choose overwrite, rename automatically, or cancel. Nothing is overwritten by default.",
+      "overwrite": "Overwrite file",
+      "rename": "Rename automatically",
+      "cancel": "Cancel",
+      "exists": "“{{name}}” already exists"
+    },
     "loading": "Loading...",
     "retry": "Retry"
   },
@@ -77,22 +105,37 @@
     "files": "Files",
     "trash": "Trash",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Sign out",
+    "brand": "R2 WebDAV",
+    "allFiles": "All files",
+    "account": "Account",
+    "accountFallback": "Owner",
+    "collapse": "Collapse navigation",
+    "expand": "Expand navigation",
+    "mobile": "Mobile navigation",
+    "personalSpace": "Personal file space",
+    "owner": "Single-user owner"
   },
   "header": {
     "theme": {
       "toggle": "Toggle theme",
+      "toDark": "Switch to dark theme",
+      "toLight": "Switch to light theme",
       "light": "Light",
       "dark": "Dark",
       "system": "System"
     },
     "language": {
       "toggle": "Change language",
-      "zh": "中文",
+      "zh": "Simplified Chinese",
       "en": "English"
     }
   },
   "preview": {
+    "fileSize": "File size",
+    "modified": "Modified",
+    "location": "Location",
+    "utcTime": "{{time}} · UTC",
     "stub": {
       "coming": "{{type}} preview coming soon"
     },
@@ -115,6 +158,13 @@
   },
   "trash": {
     "title": "Trash",
+    "countDescription": "{{count}} deletion groups",
+    "restoreTitle": "Restore or delete permanently",
+    "restoreDescription": "Items older than 14 days are removed during later cleanup. Restoring keeps the original path.",
+    "restoreConflictTitle": "Unable to restore",
+    "restoreConflictDescription": "An item with the same name exists at the original location. Restore was not performed. Move or rename the existing item, then retry.",
+    "conflictPath": "Conflict path",
+    "closeConflict": "Got it",
     "empty": "Trash is empty",
     "deletedAt": "Deleted at",
     "entries": "Original path",
@@ -131,6 +181,8 @@
   },
   "settings": {
     "title": "Settings",
+    "description": "Adjust interface preferences for this browser.",
+    "appearance": "Appearance",
     "theme": {
       "title": "Theme",
       "description": "Choose how R2 WebDAV looks."
@@ -141,16 +193,23 @@
     }
   },
   "textpad": {
-    "title": "TextPad",
-    "description": "Quickly create a text note in the current folder.",
+    "title": "New text file",
+    "description": "Create a TXT or Markdown file in this folder.",
+    "unsavedTitle": "Unsaved changes",
+    "unsavedDescription": "The file has not been saved. Keep editing to preserve your content, or discard it permanently.",
+    "continue": "Keep editing",
+    "discard": "Discard changes",
+    "bytes": "{{value}} bytes · UTF-8",
     "name": "Filename",
     "body": "Content",
     "placeholder": "Write a note...",
-    "save": "Save & upload"
+    "save": "Save file",
+    "textType": "Text"
   },
   "login": {
-    "title": "Sign in to R2 WebDAV",
-    "description": "Use the owner credentials.",
+    "title": "Sign in",
+    "description": "Use owner credentials to access your files.",
+    "security": "Credentials are verified only by this deployment. Successful sign-in uses an HttpOnly session cookie.",
     "username": "Username",
     "password": "Password",
     "submit": "Sign in",

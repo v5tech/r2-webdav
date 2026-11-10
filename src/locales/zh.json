@@ -5,6 +5,7 @@
       "delete": "删除",
       "download": "下载"
     },
+    "create": "新建",
     "newFolder": {
       "title": "新建文件夹",
       "description": "在当前位置创建一个文件夹。",
@@ -12,7 +13,8 @@
       "create": "创建",
       "cancel": "取消",
       "error": {
-        "submit": "创建失败"
+        "submit": "创建失败",
+        "duplicate": "当前目录已有同名项目，请使用其他名称"
       }
     },
     "rename": {
@@ -36,6 +38,7 @@
       "button": "上传文件",
       "queueTitle": "上传队列",
       "clearCompleted": "清除已完成",
+      "close": "收起上传队列",
       "status": {
         "pending": "等待中",
         "uploading": "上传中",
@@ -66,6 +69,31 @@
       "list": "列表视图"
     },
     "moreActions": "更多操作",
+    "count": "{{count}} 个项目",
+    "showing": "显示 {{visible}} / {{total}} 个项目",
+    "timeZone": "浏览器时区 · {{zone}}",
+    "bytes": "{{value}} 字节",
+    "select": "选择 {{name}}",
+    "open": "打开 {{name}}",
+    "selectAll": "选择当前目录全部项目",
+    "folder": "文件夹",
+    "unknownType": "未知类型",
+    "empty": "这个文件夹还是空的",
+    "emptyDescription": "上传文件，或新建一个文件夹开始整理。",
+    "searchEmpty": "没有匹配的文件",
+    "searchEmptyDescription": "换一个关键词，或清空当前搜索。",
+    "loadError": "无法加载当前目录",
+    "loadErrorDescription": "请求失败，请检查网络连接后重试。",
+    "viewTrash": "查看回收站",
+    "deletedSuccess": "{{name}} 已移至回收站",
+    "conflict": {
+      "title": "同名文件冲突",
+      "description": "当前目录已有同名文件。请选择覆盖、自动重命名或取消，不会默认覆盖。",
+      "overwrite": "覆盖同名文件",
+      "rename": "自动重命名",
+      "cancel": "取消",
+      "exists": "「{{name}}」已存在"
+    },
     "loading": "加载中…",
     "retry": "重试"
   },
@@ -77,22 +105,37 @@
     "files": "文件",
     "trash": "回收站",
     "settings": "设置",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "brand": "R2 WebDAV",
+    "allFiles": "全部文件",
+    "account": "账户",
+    "accountFallback": "所有者",
+    "collapse": "折叠导航",
+    "expand": "展开导航",
+    "mobile": "移动导航",
+    "personalSpace": "单用户文件空间",
+    "owner": "单用户所有者"
   },
   "header": {
     "theme": {
       "toggle": "切换主题",
+      "toDark": "切换到深色主题",
+      "toLight": "切换到浅色主题",
       "light": "浅色",
       "dark": "深色",
       "system": "跟随系统"
     },
     "language": {
       "toggle": "切换语言",
-      "zh": "中文",
+      "zh": "简体中文",
       "en": "English"
     }
   },
   "preview": {
+    "fileSize": "文件大小",
+    "modified": "修改时间",
+    "location": "存储位置",
+    "utcTime": "{{time}} · UTC",
     "stub": {
       "coming": "{{type}} 预览即将到来"
     },
@@ -115,6 +158,13 @@
   },
   "trash": {
     "title": "回收站",
+    "countDescription": "{{count}} 组删除记录",
+    "restoreTitle": "可恢复或彻底删除",
+    "restoreDescription": "超过 14 天的项目会在后续清理时移除。恢复操作会保留原路径。",
+    "restoreConflictTitle": "无法恢复",
+    "restoreConflictDescription": "原位置已有同名项目。恢复未执行，请先移动或重命名原位置的项目，再重试。",
+    "conflictPath": "冲突路径",
+    "closeConflict": "知道了",
     "empty": "回收站为空",
     "deletedAt": "删除时间",
     "entries": "原路径",
@@ -131,6 +181,8 @@
   },
   "settings": {
     "title": "设置",
+    "description": "调整这个浏览器中的界面偏好。",
+    "appearance": "外观",
     "theme": {
       "title": "主题",
       "description": "选择 R2 WebDAV 的外观。"
@@ -141,16 +193,23 @@
     }
   },
   "textpad": {
-    "title": "便签",
-    "description": "在当前目录快速创建一个文本便签。",
+    "title": "新建文本文件",
+    "description": "在当前目录创建 TXT 或 Markdown 文件。",
+    "unsavedTitle": "未保存的更改",
+    "unsavedDescription": "文件还没有保存。继续编辑可保留当前内容，放弃后无法恢复。",
+    "continue": "继续编辑",
+    "discard": "放弃更改",
+    "bytes": "{{value}} 字节 · UTF-8",
     "name": "文件名",
     "body": "内容",
     "placeholder": "写点什么…",
-    "save": "保存并上传"
+    "save": "保存文件",
+    "textType": "文本"
   },
   "login": {
-    "title": "登录 R2 WebDAV",
-    "description": "使用所有者凭据登录",
+    "title": "登录",
+    "description": "使用所有者凭据访问你的文件。",
+    "security": "凭据仅由当前部署验证。登录成功后使用 HttpOnly 会话 Cookie。",
     "username": "用户名",
     "password": "密码",
     "submit": "登录",

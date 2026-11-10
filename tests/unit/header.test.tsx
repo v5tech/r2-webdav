@@ -11,10 +11,6 @@ vi.mock('@/lib/theme', async () => {
   }
 })
 
-vi.mock('@/lib/api', () => ({
-  api: { logout: vi.fn().mockResolvedValue(undefined) },
-}))
-
 import i18n from '@/lib/i18n'
 import { applyTheme, setStoredTheme } from '@/lib/theme'
 
@@ -45,24 +41,14 @@ function openMenu(trigger: HTMLElement) {
 }
 
 describe('Header theme switcher', () => {
-  it('renders all three theme options in the dropdown', async () => {
+  it('uses a direct icon action and toggles to dark', () => {
     renderHeader()
-    openMenu(screen.getByRole('button', { name: /toggle theme|切换主题/i }))
-    const menu = await screen.findByRole('menu')
-    expect(within(menu).getByRole('menuitemradio', { name: /^light$/i })).toBeInTheDocument()
-    expect(within(menu).getByRole('menuitemradio', { name: /^dark$/i })).toBeInTheDocument()
-    expect(within(menu).getByRole('menuitemradio', { name: /^system$/i })).toBeInTheDocument()
-  })
-
-  it('selecting Dark calls applyTheme + setStoredTheme', async () => {
-    renderHeader()
-    openMenu(screen.getByRole('button', { name: /toggle theme|切换主题/i }))
-    const menu = await screen.findByRole('menu')
-    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /^dark$/i }))
-    await waitFor(() => {
-      expect(setStoredThemeMock).toHaveBeenCalledWith('dark')
-      expect(applyThemeMock).toHaveBeenCalledWith('dark')
-    })
+    const trigger = screen.getByRole('button', { name: /switch to dark|切换到深色/i })
+    fireEvent.click(trigger)
+    expect(setStoredThemeMock).toHaveBeenCalledWith('dark')
+    expect(applyThemeMock).toHaveBeenCalledWith('dark')
+    expect(screen.getByRole('button', { name: /switch to light|切换到浅色/i })).toBeInTheDocument()
+    expect(screen.queryByRole('menu')).toBeNull()
   })
 })
 
@@ -71,7 +57,7 @@ describe('Header language switcher', () => {
     renderHeader()
     openMenu(screen.getByRole('button', { name: /change language|切换语言/i }))
     const menu = await screen.findByRole('menu')
-    expect(within(menu).getByRole('menuitemradio', { name: '中文' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitemradio', { name: /中文|Chinese/i })).toBeInTheDocument()
     expect(within(menu).getByRole('menuitemradio', { name: 'English' })).toBeInTheDocument()
   })
 
@@ -79,9 +65,7 @@ describe('Header language switcher', () => {
     renderHeader()
     openMenu(screen.getByRole('button', { name: /change language|切换语言/i }))
     const menu = await screen.findByRole('menu')
-    fireEvent.click(within(menu).getByRole('menuitemradio', { name: '中文' }))
-    await waitFor(() => {
-      expect(i18n.language).toBe('zh')
-    })
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /中文|Chinese/i }))
+    await waitFor(() => expect(i18n.language).toBe('zh'))
   })
 })

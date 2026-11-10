@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 
 import { AppShell } from '../../src/components/layout/AppShell'
+import { AuthProvider } from '../../src/hooks/use-auth'
 import { useViewport } from '../../src/hooks/use-viewport'
 
 vi.mock('../../src/hooks/use-viewport', () => ({
@@ -19,7 +20,14 @@ function LocationProbe() {
 
 beforeEach(() => {
   fetchMock.mockReset()
+  fetchMock.mockResolvedValue(
+    new Response(JSON.stringify({ ok: true, username: 'admin' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  )
   vi.stubGlobal('fetch', fetchMock)
+  localStorage.clear()
   useViewportMock.mockReturnValue({ isMobile: false })
 })
 
@@ -27,10 +35,17 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+function openMenu(trigger: HTMLElement) {
+  fireEvent.pointerDown(trigger, { pointerType: 'mouse', button: 0 })
+  fireEvent.pointerUp(trigger, { pointerType: 'mouse', button: 0 })
+  fireEvent.click(trigger)
+}
+
 function renderShell(initial = '/files') {
   return render(
     <MemoryRouter initialEntries={[initial]}>
-      <Routes>
+      <AuthProvider value={{ status: 'authenticated', username: 'admin' }}>
+        <Routes>
         <Route
           path="/files"
           element={
@@ -40,22 +55,34 @@ function renderShell(initial = '/files') {
           }
         />
         <Route path="/login" element={<LocationProbe />} />
-      </Routes>
+        </Routes>
+      </AuthProvider>
     </MemoryRouter>,
   )
 }
 
 describe('AppShell desktop', () => {
-  it('renders header logo, sidebar nav, and main children', () => {
+  it('renders brand, primary nav, and main children', async () => {
     renderShell()
     expect(screen.getByRole('img', { name: 'R2 WebDAV' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'primary' })).toBeInTheDocument()
     expect(screen.getByTestId('main')).toBeInTheDocument()
+    expect(await screen.findByText('admin')).toBeInTheDocument()
   })
 
   it('does not show mobile menu button on desktop', () => {
     renderShell()
-    expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /open menu|打开菜单/i })).toBeNull()
+  })
+
+  it('collapses the sidebar and persists the preference', () => {
+    renderShell()
+    const shell = document.querySelector('[data-collapsed]')
+    fireEvent.click(screen.getByRole('button', { name: /collapse navigation|折叠导航/i }))
+    expect(shell).toHaveAttribute('data-collapsed', 'true')
+    expect(localStorage.getItem('r2_sidebar_collapsed')).toBe('1')
+    fireEvent.click(screen.getByRole('button', { name: /expand navigation|展开导航/i }))
+    expect(shell).toHaveAttribute('data-collapsed', 'false')
   })
 })
 
@@ -66,88 +93,53 @@ describe('AppShell mobile', () => {
 
   it('shows menu button on mobile', () => {
     renderShell()
-    expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /open menu|打开菜单/i })).toBeInTheDocument()
   })
 
-  it('hides sticky sidebar nav on mobile (closed Sheet)', () => {
+  it('keeps the sidebar closed until the menu is opened', () => {
     renderShell()
     expect(screen.queryByRole('navigation', { name: 'primary' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /open menu|打开菜单/i }))
+    expect(screen.getByRole('navigation', { name: 'primary' })).toBeInTheDocument()
   })
 
-  it('opens Sheet sidebar on menu click, revealing primary nav', () => {
+  it('uses only Files, Trash, and Settings in the mobile bottom nav', () => {
     renderShell()
-    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
-    expect(screen.getByRole('navigation', { name: 'primary' })).toBeInTheDocument()
+    const nav = screen.getByRole('navigation', { name: /mobile navigation|移动导航/i })
+    expect(nav).toHaveTextContent(/files|文件/i)
+    expect(nav).toHaveTextContent(/trash|回收站/i)
+    expect(nav).toHaveTextContent(/settings|设置/i)
+    expect(nav).not.toHaveTextContent(/upload|上传/i)
   })
 })
 
-describe('Header logout', () => {
-  it('POSTs /api/logout then navigates to /login', async () => {
-    fetchMock.mockResolvedValueOnce(new Response('', { status: 200 }))
+describe('Account menu', () => {
+  it('opens from the sidebar and logs out through /api/logout', async () => {
     renderShell()
-    fireEvent.click(screen.getByRole('button', { name: 'Logout' }))
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-    expect(fetchMock.mock.calls[0][0]).toBe('/api/logout')
-    expect(fetchMock.mock.calls[0][1].method).toBe('POST')
-    await waitFor(() =>
-      expect(screen.getByTestId('location').textContent).toBe('/login'),
+    openMenu(await screen.findByRole('button', { name: /account|账户/i }))
+    fireEvent.click(
+      await screen.findByRole('menuitem', { name: /log out|sign out|logout|退出登录/i }),
     )
+    await waitFor(() => {
+      expect(fetchMock.mock.calls.some((call) => call[0] === '/api/logout')).toBe(true)
+    })
+    const logoutCall = fetchMock.mock.calls.find((call) => call[0] === '/api/logout')
+    expect(logoutCall[1].method).toBe('POST')
+    await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('/login'))
   })
 
   it('navigates to /login even if logout fetch rejects', async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError('network down'))
+    fetchMock.mockImplementation((url) => {
+      if (url === '/api/logout') return Promise.reject(new TypeError('network down'))
+      return Promise.resolve(
+        new Response(JSON.stringify({ ok: true, username: 'admin' }), { status: 200 }),
+      )
+    })
     renderShell()
-    fireEvent.click(screen.getByRole('button', { name: 'Logout' }))
-    await waitFor(() =>
-      expect(screen.getByTestId('location').textContent).toBe('/login'),
+    openMenu(await screen.findByRole('button', { name: /account|账户/i }))
+    fireEvent.click(
+      await screen.findByRole('menuitem', { name: /log out|sign out|logout|退出登录/i }),
     )
-  })
-})
-
-describe('Header upload', () => {
-  it('hides upload button when onUpload not provided', () => {
-    renderShell()
-    expect(screen.queryByRole('button', { name: /upload/i })).toBeNull()
-  })
-
-  it('renders upload button when onUpload provided', () => {
-    const onUpload = vi.fn()
-    render(
-      <MemoryRouter initialEntries={['/files']}>
-        <Routes>
-          <Route
-            path="/files"
-            element={
-              <AppShell onUpload={onUpload}>
-                <div data-testid="main">main</div>
-              </AppShell>
-            }
-          />
-        </Routes>
-      </MemoryRouter>,
-    )
-    expect(screen.getByRole('button', { name: /upload/i })).toBeInTheDocument()
-  })
-
-  it('change on hidden file input calls onUpload with files', () => {
-    const onUpload = vi.fn()
-    render(
-      <MemoryRouter initialEntries={['/files']}>
-        <Routes>
-          <Route
-            path="/files"
-            element={
-              <AppShell onUpload={onUpload}>
-                <div data-testid="main">main</div>
-              </AppShell>
-            }
-          />
-        </Routes>
-      </MemoryRouter>,
-    )
-    const input = screen.getByTestId('upload-input') as HTMLInputElement
-    const file = new File(['x'], 'a.txt')
-    fireEvent.change(input, { target: { files: [file] } })
-    expect(onUpload).toHaveBeenCalledWith([file])
+    await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('/login'))
   })
 })
