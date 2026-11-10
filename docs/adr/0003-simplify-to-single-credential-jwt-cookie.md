@@ -3,6 +3,7 @@
 - **日期**: 2026-05-22
 - **状态**: 已接受
 - **取代**: [ADR-0001](./0001-dual-credential-auth-with-d1.md), [ADR-0002](./0002-hono-for-api-raw-for-webdav.md)
+- **修订**: 会话 cookie 名与派生常量由 [ADR-0005](./0005-rename-session-cookie-to-r2-session.md) 修订; 回收站范围由 [ADR-0006](./0006-include-trash-in-scope-b.md) 修订.
 
 ## 背景
 
