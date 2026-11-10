@@ -40,6 +40,11 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : 'Internal Server Error'
 }
 
+async function failedDeleteResponse(bucket: R2Bucket, err: unknown): Promise<Response> {
+  await maybePurgeExpiredTrash(bucket)
+  return new Response(errorMessage(err), { status: 500 })
+}
+
 function failureFor(key: string, err: unknown): DeleteFailure {
   return { key, status: `HTTP/1.1 500 ${errorMessage(err)}` }
 }
@@ -62,8 +67,7 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     try {
       await moveChildToTrash(bucket, target, trashRoot)
     } catch (err) {
-      await maybePurgeExpiredTrash(bucket)
-      return new Response(errorMessage(err), { status: 500 })
+      return failedDeleteResponse(bucket, err)
     }
     await maybePurgeExpiredTrash(bucket)
     return new Response(null, { status: 204 })
@@ -120,8 +124,7 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     try {
       await moveChildToTrash(bucket, target, trashRoot)
     } catch (err) {
-      await maybePurgeExpiredTrash(bucket)
-      return new Response(errorMessage(err), { status: 500 })
+      return failedDeleteResponse(bucket, err)
     }
   }
 

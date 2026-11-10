@@ -359,6 +359,50 @@ describe('handleRequestDelete (trash)', () => {
     expect(bucket.delete).not.toHaveBeenCalledWith('docs')
   })
 
+  it('returns 500 when the collection marker fails after members succeed', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1)
+    const bucket = makeBucket()
+    const dir = {
+      key: 'docs',
+      size: 0,
+      etag: 'd',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'application/x-directory' },
+      customMetadata: undefined,
+    }
+    const child = {
+      key: 'docs/a.txt',
+      size: 1,
+      etag: 'a',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(dir)
+    bucket.list.mockResolvedValue({ objects: [child], truncated: false })
+    bucket.get.mockImplementation((key: string) => {
+      if (key === 'docs') return Promise.resolve({ ...dir, body: 'body-docs' })
+      if (key === 'docs/a.txt') return Promise.resolve({ ...child, body: 'body-a' })
+      return Promise.resolve(null)
+    })
+    bucket.put.mockImplementation((key: string) => {
+      if (key.endsWith('/docs')) return Promise.reject(new Error('R2 quota exceeded'))
+      return Promise.resolve(undefined)
+    })
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'docs',
+      request: new Request('http://x/webdav/docs', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(500)
+    const body = await res.text()
+    expect(body).toContain('R2 quota exceeded')
+    expect(bucket.delete).toHaveBeenCalledWith('docs/a.txt')
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs')
+  })
+
   it('still samples trash purge when a single-object delete fails', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0)
     const bucket = makeBucket()
