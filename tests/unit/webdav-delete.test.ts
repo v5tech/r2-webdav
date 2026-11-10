@@ -173,7 +173,8 @@ describe('handleRequestDelete (trash)', () => {
     bucket.get.mockImplementation((key: string) => {
       if (key === 'docs') return Promise.resolve({ ...dir, body: 'body-docs' })
       if (key === 'docs/ok.txt') return Promise.resolve({ ...ok1, body: 'body-ok' })
-      if (key === 'docs/locked#file.txt') return Promise.resolve({ ...failChild, body: 'body-locked' })
+      if (key === 'docs/locked#file.txt')
+        return Promise.resolve({ ...failChild, body: 'body-locked' })
       return Promise.resolve(null)
     })
     bucket.put.mockImplementation((key: string) => {
@@ -201,7 +202,7 @@ describe('handleRequestDelete (trash)', () => {
     expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked#file.txt')
   })
 
-  it('returns 207 Multi-Status when single-object trash copy fails', async () => {
+  it('returns 500 when single-object trash copy fails', async () => {
     const bucket = makeBucket()
     const file = {
       key: 'locked.txt',
@@ -221,12 +222,10 @@ describe('handleRequestDelete (trash)', () => {
       request: new Request('http://x/webdav/locked.txt', { method: 'DELETE' }),
     })
 
-    expect(res.status).toBe(207)
-    expect(res.headers.get('Content-Type')).toBe('application/xml')
+    expect(res.status).toBe(500)
     const body = await res.text()
-    expect(body).toContain('<href>/webdav/locked.txt</href>')
-    expect(body).toContain('HTTP/1.1 500')
     expect(body).toContain('R2 quota exceeded')
+    expect(body).not.toContain('<multistatus')
     // put failed -> original must NOT have been deleted
     expect(bucket.delete).not.toHaveBeenCalledWith('locked.txt')
   })
@@ -274,5 +273,60 @@ describe('handleRequestDelete (trash)', () => {
     // RFC 4918 §9.6.1: if a member cannot be deleted, its ancestors MUST NOT be deleted.
     expect(bucket.delete).not.toHaveBeenCalledWith('docs')
     expect(bucket.delete).not.toHaveBeenCalledWith('docs/locked.txt')
+  })
+
+  it('preserves nested directory markers when a descendant fails (RFC 4918 §9.6.1)', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(1)
+    const bucket = makeBucket()
+    const dir = {
+      key: 'docs',
+      size: 0,
+      etag: 'd',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'application/x-directory' },
+      customMetadata: undefined,
+    }
+    const sub = {
+      key: 'docs/sub',
+      size: 0,
+      etag: 's',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'application/x-directory' },
+      customMetadata: undefined,
+    }
+    const locked = {
+      key: 'docs/sub/locked.txt',
+      size: 1,
+      etag: 'l',
+      uploaded: new Date(),
+      httpMetadata: { contentType: 'text/plain' },
+      customMetadata: undefined,
+    }
+    bucket.head.mockResolvedValue(dir)
+    bucket.list.mockResolvedValue({ objects: [sub, locked], truncated: false })
+    bucket.get.mockImplementation((key: string) => {
+      if (key === 'docs') return Promise.resolve({ ...dir, body: 'body-docs' })
+      if (key === 'docs/sub') return Promise.resolve({ ...sub, body: 'body-sub' })
+      if (key === 'docs/sub/locked.txt') return Promise.resolve({ ...locked, body: 'body-locked' })
+      return Promise.resolve(null)
+    })
+    bucket.put.mockImplementation((key: string) => {
+      if (key.endsWith('/docs/sub/locked.txt')) return Promise.reject(new Error('R2 locked'))
+      return Promise.resolve(undefined)
+    })
+
+    const res = await handleRequestDelete({
+      bucket: bucket as unknown as R2Bucket,
+      path: 'docs',
+      request: new Request('http://x/webdav/docs', { method: 'DELETE' }),
+    })
+
+    expect(res.status).toBe(207)
+    const body = await res.text()
+    expect(body).toContain('HTTP/1.1 500 R2 locked')
+    // RFC 4918 §9.6.1: every ancestor of the failed member must survive.
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs/sub')
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs')
+    expect(bucket.delete).not.toHaveBeenCalledWith('docs/sub/locked.txt')
   })
 })

@@ -14,11 +14,10 @@ import { MULTISTATUS_CLOSE, MULTISTATUS_OPEN, renderErrorResponse } from '../_sh
  * bounded by wall-time and subrequest budgets. Large objects approaching R2's
  * 5 GiB single-object cap should use rclone over R2 S3 (see README).
  *
- * Both single-object and recursive paths report partial failures via 207
- * Multi-Status. RFC 4918 §9.6.1 uses 207 for member-resource failures; single
- * objects reuse the same shape so clients have one error-parsing path.
- * Collection children are trashed before the marker so a failed member leaves
- * its ancestors intact (RFC 4918 §9.6.1).
+ * Collection partial failures report 207 Multi-Status (RFC 4918 §9.6.1); a
+ * single non-collection object failure is a plain 500. Collection members are
+ * trashed before their markers; directory markers are processed deepest-first
+ * so a failed member leaves every ancestor intact.
  */
 
 async function moveChildToTrash(
@@ -35,14 +34,22 @@ async function moveChildToTrash(
   await bucket.delete(child.key)
 }
 
-function failureFor(key: string, err: unknown): { key: string; status: string } {
-  const msg = err instanceof Error ? err.message : 'Internal Server Error'
-  return { key, status: `HTTP/1.1 500 ${msg}` }
+type DeleteFailure = { key: string; status: string }
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : 'Internal Server Error'
+}
+
+function failureFor(key: string, err: unknown): DeleteFailure {
+  return { key, status: `HTTP/1.1 500 ${errorMessage(err)}` }
+}
+
+function isDirectoryObject(object: R2Object): boolean {
+  return object.httpMetadata?.contentType === 'application/x-directory'
 }
 
 export async function handleRequestDelete({ bucket, path }: RequestHandlerParams) {
   const trashRoot = `${TRASH_PREFIX}${Date.now()}/`
-  const failures: Array<{ key: string; status: string }> = []
 
   let target: R2Object | null = null
   if (path !== '') {
@@ -50,34 +57,69 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
     if (target === null) return notFound()
   }
 
-  const isCollection =
-    path === '' || target?.httpMetadata?.contentType === 'application/x-directory'
-
-  if (isCollection) {
-    const prefix = path === '' ? undefined : `${path}/`
-    const limit = pLimit(5)
-    const tasks: Array<Promise<void>> = []
-    for await (const child of listAll(bucket, prefix, true)) {
-      tasks.push(
-        limit(async () => {
-          try {
-            await moveChildToTrash(bucket, child, trashRoot)
-          } catch (err) {
-            failures.push(failureFor(child.key, err))
-          }
-        }),
-      )
-    }
-    await Promise.all(tasks)
-  }
-
-  // Delete the collection target last: RFC 4918 §9.6.1 requires ancestors
-  // to survive when a member cannot be deleted.
-  if (target && (!isCollection || failures.length === 0)) {
+  // A single non-collection object has no members, so a failure is a plain 500.
+  if (target && !isDirectoryObject(target)) {
     try {
       await moveChildToTrash(bucket, target, trashRoot)
     } catch (err) {
-      failures.push(failureFor(path, err))
+      return new Response(errorMessage(err), { status: 500 })
+    }
+    await maybePurgeExpiredTrash(bucket)
+    return new Response(null, { status: 204 })
+  }
+
+  // Collection (or root): delete members first, ancestors last.
+  const failures: DeleteFailure[] = []
+  const prefix = path === '' ? undefined : `${path}/`
+  const children: R2Object[] = []
+  for await (const child of listAll(bucket, prefix, true)) children.push(child)
+
+  const files = children.filter((child) => !isDirectoryObject(child))
+  const directoriesByDepth = new Map<number, R2Object[]>()
+  for (const directory of children.filter(isDirectoryObject)) {
+    const depth = directory.key.split('/').length
+    const group = directoriesByDepth.get(depth) ?? []
+    group.push(directory)
+    directoriesByDepth.set(depth, group)
+  }
+
+  const limit = pLimit(5)
+  await Promise.all(
+    files.map((child) =>
+      limit(async () => {
+        try {
+          await moveChildToTrash(bucket, child, trashRoot)
+        } catch (err) {
+          failures.push(failureFor(child.key, err))
+        }
+      }),
+    ),
+  )
+
+  // Markers at the same depth cannot be ancestors of each other, so each depth
+  // layer can run in parallel; deeper layers complete first.
+  for (const depth of Array.from(directoriesByDepth.keys()).sort((a, b) => b - a)) {
+    const directories = directoriesByDepth.get(depth) ?? []
+    await Promise.all(
+      directories.map((directory) =>
+        limit(async () => {
+          // RFC 4918 §9.6.1: keep every ancestor of a failed member.
+          if (failures.some((failure) => failure.key.startsWith(`${directory.key}/`))) return
+          try {
+            await moveChildToTrash(bucket, directory, trashRoot)
+          } catch (err) {
+            failures.push(failureFor(directory.key, err))
+          }
+        }),
+      ),
+    )
+  }
+
+  if (target && failures.length === 0) {
+    try {
+      await moveChildToTrash(bucket, target, trashRoot)
+    } catch (err) {
+      failures.push(failureFor(target.key, err))
     }
   }
 
@@ -90,10 +132,10 @@ export async function handleRequestDelete({ bucket, path }: RequestHandlerParams
   const body =
     MULTISTATUS_OPEN +
     failures
-      .map((f) =>
+      .map((failure) =>
         renderErrorResponse({
-          href: `${WEBDAV_ENDPOINT}${encodeKey(f.key)}`,
-          status: f.status,
+          href: `${WEBDAV_ENDPOINT}${encodeKey(failure.key)}`,
+          status: failure.status,
         }),
       )
       .join('') +
