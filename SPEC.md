@@ -24,30 +24,30 @@
 
 ## 2. Tech Stack
 
-| 类别            | 选型                                                          | 版本         | 说明                                             |
-| --------------- | ------------------------------------------------------------- | ------------ | ------------------------------------------------ |
-| 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现                         |
-| 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变                            |
-| 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV                                 |
-| 前端框架        | React                                                         | 18.x         | 不升 19                                          |
-| 构建工具        | Vite                                                          | ^7           | 替换 CRA                                         |
-| 路由            | React Router                                                  | ^7           |                                                  |
-| 类型系统        | TypeScript                                                    | ^5.5         | strict                                           |
-| 样式            | Tailwind CSS                                                  | ^4           | 现代浏览器底线: Safari 16.4+ / Chrome 111+ / Firefox 128+ (ADR-0004) |
-| 组件库          | shadcn/ui                                                     | 4.x          | 复制进 `src/components/ui/`; new-york style; `shadcn` 装为本地 dep (`shadcn/tailwind.css` 提供 data-* variants) |
-| 状态/数据       | TanStack Query                                                | ^5           |                                                  |
-| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                                  |
-| i18n            | react-i18next                                                 | ^14          | 中文默认                                         |
-| 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes                                 |
-| PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs                            |
-| 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                                      |
-| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架                   |
-| 测试 (单元)     | Vitest + RTL                                                  | latest       |                                                  |
-| 测试 (E2E)      | Chrome DevTools MCP / agent-browser                           | —            | agent 即时驱动真实浏览器 (CDP), 不维护 spec 文件 |
-| Lint            | ESLint 9 flat                                                 | latest       |                                                  |
-| 格式化          | Prettier                                                      | latest       | 单引号/无分号/Tab 宽 2                           |
-| 包管理          | npm                                                           | Node 20 LTS+ |                                                  |
-| 工具链          | wrangler                                                      | latest       | 仅本地 Pages dev, 不用 D1 命令                   |
+| 类别            | 选型                                                          | 版本         | 说明                                                                                                             |
+| --------------- | ------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现                                                                                         |
+| 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变                                                                                            |
+| 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV                                                                                                 |
+| 前端框架        | React                                                         | 18.x         | 不升 19                                                                                                          |
+| 构建工具        | Vite                                                          | ^7           | 替换 CRA                                                                                                         |
+| 路由            | React Router                                                  | ^7           |                                                                                                                  |
+| 类型系统        | TypeScript                                                    | ^5.5         | strict                                                                                                           |
+| 样式            | Tailwind CSS                                                  | ^4           | 现代浏览器底线: Safari 16.4+ / Chrome 111+ / Firefox 128+ (ADR-0004)                                             |
+| 组件库          | shadcn/ui                                                     | 4.x          | 复制进 `src/components/ui/`; new-york style; `shadcn` 装为本地 dep (`shadcn/tailwind.css` 提供 data-\* variants) |
+| 状态/数据       | TanStack Query                                                | ^5           |                                                                                                                  |
+| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                                                                                                  |
+| i18n            | react-i18next                                                 | ^14          | 中文默认                                                                                                         |
+| 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes                                                                                                 |
+| PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs                                                                                            |
+| 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                                                                                                      |
+| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架                                                                                   |
+| 测试 (单元)     | Vitest + RTL                                                  | latest       |                                                                                                                  |
+| 测试 (E2E)      | Chrome DevTools MCP / agent-browser                           | —            | agent 即时驱动真实浏览器 (CDP), 不维护 spec 文件                                                                 |
+| Lint            | ESLint 9 flat                                                 | latest       |                                                                                                                  |
+| 格式化          | Prettier                                                      | latest       | 单引号/无分号/Tab 宽 2                                                                                           |
+| 包管理          | npm                                                           | Node 20 LTS+ |                                                                                                                  |
+| 工具链          | wrangler                                                      | latest       | 仅本地 Pages dev, 不用 D1 命令                                                                                   |
 
 ## 3. Commands
 
@@ -95,12 +95,15 @@
 │   │   ├── move.ts
 │   │   ├── delete.ts
 │   │   └── utils.ts            # 去 driveid 后门
-│   ├── api/                    # 3 个独立 Pages Function 文件
+│   ├── api/                    # 4 个独立 Pages Function 文件
 │   │   ├── login.ts            # POST /api/login
 │   │   ├── logout.ts           # POST /api/logout
-│   │   └── me.ts               # GET /api/me
+│   │   ├── me.ts               # GET /api/me
+│   │   └── trash.ts            # GET/POST/DELETE /api/trash
 │   └── _shared/
 │       ├── auth.ts             # 常量时间比较 / JWT 签发与验签
+│       ├── r2.ts               # 内部命名空间前缀 / listAll
+│       ├── trash.ts            # 14 天 TTL / 机会式清理
 │       └── xml.ts              # PROPFIND 转义
 ├── src/                        # 前端 (Vite)
 │   ├── main.tsx
@@ -114,10 +117,12 @@
 │   ├── pages/
 │   │   ├── login.tsx
 │   │   ├── files.tsx           # 主视图 (/ 与 /files/*)
-│   │   └── settings.tsx        # 语言 / 主题
+│   │   ├── settings.tsx        # 语言 / 主题
+│   │   └── trash.tsx           # 回收站 (/trash)
 │   ├── lib/
 │   │   ├── api.ts              # /api/* 客户端
 │   │   ├── webdav.ts           # PROPFIND 解析 / multipart 上传
+│   │   ├── trash.ts            # 回收站 API 客户端
 │   │   ├── i18n.ts
 │   │   ├── theme.ts
 │   │   └── utils.ts
@@ -281,7 +286,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 ### 文件 UI
 
 - **S10**: 上传 1MB / 99MB / 200MB 文件成功 (multipart 在 100MB 阈值切换).
-- **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006).
+- **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006). 单文件软删除失败返回 500; 集合部分失败返回 207 Multi-Status.
 - **S12**: 客户端搜索仅过滤当前目录, 跨目录搜索不支持 (与现状一致).
 - **S13**: 缩略图: jpg/png/gif/webp/mp4/pdf 生成, 其它显默认 mime 图标.
 - **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.

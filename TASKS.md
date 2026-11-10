@@ -213,6 +213,15 @@
 
 ---
 
+## Scope B 增补 (2026-11-10)
+
+- **T4.1 — 回收站** ([ADR-0006](./docs/adr/0006-include-trash-in-scope-b.md)): DELETE 软删除到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目机会式清理; 恢复冲突返回 409.
+  - **Acceptance**: 删除/恢复/彻底删除闭环通过; 子项失败时祖先保留 (RFC 4918 §9.6.1).
+  - **Verify**: `npm test` 覆盖 `webdav-delete` / `api-trash`; 手工回归 `/trash` 页面.
+  - **Files**: `functions/api/trash.ts`, `functions/_shared/trash.ts`, `src/pages/trash.tsx` (已实现, 本节用于范围追溯).
+
+---
+
 ## 任务追踪
 
 Phase 0 八条 (#1-#8) 已在任务追踪系统内, 依赖链锁定 (无变化). Phase 1 起进入时再批量登记.
