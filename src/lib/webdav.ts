@@ -15,14 +15,14 @@ export function isDirectory(file: FileItem) {
   return file.httpMetadata?.contentType === 'application/x-directory'
 }
 
-export async function createFolder(key: string): Promise<void> {
-  const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'MKCOL' })
-  if (!res.ok) throw new Error(`Failed to create folder: ${res.status}`)
-}
-
 function assertComplete(res: Response, action: string): void {
   if (res.status === 207) throw new Error(`${action}: 207 (partial failure)`)
   if (!res.ok) throw new Error(`${action}: ${res.status}`)
+}
+
+export async function createFolder(key: string): Promise<void> {
+  const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'MKCOL' })
+  assertComplete(res, 'Failed to create folder')
 }
 
 export async function moveFile(source: string, target: string): Promise<void> {

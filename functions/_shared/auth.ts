@@ -138,8 +138,8 @@ export function extractSession(request: Request): string | null {
   const cookie = request.headers.get('Cookie')
   if (!cookie) return null
   for (const part of cookie.split(';')) {
-    const [name, ...value] = part.trim().split('=')
-    if (name === SESSION_COOKIE_NAME) return value.join('=') || null
+    const [name, ...valueParts] = part.trim().split('=')
+    if (name === SESSION_COOKIE_NAME) return valueParts.join('=') || null
   }
   return null
 }
