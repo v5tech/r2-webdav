@@ -101,4 +101,12 @@ describe('extractSession', () => {
   it('returns null when r2_session absent', () => {
     expect(extractSession(mkReq('lang=zh; theme=dark'))).toBeNull()
   })
+
+  it('extracts values containing =', () => {
+    expect(extractSession(mkReq('r2_session=a=b'))).toBe('a=b')
+  })
+
+  it('returns null for an empty cookie value', () => {
+    expect(extractSession(mkReq('r2_session='))).toBeNull()
+  })
 })
