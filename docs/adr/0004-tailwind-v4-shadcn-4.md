@@ -3,6 +3,7 @@
 - **日期**: 2026-05-23
 - **状态**: 已接受
 - **修订**: [SPEC.md](../../SPEC.md) §技术选型 `Tailwind CSS | ^3.4` → `^4`; [SPEC.md](../../SPEC.md) §技术选型 `shadcn/ui | latest` 含义具体化为 "shadcn 4.x". 上次会话决策日志 (handoff 2026-05-22) #3 中 "Phase 2/3 升 v4 + shadcn 4 是反向通路, 不属本期决策" 被本 ADR 替代.
+- **后续修订（2026-11-10）**: 当前 UI 重设计已获用户批准，保留蓝灰/橙色品牌配色。本文“官方 neutral 模板”仅描述 Tailwind v4/shadcn 4 迁移的初始基线，不再要求后续主题恢复 neutral。
 
 ## 背景
 
