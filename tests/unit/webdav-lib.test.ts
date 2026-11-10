@@ -242,6 +242,11 @@ describe('moveFile', () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 412 }))
     await expect(moveFile('a', 'b')).rejects.toThrow(/412/)
   })
+
+  it('throws on 207 partial failure', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 207 }))
+    await expect(moveFile('a', 'b')).rejects.toThrow(/207.*partial/i)
+  })
 })
 
 describe('deleteFile', () => {
@@ -256,6 +261,11 @@ describe('deleteFile', () => {
   it('throws on non-OK response', async () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 404 }))
     await expect(deleteFile('missing')).rejects.toThrow(/404/)
+  })
+
+  it('throws on 207 partial failure', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('', { status: 207 }))
+    await expect(deleteFile('partial')).rejects.toThrow(/207.*partial/i)
   })
 })
 

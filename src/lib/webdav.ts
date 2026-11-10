@@ -26,11 +26,13 @@ export async function moveFile(source: string, target: string): Promise<void> {
     method: 'MOVE',
     headers: { Destination: dest.href },
   })
+  if (res.status === 207) throw new Error('Failed to move: 207 (partial failure)')
   if (!res.ok) throw new Error(`Failed to move: ${res.status}`)
 }
 
 export async function deleteFile(key: string): Promise<void> {
   const res = await fetch(`${WEBDAV_ENDPOINT}${encodeKey(key)}`, { method: 'DELETE' })
+  if (res.status === 207) throw new Error('Failed to delete: 207 (partial failure)')
   if (!res.ok) throw new Error(`Failed to delete: ${res.status}`)
 }
 
