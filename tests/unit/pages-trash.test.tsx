@@ -12,9 +12,10 @@ vi.mock('@/lib/trash', async () => {
   }
 })
 
-import { fetchTrash, permanentDeleteSession, restoreSession } from '@/lib/trash'
+import { fetchTrash, permanentDeleteSession, restoreSession, TrashConflictError } from '@/lib/trash'
 
 import TrashPage from '../../src/pages/trash'
+import { AuthProvider } from '../../src/hooks/use-auth'
 
 const fetchTrashMock = vi.mocked(fetchTrash)
 const restoreSessionMock = vi.mocked(restoreSession)
@@ -29,7 +30,9 @@ beforeEach(() => {
 function renderPage() {
   return render(
     <MemoryRouter>
-      <TrashPage />
+      <AuthProvider value={{ status: 'authenticated', username: 'admin' }}>
+        <TrashPage />
+      </AuthProvider>
     </MemoryRouter>,
   )
 }
@@ -86,6 +89,18 @@ describe('TrashPage', () => {
     fireEvent.click(deleteBtn)
 
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+  })
+
+  it('shows the conflict path and does not retry automatically on 409', async () => {
+    fetchTrashMock.mockResolvedValue([
+      { deletedAt: 1716499000000, rootEntries: ['docs'], totalCount: 3 },
+    ])
+    restoreSessionMock.mockRejectedValue(new TrashConflictError('docs/report.pdf'))
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: /restore|恢复/i }))
+    expect(await screen.findByText('docs/report.pdf')).toBeInTheDocument()
+    expect(screen.getByText(/unable to restore|无法恢复/i)).toBeInTheDocument()
+    expect(restoreSessionMock).toHaveBeenCalledTimes(1)
   })
 
   it('confirming dialog calls permanentDeleteSession then refreshes', async () => {

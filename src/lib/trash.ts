@@ -1,3 +1,13 @@
+export class TrashConflictError extends Error {
+  conflictKey: string
+
+  constructor(conflictKey: string) {
+    super('Restore conflict')
+    this.name = 'TrashConflictError'
+    this.conflictKey = conflictKey
+  }
+}
+
 export interface TrashSession {
   deletedAt: number
   rootEntries: string[]
@@ -16,6 +26,12 @@ export async function restoreSession(deletedAt: number): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ deletedAt }),
   })
+  if (res.status === 409) {
+    const body = (await res.json()) as { conflictKey?: unknown }
+    if (typeof body.conflictKey === 'string') {
+      throw new TrashConflictError(body.conflictKey)
+    }
+  }
   if (!res.ok) throw new Error(`Failed to restore: ${res.status}`)
 }
 
