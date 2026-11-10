@@ -316,21 +316,21 @@ describe('uploadFile', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('/webdav/big.bin?uploads')
     expect(fetchMock.mock.calls[0][1].method).toBe('POST')
   })
+})
 
-  describe('encodeKey cross-bundle contract (functions ⇄ src)', () => {
-    it('server and client encodeKey stay byte-identical on tricky names', () => {
-      const corpus = [
-        'a#b?c.txt',
-        'docs/a#b&c d.txt',
-        '100% done.txt',
-        'docs/中文 file.txt',
-        'a//b',
-        'docs/',
-        '',
-      ]
-      for (const key of corpus) {
-        expect(serverEncodeKey(key)).toBe(encodeKey(key))
-      }
-    })
+describe('encodeKey cross-bundle contract (functions ⇄ src)', () => {
+  it('server and client encodeKey stay byte-identical on tricky names', () => {
+    const corpus = [
+      'a#b?c.txt',
+      'docs/a#b&c d.txt',
+      '100% done.txt',
+      'docs/中文 file.txt',
+      'a//b',
+      'docs/',
+      '',
+    ]
+    for (const key of corpus) {
+      expect(serverEncodeKey(key)).toBe(encodeKey(key))
+    }
   })
 })

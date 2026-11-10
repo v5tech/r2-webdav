@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button'
 import { useFileSelection } from '@/hooks/use-file-selection'
 import { useUploadQueue } from '@/hooks/use-upload-queue'
 import type { FileItem } from '@/lib/types'
-import { deleteFile, fetchPath, isDirectory } from '@/lib/webdav'
+import { deleteFile, encodeKey, fetchPath, isDirectory } from '@/lib/webdav'
 
 function extractFilename(key: string): string {
   return key.replace(/\/$/, '').split('/').pop() ?? key
@@ -125,7 +125,7 @@ export default function FilesPage() {
   const handleBulkDownload = useCallback(() => {
     selection.selected.forEach((key) => {
       const a = document.createElement('a')
-      a.href = `/webdav/${key.split('/').map(encodeURIComponent).join('/')}`
+      a.href = `/webdav/${encodeKey(key)}`
       a.download = ''
       a.click()
     })
