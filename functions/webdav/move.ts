@@ -8,7 +8,8 @@ import { handleRequestDelete } from './delete'
  * - COPY success + DELETE partial failure: source is preserved (or partially
  *   deleted) while destination is already written. DELETE returns 207 listing
  *   the failed key(s); clients may retry DELETE or clean up out-of-band
- *   (RFC 4918 §9.9.1 permits 207 for MOVE partial failure).
+ *   (RFC 4918 §9.9.4 lists 207 for MOVE when multiple resources are
+ *   affected and some cannot be moved).
  */
 
 export async function handleRequestMove({ bucket, path, request }: RequestHandlerParams) {
