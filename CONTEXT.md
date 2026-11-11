@@ -37,6 +37,10 @@
 - **文件/对象 (File / Object)** — 用户命名空间内的非目录 R2 对象.
 - **目录 (Directory / Collection)** — 以 `contentType: application/x-directory` 标记的零字节占位对象 (`mkcol.ts`). 不存在真正的"目录"实体, 只是 R2 key 前缀的约定.
 
+## 文件操作
+
+- **同名冲突** — 上传或保存时，目标位置已有同名项目，或同一批次包含重复名称。避免使用“重名问题”。
+
 ## DELETE 失败语义
 
 - **成员失败 (Member failure)** — 集合内的文件或嵌套目录标记删除失败.
@@ -48,35 +52,3 @@
 - **R2** — 文件主体与缩略图. 唯一持久化层.
 - **环境变量** — `WEBDAV_USERNAME`, `WEBDAV_PASSWORD`, `WEBDAV_PUBLIC_READ` 经 Cloudflare Pages 仪表盘配置. 不在 git 里, 不在 D1 里.
 - **不引入** D1、KV、Durable Objects、外部数据库.
-
-## "二次开发" 范围 (Scope B, 2026-05-22 锁定; 回收站于 2026-11-10 纳入, 见 ADR-0006)
-
-### 在范围内
-
-- 修复上手地图中识别出的安全/正确性缺陷 (Basic auth 时序攻击、PROPFIND XML 转义、`driveid` 后门、cdnjs pdf.js、根目录死代码、`utils/s3.ts` 死代码、README 阈值文档).
-- 构建工具现代化 (CRA → Vite).
-- UI 全面重做于 shadcn/ui + Tailwind, 桌面/平板/移动响应式.
-- 自定义登录页 + JWT cookie 会话, 替代浏览器 Basic auth 弹窗.
-- WebDAV `/webdav/*` 双重鉴权 (cookie 或 Basic auth 二选一通过).
-- 文件操作功能集 (与现有持平 + 在线预览): 浏览/上传/下载/重命名/移动/删除/多选批操作/缩略图.
-- 回收站 (软删除 + 还原): DELETE 软删除到内部命名空间, 14 天保留, 机会式清理; 见 ADR-0006.
-- 在线预览 (图片/视频/PDF).
-- 文本笔记 (TextPad, 保留).
-- 暗色模式.
-- 国际化骨架 (中/英).
-
-### 不在范围内
-
-- 多用户、用户管理界面、逐用户配额.
-- 应用令牌 / 可吊销凭据 / 多客户端独立凭据.
-- D1 / KV / 任何新数据库依赖.
-- 公开分享链接 (细粒度文件分享).
-- 审计日志.
-- 存储占用看板.
-- 键盘快捷键.
-- 登录失败 rate limit (默认不做; 若需可在 Cloudflare 仪表盘 Rate Limiting Rules 配置).
-- 服务端递归搜索 (保留现状: 客户端当前目录过滤).
-- 服务端 WebDAV 协议扩展.
-- Markdown 在线编辑增强、WebDAV 配置向导.
-- 计费、移动端原生 App、PWA 离线、Electron/Tauri 桌面壳.
-- 打 zip 下载、跨目录批量移动、文件版本历史.

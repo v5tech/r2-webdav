@@ -18,6 +18,38 @@
 - **所有者 (Owner)** — 部署者本人. 主要通过第三方 WebDAV 客户端 (rclone / 手机文件管理器 / NAS) 做日常文件操作; 用 Web UI 偶尔浏览、上传、预览.
 - **公共读取者 (Public reader)** — 仅当 `WEBDAV_PUBLIC_READ=1` 时存在.
 
+### Scope B 范围 (2026-05-22 锁定; 回收站于 2026-11-10 纳入, 见 ADR-0006)
+
+#### 在范围内
+
+- 修复上手地图中识别出的安全/正确性缺陷 (Basic auth 时序攻击、PROPFIND XML 转义、`driveid` 后门、cdnjs pdf.js、根目录死代码、`utils/s3.ts` 死代码、README 阈值文档).
+- 构建工具现代化 (CRA → Vite).
+- UI 全面重做于 shadcn/ui + Tailwind, 桌面/平板/移动响应式.
+- 自定义登录页 + JWT cookie 会话, 替代浏览器 Basic auth 弹窗.
+- WebDAV `/webdav/*` 双重鉴权 (cookie 或 Basic auth 二选一通过).
+- 文件操作功能集 (与现有持平 + 在线预览): 浏览/上传/下载/重命名/移动/删除/多选批操作/缩略图.
+- 回收站 (软删除 + 还原): DELETE 软删除到内部命名空间, 14 天保留, 机会式清理; 见 ADR-0006.
+- 在线预览 (图片/视频/PDF).
+- 文本笔记 (TextPad, 保留).
+- 暗色模式.
+- 国际化骨架 (中/英).
+
+#### 不在范围内
+
+- 多用户、用户管理界面、逐用户配额.
+- 应用令牌 / 可吊销凭据 / 多客户端独立凭据.
+- D1 / KV / 任何新数据库依赖.
+- 公开分享链接 (细粒度文件分享).
+- 审计日志.
+- 存储占用看板.
+- 键盘快捷键.
+- 登录失败 rate limit (默认不做; 若需可在 Cloudflare 仪表盘 Rate Limiting Rules 配置).
+- 服务端递归搜索 (保留现状: 客户端当前目录过滤).
+- 服务端 WebDAV 协议扩展.
+- Markdown 在线编辑增强、WebDAV 配置向导.
+- 计费、移动端原生 App、PWA 离线、Electron/Tauri 桌面壳.
+- 打 zip 下载、跨目录批量移动、文件版本历史.
+
 ### 成功定义
 
 见 §8. 所有条目可被自动化或手工复现验证.
@@ -29,19 +61,19 @@
 | 部署平台        | Cloudflare Pages                                              | —            | Pages Functions 自动发现                                                                                         |
 | 文件存储        | Cloudflare R2                                                 | —            | binding `BUCKET` 不变                                                                                            |
 | 鉴权数据        | 环境变量 + JWT cookie                                         | —            | **不引入** D1/KV                                                                                                 |
-| 前端框架        | React                                                         | 18.x         | 不升 19                                                                                                          |
-| 构建工具        | Vite                                                          | ^7           | 替换 CRA                                                                                                         |
+| 前端框架        | React                                                         | 19.x         | 当前主版本                                                                                                       |
+| 构建工具        | Vite                                                          | ^8           | 替换 CRA                                                                                                         |
 | 路由            | React Router                                                  | ^7           |                                                                                                                  |
-| 类型系统        | TypeScript                                                    | ^5.5         | strict                                                                                                           |
+| 类型系统        | TypeScript                                                    | ^6           | strict                                                                                                           |
 | 样式            | Tailwind CSS                                                  | ^4           | 现代浏览器底线: Safari 16.4+ / Chrome 111+ / Firefox 128+ (ADR-0004)                                             |
 | 组件库          | shadcn/ui                                                     | 4.x          | 复制进 `src/components/ui/`; new-york style; `shadcn` 装为本地 dep (`shadcn/tailwind.css` 提供 data-\* variants) |
 | 状态/数据       | TanStack Query                                                | ^5           |                                                                                                                  |
-| 表单            | react-hook-form + zod                                         | ^7 / ^3      |                                                                                                                  |
-| i18n            | react-i18next                                                 | ^14          | 中文默认                                                                                                         |
+| 表单            | react-hook-form + zod                                         | ^7 / ^4      |                                                                                                                  |
+| i18n            | react-i18next                                                 | ^17          | 中文默认                                                                                                         |
 | 暗色模式        | 手写 (prefers-color-scheme + localStorage) + Tailwind `dark:` | —            | 不装 next-themes                                                                                                 |
 | PDF 预览        | `pdfjs-dist`                                                  | latest       | 本地 npm 包替代 cdnjs                                                                                            |
 | 代码高亮 (预览) | Shiki                                                         | latest       | lazy import                                                                                                      |
-| JWT             | `hono/jwt` 或 `jose`                                          | —            | 仅用工具函数, 不引入 Hono 框架                                                                                   |
+| JWT             | Web Crypto API                                                | —            | 使用现有签发/验签工具函数, 不引入额外 JWT 库                                                                     |
 | 测试 (单元)     | Vitest + RTL                                                  | latest       |                                                                                                                  |
 | 测试 (E2E)      | Chrome DevTools MCP / agent-browser                           | —            | agent 即时驱动真实浏览器 (CDP), 不维护 spec 文件                                                                 |
 | Lint            | ESLint 9 flat                                                 | latest       |                                                                                                                  |
@@ -55,7 +87,7 @@
 | --------------------------------- | ----------------------------- |
 | `npm install`                     | 装依赖                        |
 | `npm run dev`                     | Vite 前端开发服务器           |
-| `npm run pages:dev`               | `wrangler pages dev` 全栈本地 |
+| `npx wrangler pages dev dist --r2 BUCKET` | 全栈本地调试 (Workflow C) |
 | `npm run build`                   | Vite 构建 → `dist/`           |
 | `npm run preview`                 | 预览构建产物                  |
 | `npm run typecheck`               | `tsc --noEmit`                |
@@ -71,9 +103,8 @@
 /
 ├── CONTEXT.md
 ├── SPEC.md
-├── PLAN.md
-├── TASKS.md
-├── README.md                   # Phase 3 末重写
+├── README.md                   # 英文入口
+├── README.zh.md                # 中文入口
 ├── LICENSE
 ├── docs/adr/
 │   ├── 0001-...md (Superseded)
@@ -111,8 +142,8 @@
 │   ├── App.tsx                 # 路由
 │   ├── components/
 │   │   ├── ui/                 # shadcn 原语
-│   │   ├── files/              # 文件网格/列表、面包屑、预览
-│   │   ├── upload/             # 上传抽屉、进度条
+│   │   ├── files/              # 文件网格/列表、面包屑与上传
+│   │   ├── preview/            # 图片、PDF、文本等预览
 │   │   ├── textpad/            # TextPad 重写
 │   │   └── layout/             # AppShell / Header / Sidebar
 │   ├── pages/
@@ -130,8 +161,7 @@
 │   ├── hooks/
 │   ├── locales/{zh,en}.json
 │   └── styles/globals.css
-├── tests/{unit,integration}/
-├── docs/e2e-evidence/             # MCP 驱动 E2E 跑出来的截图证据 (按 viewport 归档)
+├── tests/unit/                 # Vitest 单元与组件测试
 ├── public/
 ├── index.html
 ├── vite.config.ts
@@ -139,7 +169,7 @@
 ├── eslint.config.js
 ├── .prettierrc
 ├── vitest.config.ts
-├── wrangler.toml               # 仅 BUCKET binding, 无 D1
+├── wrangler.toml.example       # BUCKET binding 模板, 无 D1
 ├── package.json
 └── package-lock.json
 ```
@@ -161,76 +191,18 @@
 - **错误处理** — 抛 Error 子类带上下文, 边界统一映射为 JSON.
 - **不留死代码** — 同次改动产物的废代码同步删.
 
-### 前端示例
-
-```tsx
-import { useQuery } from '@tanstack/react-query'
-import { Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { listFiles } from '@/lib/api'
-import { cn, formatBytes } from '@/lib/utils'
-
-interface FileGridProps {
-  path: string
-  selection: Set<string>
-  onSelectionChange: (next: Set<string>) => void
-  className?: string
-}
-
-export function FileGrid({ path, selection, onSelectionChange, className }: FileGridProps) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['files', path],
-    queryFn: () => listFiles(path),
-  })
-  if (isLoading) return <FileGridSkeleton />
-  return (
-    <div className={cn('grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6', className)}>
-      {data?.map((file) => (
-        <FileCard key={file.key} file={file} selected={selection.has(file.key)} />
-      ))}
-    </div>
-  )
-}
-```
-
-### 后端示例
-
-```ts
-// functions/api/login.ts
-import { constantTimeEqual, signSessionJwt } from '@functions/_shared/auth'
-
-export const onRequestPost: PagesFunction<Env> = async (ctx) => {
-  const { username, password } = await ctx.request.json<{ username: string; password: string }>()
-  const userMatch = constantTimeEqual(username, ctx.env.WEBDAV_USERNAME ?? '')
-  const passMatch = constantTimeEqual(password, ctx.env.WEBDAV_PASSWORD ?? '')
-  if (!userMatch || !passMatch) {
-    return new Response(JSON.stringify({ error: 'invalid_credentials' }), { status: 401 })
-  }
-  const origin = new URL(ctx.request.url).origin
-  const token = await signSessionJwt(ctx.env, { sub: 'owner', iss: origin })
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Set-Cookie': `r2_session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`,
-    },
-  })
-}
-```
-
 ## 6. Testing Strategy
 
-### 三层
+### 两层
 
-1. **Unit (Vitest)** — `tests/unit/`. 纯函数: 常量时间比较、JWT 签发验签、XML 转义.
-2. **Integration (Vitest + miniflare)** — `tests/integration/`. 本地 Pages Functions 全链路, 含 /api/login → /api/me, /webdav/ 的双重鉴权.
-3. **E2E (Chrome DevTools MCP / agent-browser)** — 不维护 spec 文件. agent 通过 CDP 连接本地真实浏览器, 即时驱动核心闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销), 截图存到 `docs/e2e-evidence/<phase>-<viewport>.png` 作回归基线. 桌面 chromium 一种.
+1. **Unit / Component (Vitest + RTL)** — `tests/unit/`. 覆盖纯函数、鉴权工具、WebDAV 工具、React 组件和页面行为.
+2. **Browser E2E (agent-browser / CDP)** — 不维护 spec 文件. 使用本地 mock 做核心闭环与响应式验收; 生产只做只读复查. 截图和日志保存在仓库外并脱敏, 不纳入 Git.
 
 ### 覆盖
 
 - 必须有: `_shared/auth.ts`, `_shared/xml.ts`, multipart 上传切片逻辑.
-- 不强求行覆盖率%, 关键路径绿就行.
-- 不为 UI 组件写单元 (留给 MCP E2E).
+- 关键 UI 组件和页面行为也需要单元测试, 不能只依赖浏览器验收.
+- 不强求行覆盖率%, 关键路径和回归场景必须可重复验证.
 
 ## 7. Boundaries
 
@@ -290,7 +262,7 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 - **S11**: DELETE 为软删除: 对象先复制到 `_$r2webdav$/trash/<timestamp>/`, 保留 14 天; `/trash` 支持查看/恢复/彻底删除; 过期条目在后续 DELETE 请求中按约 10% 概率清理 (ADR-0006). 单文件或集合目标自身失败返回 500; 集合成员部分失败返回 207 Multi-Status (ADR-0007).
 - **S12**: 客户端搜索仅过滤当前目录, 跨目录搜索不支持 (与现状一致).
 - **S13**: 缩略图: jpg/png/gif/webp/mp4/pdf 生成, 其它显默认 mime 图标.
-- **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 < 2MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.
+- **S14**: 在线预览: 图片 (`<img>`), 视频 (`<video>` 整文件加载), 音频 (`<audio>`), PDF (本地 pdfjs), 文本 ≤ 1 MB (`<pre>`), 代码 (Shiki lazy). 其它显"请下载"提示.
 
 ### 多端与体验
 
@@ -302,17 +274,13 @@ export const onRequestPost: PagesFunction<Env> = async (ctx) => {
 
 - **S19**: Vite 构建初始 bundle ≤ 500 KB (gzipped).
 - **S20**: `npm run typecheck` / `lint` / `test` 全绿.
-- **S21**: 核心闭环全过 — agent 通过 Chrome DevTools MCP / agent-browser 连接本地真实浏览器, 在 viewport `375 × 667` / `768 × 1024` / `1280 × 800` 三种尺寸下分别跑同一闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销) 均通过; 三尺寸下均无横向滚动、无元素溢出; 截图归档到 `docs/e2e-evidence/<phase>-<viewport>.png`.
+- **S21**: 核心闭环全过 — agent 通过 Chrome DevTools MCP / agent-browser 连接本地真实浏览器, 在 `320` / `390` / `768` / `1280+` 宽度下分别跑同一闭环 (登录 → 上传 → 预览 → 重命名 → 删除 → 注销) 均通过; 各尺寸下均无横向滚动、无元素溢出; 截图与日志保存在仓库外并脱敏, 不纳入 Git.
 - **S22**: 根目录 `Main.tsx` / `TextPadDrawer.tsx` / `utils/s3.ts` 已删, `grep -rn '@mui\|react-scripts' .` 仅命中 `package-lock.json` 历史.
 - **S23**: Lighthouse (生产部署, 桌面 viewport) Performance ≥ 90, Accessibility ≥ 90.
 
 ## 9. Open Questions
 
-- **OQ-1 — JWT 库选型**: `hono/jwt` (轻) vs `jose` (功能全). 实施时按 bundle 占用决定. 无论选哪个, JWT payload 都必须含 `sub`/`iss`/`iat`/`exp`, `iss` 取请求 origin 防跨部署 cookie 互认.
-- **OQ-2 — `pdfjs-dist` bundle 实际尺寸**: Vite tree-shake 后若 > 1 MB (gzip), 走 lazy load worker. CSP 必须含 `worker-src 'self' blob:`; 若 pdf.js worker 使用 WebAssembly, CSP 还需 `script-src 'self' 'wasm-unsafe-eval'`. Phase 2 末用 CSP-Report-Only 验证一次, Phase 3 切 enforce.
-- **OQ-3 — iOS Safari 拖拽上传兼容性**: 部分 iOS 版本不支持 HTML5 拖拽, 需点选按钮兜底. Phase 2 实测后定 fallback 形态.
-- **OQ-4 — multipart 中断的孤儿 part 清理**: R2 自动会清吗? Phase 2 实测后定, 不归类为 bug.
-- **OQ-5 — 在线预览的 `<video>` 大视频体验**: 不做 Range 支持, 拖拽进度条会重新下载. 单用户场景判断可接受, 若用户反馈差再单独评估.
+原列问题均已有实现或明确边界: JWT 使用 Web Crypto API, PDF 按需加载, 上传按钮提供拖拽兜底, multipart 生命周期见 README, 视频 Range 支持仍不在范围内. 当前无额外开放问题.
 
 ---
 
