@@ -49,7 +49,7 @@
       "cancel": "Cancel"
     },
     "search": {
-      "placeholder": "Search in this folder",
+      "placeholder": "Search current directory…",
       "clear": "Clear search"
     },
     "sort": {
@@ -95,7 +95,8 @@
       "exists": "“{{name}}” already exists"
     },
     "loading": "Loading...",
-    "retry": "Retry"
+    "retry": "Retry",
+    "reload": "Reload"
   },
   "nav": {
     "menu": "Menu",
@@ -135,6 +136,9 @@
     "fileSize": "File size",
     "modified": "Modified",
     "location": "Location",
+    "close": "Close preview",
+    "readOnly": "Read-only preview",
+    "encoding": "{{type}} · UTF-8",
     "utcTime": "{{time}} · UTC",
     "stub": {
       "coming": "{{type}} preview coming soon"
@@ -203,6 +207,7 @@
     "name": "Filename",
     "body": "Content",
     "placeholder": "Write a note...",
+    "cancel": "Cancel",
     "save": "Save file",
     "textType": "Text"
   },

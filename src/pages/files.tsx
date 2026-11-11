@@ -1,10 +1,12 @@
 import {
   AlertCircleIcon,
   ChevronDownIcon,
+  Clock3Icon,
   FileTextIcon,
   FolderIcon,
   FolderPlusIcon,
   PlusIcon,
+  SearchIcon,
   UploadIcon,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -258,21 +260,24 @@ export default function FilesPage() {
 
   return (
     <AppShell>
-      <div className="flex min-h-full flex-col">
-        <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-5 md:px-8 md:py-6">
+      <div className="mx-auto min-h-full w-full max-w-[1440px] px-4 pt-5 pb-7 md:px-8 md:pt-[22px] md:pb-12">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-6 md:mb-[18px]">
           <div>
             <Breadcrumb cwd={cwd} onCwdChange={setCwd} />
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            <h1 className="text-[clamp(25px,2.4vw,31px)] leading-[1.2] font-semibold tracking-[-0.035em]">
               {cwd ? extractFilename(cwd) : t('nav.allFiles')}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-[7px] text-[13px] leading-normal text-muted-foreground">
               {t('files.count', { count: files.length })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-md bg-card px-3.5 text-[13px] font-semibold md:h-10"
+                >
                   <PlusIcon />
                   {t('files.create')}
                   <ChevronDownIcon />
@@ -301,14 +306,17 @@ export default function FilesPage() {
                 event.target.value = ''
               }}
             />
-            <Button onClick={() => uploadInputRef.current?.click()}>
+            <Button
+              className="h-11 rounded-md px-3.5 text-[13px] font-semibold md:h-10"
+              onClick={() => uploadInputRef.current?.click()}
+            >
               <UploadIcon />
               {t('files.upload.button')}
             </Button>
           </div>
         </div>
 
-        <section className="mx-4 mb-4 overflow-hidden rounded-xl border bg-card md:mx-8">
+        <section className="overflow-hidden rounded-[14px] border bg-card">
           {selection.count > 0 ? (
             <SelectionToolbar
               selectedCount={selection.count}
@@ -318,11 +326,11 @@ export default function FilesPage() {
               canDownload={downloadableCount > 0}
             />
           ) : (
-            <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2">
-              <div className="w-full max-w-sm sm:w-64">
+            <div className="flex flex-col items-stretch gap-3 border-b p-3 md:min-h-14 md:flex-row md:items-center md:justify-between md:gap-3 md:px-3.5 md:py-2">
+              <div className="w-full md:max-w-[340px]">
                 <SearchBar value={search} onChange={setSearch} />
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="flex items-center justify-between gap-2 md:justify-end">
                 <SortControls sortKey={sortKey} sortDir={sortDir} onSortChange={handleSortChange} />
                 <ViewToggle view={viewMode} onViewChange={setViewMode} />
               </div>
@@ -331,51 +339,76 @@ export default function FilesPage() {
 
           <div>
             {loading ? (
-              <div role="status" aria-label={t('files.loading')} className="p-3">
-                {Array.from({ length: 6 }, (_, index) => (
+              <div role="status" aria-label={t('files.loading')} aria-busy="true">
+                {Array.from({ length: 7 }, (_, index) => (
                   <div
                     key={index}
-                    className="flex h-14 items-center gap-3 border-b last:border-b-0"
+                    className="mx-3.5 flex h-[58px] items-center gap-3 border-b last:border-b-0"
                   >
                     <span className="size-4 animate-pulse rounded bg-muted" />
-                    <span className="size-9 animate-pulse rounded-lg bg-muted" />
-                    <span className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+                    <span className="size-9 animate-pulse rounded-[9px] bg-muted" />
+                    <span className="h-[13px] w-1/3 animate-pulse rounded-[5px] bg-muted" />
+                    <span className="hidden h-[13px] w-16 animate-pulse rounded-[5px] bg-muted sm:block" />
+                    <span className="hidden h-[13px] w-32 animate-pulse rounded-[5px] bg-muted md:block" />
                   </div>
                 ))}
               </div>
             ) : error ? (
-              <div role="alert" className="flex flex-col items-center gap-3 p-12 text-center">
-                <AlertCircleIcon className="size-6 text-destructive" />
-                <p className="font-medium">{t('files.loadError')}</p>
-                <p className="text-sm text-muted-foreground">{t('files.loadErrorDescription')}</p>
-                <p className="text-xs text-destructive">{error}</p>
-                <Button variant="outline" size="sm" onClick={() => void refresh()}>
-                  {t('files.retry')}
+              <div role="alert" className="flex flex-col items-center px-6 py-16 text-center">
+                <span className="mb-4 flex size-[52px] items-center justify-center rounded-[14px] bg-destructive/10 text-destructive">
+                  <AlertCircleIcon />
+                </span>
+                <h2 className="text-base font-medium">{t('files.loadError')}</h2>
+                <p className="mt-[7px] text-[13px] text-muted-foreground">
+                  {t('files.loadErrorDescription')}
+                </p>
+                <p className="mb-4 text-xs text-destructive">{error}</p>
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
+                  onClick={() => void refresh()}
+                >
+                  {t('files.reload')}
                 </Button>
               </div>
             ) : visibleFiles.length === 0 ? (
-              <div className="flex flex-col items-center p-12 text-center">
-                <span className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  {search ? <AlertCircleIcon /> : <FolderIcon />}
+              <div className="flex flex-col items-center px-6 py-16 text-center">
+                <span className="mb-4 flex size-[52px] items-center justify-center rounded-[14px] bg-primary/10 text-primary">
+                  {search ? <SearchIcon /> : <FolderIcon />}
                 </span>
                 <h2 className="text-base font-medium">
                   {search ? t('files.searchEmpty') : t('files.empty')}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-[7px] mb-[18px] text-[13px] text-muted-foreground">
                   {search ? t('files.searchEmptyDescription') : t('files.emptyDescription')}
                 </p>
                 {!search ? (
-                  <div className="mt-5 flex flex-wrap justify-center gap-2">
-                    <Button variant="outline" onClick={() => setNewFolderOpen(true)}>
+                  <div className="flex flex-wrap justify-center gap-2.5">
+                    <Button
+                      variant="outline"
+                      className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
+                      onClick={() => setNewFolderOpen(true)}
+                    >
                       <FolderPlusIcon />
                       {t('files.newFolder.title')}
                     </Button>
-                    <Button onClick={() => uploadInputRef.current?.click()}>
+                    <Button
+                      className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+                      onClick={() => uploadInputRef.current?.click()}
+                    >
                       <UploadIcon />
                       {t('files.upload.button')}
                     </Button>
                   </div>
-                ) : null}
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
+                    onClick={() => setSearch('')}
+                  >
+                    {t('files.search.clear')}
+                  </Button>
+                )}
               </div>
             ) : viewMode === 'grid' ? (
               <FileGrid
@@ -415,9 +448,10 @@ export default function FilesPage() {
               />
             )}
           </div>
-          <footer className="flex items-center justify-between border-t bg-muted/30 px-4 py-2 text-[11px] text-muted-foreground">
+          <footer className="flex min-h-[38px] items-center justify-between border-t bg-muted/30 px-4 text-[11px] text-muted-foreground">
             <span>{t('files.showing', { visible: visibleFiles.length, total: files.length })}</span>
-            <span className="hidden sm:inline">
+            <span className="hidden items-center gap-1.5 sm:flex">
+              <Clock3Icon className="size-3.5" aria-hidden="true" />
               {t('files.timeZone', {
                 zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               })}
@@ -466,26 +500,41 @@ export default function FilesPage() {
         }}
       />
       <AlertDialog open={conflict !== null} onOpenChange={(open) => !open && setConflict(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('files.conflict.title')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {conflict?.conflictingNames.map((name) => (
-                <span key={name} className="block">
-                  {t('files.conflict.exists', { name })}
-                </span>
-              ))}
-              {t('files.conflict.description')}
-            </AlertDialogDescription>
+        <AlertDialogContent className="w-[min(480px,calc(100vw-32px))] max-w-none gap-0 rounded-2xl p-0 data-[size=default]:max-w-[calc(100vw-32px)] sm:max-w-[480px] data-[size=default]:sm:max-w-[480px]">
+          <AlertDialogHeader className="place-items-start border-b px-4 py-3.5 text-left">
+            <AlertDialogTitle className="text-[13px] font-semibold">
+              {t('files.conflict.title')}
+            </AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('files.conflict.cancel')}</AlertDialogCancel>
-            <Button variant="outline" onClick={() => resolveConflict('rename')}>
-              {t('files.conflict.rename')}
-            </Button>
-            <AlertDialogAction onClick={() => resolveConflict('overwrite')}>
+          <AlertDialogDescription className="p-6 text-[13px] leading-[1.7]">
+            {conflict?.conflictingNames.map((name) => (
+              <span key={name} className="block font-medium text-foreground">
+                {t('files.conflict.exists', { name })}
+              </span>
+            ))}
+            {t('files.conflict.description')}
+          </AlertDialogDescription>
+          <AlertDialogFooter className="m-0 flex-row flex-wrap justify-end gap-2.5 px-[18px] py-3.5">
+            <AlertDialogAction
+              variant="destructive"
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+              onClick={() => resolveConflict('overwrite')}
+            >
               {t('files.conflict.overwrite')}
             </AlertDialogAction>
+            <Button
+              variant="outline"
+              className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
+              onClick={() => resolveConflict('rename')}
+            >
+              {t('files.conflict.rename')}
+            </Button>
+            <AlertDialogCancel
+              variant="ghost"
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+            >
+              {t('files.conflict.cancel')}
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

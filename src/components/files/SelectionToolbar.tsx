@@ -27,7 +27,7 @@ export function SelectionToolbar({
     <div
       role="toolbar"
       aria-label={t('files.selection.toolbar')}
-      className="flex flex-wrap items-center gap-2 border-b bg-primary/5 px-3 py-2"
+      className="flex min-h-14 flex-wrap items-center gap-2 border-b bg-primary/10 px-3.5 py-2"
     >
       <span className="text-sm font-medium text-primary">
         {t('files.selection.count', { count: selectedCount })}

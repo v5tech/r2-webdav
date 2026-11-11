@@ -4,15 +4,15 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { Breadcrumb } from '../../src/components/files/Breadcrumb'
 
 describe('Breadcrumb', () => {
-  it('shows only Home for empty cwd', () => {
+  it('shows only All files for empty cwd', () => {
     render(<Breadcrumb cwd="" onCwdChange={() => {}} />)
-    expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'All files' })).toBeInTheDocument()
     expect(screen.queryByText('foo')).toBeNull()
   })
 
   it('renders segments with trailing slash cwd', () => {
     render(<Breadcrumb cwd="foo/bar/" onCwdChange={() => {}} />)
-    expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'All files' })).toBeInTheDocument()
     expect(screen.getByText('foo')).toBeInTheDocument()
     expect(screen.getByText('bar')).toBeInTheDocument()
   })
@@ -27,10 +27,10 @@ describe('Breadcrumb', () => {
     expect(screen.getByRole('button', { name: 'foo' })).toBeInTheDocument()
   })
 
-  it('Home click calls onCwdChange("")', () => {
+  it('All files click calls onCwdChange("")', () => {
     const onCwdChange = vi.fn()
     render(<Breadcrumb cwd="foo/bar/" onCwdChange={onCwdChange} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+    fireEvent.click(screen.getByRole('button', { name: 'All files' }))
     expect(onCwdChange).toHaveBeenCalledWith('')
   })
 

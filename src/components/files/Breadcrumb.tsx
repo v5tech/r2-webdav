@@ -1,13 +1,14 @@
-import { HomeIcon } from 'lucide-react'
+import { ChevronRightIcon } from 'lucide-react'
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-
-import { Button } from '@/components/ui/button'
 
 interface BreadcrumbProps {
   cwd: string
   onCwdChange: (cwd: string) => void
 }
+
+const crumbButtonClass =
+  'rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50'
 
 export function Breadcrumb({ cwd, onCwdChange }: BreadcrumbProps) {
   const { t } = useTranslation()
@@ -15,29 +16,31 @@ export function Breadcrumb({ cwd, onCwdChange }: BreadcrumbProps) {
   const segments = trimmed ? trimmed.split('/') : []
 
   return (
-    <nav aria-label="breadcrumb" className="flex items-center gap-1 p-2">
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={t('nav.home')}
-        onClick={() => onCwdChange('')}
-      >
-        <HomeIcon />
-      </Button>
+    <nav
+      aria-label="breadcrumb"
+      className="mb-1.5 flex flex-wrap items-center gap-[5px] text-xs leading-4"
+    >
+      <button type="button" className={crumbButtonClass} onClick={() => onCwdChange('')}>
+        {t('nav.allFiles')}
+      </button>
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1
         const prefix = segments.slice(0, index + 1).join('/') + '/'
         return (
           <Fragment key={index}>
-            <span className="text-muted-foreground" aria-hidden="true">
-              /
-            </span>
+            <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
             {isLast ? (
-              <span className="px-2 text-sm font-medium">{segment}</span>
-            ) : (
-              <Button variant="link" size="sm" onClick={() => onCwdChange(prefix)}>
+              <span aria-current="page" className="font-semibold text-foreground">
                 {segment}
-              </Button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={crumbButtonClass}
+                onClick={() => onCwdChange(prefix)}
+              >
+                {segment}
+              </button>
             )}
           </Fragment>
         )

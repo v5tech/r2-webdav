@@ -13,6 +13,7 @@ describe('SortControls', () => {
   it('renders the current key and direction button', () => {
     render(<SortControls sortKey="name" sortDir="asc" onSortChange={() => {}} />)
     expect(screen.getByRole('button', { name: 'Sort key' })).toHaveTextContent('Name')
+    expect(screen.getByRole('button', { name: 'Sort key' })).toHaveClass('h-10', 'md:h-9')
     expect(screen.getByRole('button', { name: /sort direction/i })).toBeInTheDocument()
   })
 

@@ -12,14 +12,14 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange }: SearchBarProps) {
   const { t } = useTranslation()
   return (
-    <div className="relative flex items-center">
-      <SearchIcon className="absolute left-2.5 size-4 text-muted-foreground" aria-hidden="true" />
+    <div className="relative flex h-10 w-full items-center gap-2 rounded-md border border-transparent bg-muted/50 px-[11px] text-muted-foreground focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30">
+      <SearchIcon className="size-4 shrink-0" aria-hidden="true" />
       <Input
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t('files.search.placeholder')}
-        className="pl-8 pr-8"
+        className="h-auto flex-1 border-0 bg-transparent px-0 py-0 pr-8 text-sm leading-normal focus-visible:border-transparent focus-visible:ring-0 dark:bg-transparent"
       />
       {value ? (
         <Button

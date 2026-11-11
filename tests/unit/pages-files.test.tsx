@@ -106,14 +106,14 @@ describe('FilesPage', () => {
     fetchPathMock.mockRejectedValue(new Error('network down'))
     renderPage()
     expect(await screen.findByRole('alert')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /retry|reload/i })).toBeInTheDocument()
   })
 
   it('Retry button re-fetches', async () => {
     fetchPathMock.mockRejectedValueOnce(new Error('boom'))
     fetchPathMock.mockResolvedValueOnce([file({ key: 'x.txt' })])
     renderPage()
-    fireEvent.click(await screen.findByRole('button', { name: /retry/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /retry|reload/i }))
     expect(await screen.findByRole('button', { name: /open x\.txt/i })).toBeInTheDocument()
   })
 
@@ -208,13 +208,45 @@ describe('FilesPage', () => {
     await waitFor(() => expect(screen.getByTestId('location').dataset.search).toBe('?p=photos%2F'))
   })
 
+  it('clears the search from the empty results state', async () => {
+    fetchPathMock.mockResolvedValue([file({ key: 'a.txt' })])
+    renderPage()
+    await screen.findByRole('button', { name: /open a\.txt/i })
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'missing' } })
+    const clearButtons = await screen.findAllByRole('button', { name: /clear search|清空搜索/i })
+    expect(clearButtons).toHaveLength(2)
+    fireEvent.click(clearButtons[1])
+    expect(screen.getByRole('searchbox')).toHaveValue('')
+    expect(await screen.findByRole('button', { name: /open a\.txt/i })).toBeInTheDocument()
+  })
+
+  it('keeps the new folder dialog and actions within the mobile viewport', async () => {
+    fetchPathMock.mockResolvedValue([])
+    renderPage()
+    await openNewFolder()
+    expect(screen.getByRole('dialog')).toHaveClass('w-[min(480px,calc(100vw-32px))]')
+    expect(screen.getByRole('button', { name: /^cancel$/i }).parentElement).toHaveClass(
+      'flex-row',
+      'flex-wrap',
+    )
+  })
+
+  it('uses prototype header actions and search styling', async () => {
+    fetchPathMock.mockResolvedValue([])
+    renderPage()
+    const upload = await screen.findByRole('button', { name: /upload files|上传文件/i })
+    expect(upload).toHaveClass('h-11', 'md:h-10', 'rounded-md')
+    expect(screen.getByRole('button', { name: /all files|全部文件/i })).toBeInTheDocument()
+    expect(screen.getByRole('searchbox').parentElement).toHaveClass('bg-muted/50')
+  })
+
   it('Home breadcrumb clears the query', async () => {
     fetchPathMock.mockResolvedValueOnce([dir('photos')])
     fetchPathMock.mockResolvedValueOnce([])
     fetchPathMock.mockResolvedValueOnce([])
     renderPage('/files?p=photos/')
     await waitFor(() => expect(fetchPathMock).toHaveBeenCalledWith('photos/'))
-    fireEvent.click(screen.getByRole('button', { name: /^home$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^all files$|^全部文件$/i }))
     await waitFor(() => {
       expect(screen.getByTestId('location').dataset.search).toBe('')
     })

@@ -39,7 +39,11 @@ export function SortControls({ sortKey, sortDir, onSortChange }: SortControlsPro
     <div className="flex items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" aria-label={t('files.sort.key')}>
+          <Button
+            variant="ghost"
+            className="h-10 rounded-md px-2.5 text-xs font-normal md:h-9"
+            aria-label={t('files.sort.key')}
+          >
             <ArrowUpDownIcon />
             <span>{t(SORT_LABEL_KEY[sortKey])}</span>
             <ChevronDownIcon />
@@ -63,6 +67,7 @@ export function SortControls({ sortKey, sortDir, onSortChange }: SortControlsPro
       <Button
         variant="ghost"
         size="icon-sm"
+        className="h-10 w-10 rounded-md md:h-8 md:w-[30px]"
         aria-label={sortDir === 'asc' ? t('files.sort.directionAsc') : t('files.sort.directionDesc')}
         onClick={() => onSortChange(sortKey, sortDir === 'asc' ? 'desc' : 'asc')}
       >
