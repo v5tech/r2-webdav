@@ -60,7 +60,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
             onClick={onToggle}
             aria-label={t('nav.expand')}
           >
-            <span className="flex size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10">
+            <span className="flex size-9 items-center justify-center rounded-[9px] border border-primary/25 bg-primary/10">
               <img src="/logo144.png" alt="R2 WebDAV" className="size-6" />
             </span>
             <PanelLeftOpenIcon className="absolute -right-1 -bottom-1 size-4 rounded-md border bg-card p-0.5 text-muted-foreground group-hover:text-primary group-focus-visible:text-primary" />
@@ -74,15 +74,15 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
           </button>
         ) : (
           <>
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10">
+            <div className="flex min-w-0 items-center gap-[11px] px-2">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-[9px] border border-primary/25 bg-primary/10">
                 <img src="/logo144.png" alt="R2 WebDAV" className="size-6" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold tracking-tight">
+                <span className="block truncate text-[15px] leading-[1.2] font-semibold tracking-[-0.02em]">
                   {t('nav.brand')}
                 </span>
-                <span className="block text-[11px] text-muted-foreground">
+                <span className="mt-[3px] block text-[11px] leading-normal text-muted-foreground">
                   {t('nav.personalSpace')}
                 </span>
               </span>
@@ -90,7 +90,8 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
             {showCollapse ? (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
+                className="rounded-md"
                 onClick={onToggle}
                 aria-label={t('nav.collapse')}
                 title={t('nav.collapse')}
@@ -102,7 +103,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
         )}
       </div>
 
-      <nav aria-label="primary" className="flex flex-col gap-1">
+      <nav aria-label="primary" className="grid gap-[5px]">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -110,11 +111,11 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
             onClick={onNavigate}
             data-tooltip={collapsed ? label : undefined}
             className={({ isActive }) =>
-              `group relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${
-                collapsed ? 'justify-center px-0' : ''
+              `group relative flex min-h-[42px] items-center gap-[11px] rounded-md px-3 text-sm transition-colors ${
+                collapsed ? 'justify-center px-0 before:-left-2.5' : 'before:-left-4'
               } ${
                 isActive
-                  ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                  ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground before:absolute before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-r-[3px] before:bg-primary before:content-[\'\']'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`
             }
@@ -134,24 +135,26 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
         ))}
       </nav>
 
-      <div className="mt-auto pt-4">
+      <div className={`mt-auto border-t pt-[18px] ${collapsed ? 'px-0' : 'px-2'}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`group relative flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 ${
+              className={`group relative flex min-h-10 w-full items-center gap-2.5 rounded-md p-1 text-left transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 ${
                 collapsed ? 'justify-center px-0' : ''
               }`}
               aria-label={t('nav.account')}
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+              <span className="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                 {displayName.charAt(0).toUpperCase()}
               </span>
               {!collapsed ? (
                 <>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-medium">{displayName}</span>
-                    <span className="block text-[11px] text-muted-foreground">
+                    <span className="block truncate text-[13px] leading-normal font-semibold">
+                      {displayName}
+                    </span>
+                    <span className="mt-px block text-[11px] leading-normal text-muted-foreground">
                       {t('nav.owner')}
                     </span>
                   </span>

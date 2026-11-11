@@ -23,7 +23,7 @@ function renderSidebar(
   auth: AuthState = { status: 'authenticated', username: 'admin' },
 ) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/files']}>
       <AuthProvider value={auth}>
         <Sidebar collapsed={collapsed} onToggle={onToggle} />
       </AuthProvider>
@@ -40,6 +40,18 @@ describe('Sidebar navigation', () => {
     expect(screen.getByRole('link', { name: /trash|回收站/i }).getAttribute('href')).toBe('/trash')
     expect(screen.getByRole('link', { name: /settings|设置/i }).getAttribute('href')).toBe(
       '/settings',
+    )
+  })
+
+  it('applies the prototype navigation and account spacing', () => {
+    renderSidebar()
+    expect(screen.getByRole('link', { name: 'All files' })).toHaveClass(
+      'min-h-[42px]',
+      'before:bg-primary',
+    )
+    expect(screen.getByRole('button', { name: 'Account' }).parentElement).toHaveClass(
+      'border-t',
+      'pt-[18px]',
     )
   })
 

@@ -70,6 +70,20 @@ describe('AppShell desktop', () => {
     expect(await screen.findByText('admin')).toBeInTheDocument()
   })
 
+  it('places the full-height sidebar beside a workspace containing the header and main', () => {
+    renderShell()
+    const shell = document.querySelector('[data-collapsed]')
+    const sidebar = shell?.querySelector(':scope > aside')
+    const workspace = shell?.querySelector(':scope > div')
+    const header = screen.getByRole('banner')
+    const main = screen.getByRole('main')
+
+    expect(sidebar).toBeInTheDocument()
+    expect(workspace).toContainElement(header)
+    expect(workspace).toContainElement(main)
+    expect(workspace).not.toContainElement(sidebar)
+  })
+
   it('does not show mobile menu button on desktop', () => {
     renderShell()
     expect(screen.queryByRole('button', { name: /open menu|打开菜单/i })).toBeNull()
@@ -80,6 +94,10 @@ describe('AppShell desktop', () => {
     const shell = document.querySelector('[data-collapsed]')
     fireEvent.click(screen.getByRole('button', { name: /collapse navigation|折叠导航/i }))
     expect(shell).toHaveAttribute('data-collapsed', 'true')
+    expect(shell).not.toHaveClass(
+      'md:grid-cols-[216px_minmax(0,1fr)]',
+      'lg:grid-cols-[240px_minmax(0,1fr)]',
+    )
     expect(localStorage.getItem('r2_sidebar_collapsed')).toBe('1')
     fireEvent.click(screen.getByRole('button', { name: /expand navigation|展开导航/i }))
     expect(shell).toHaveAttribute('data-collapsed', 'false')

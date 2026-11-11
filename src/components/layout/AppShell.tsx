@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom'
 
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { useViewport } from '@/hooks/use-viewport'
+import { cn } from '@/lib/utils'
 
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
@@ -36,32 +37,36 @@ export function AppShell({ children }: AppShellProps) {
   ]
 
   return (
-    <div className="flex h-full flex-col" data-collapsed={collapsed}>
-      <Header showMenuButton={isMobile} onMenuClick={() => setMobileSidebarOpen(true)} />
-      <div className="flex flex-1 overflow-hidden">
-        {!isMobile ? (
-          <aside
-            className={`shrink-0 border-r bg-card px-4 py-6 transition-[width] ${
-              collapsed ? 'w-[76px]' : 'w-60'
-            }`}
-          >
-            <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
-          </aside>
-        ) : (
-          <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-            <SheetContent side="left" className="w-64 p-4">
-              <SheetTitle className="sr-only">{t('nav.menu')}</SheetTitle>
-              <SheetDescription className="sr-only">{t('nav.primary')}</SheetDescription>
-              <Sidebar
-                collapsed={false}
-                showCollapse={false}
-                onToggle={() => {}}
-                onNavigate={() => setMobileSidebarOpen(false)}
-              />
-            </SheetContent>
-          </Sheet>
-        )}
-        <main className={`flex-1 overflow-auto ${isMobile ? 'pb-20' : ''}`}>{children}</main>
+    <div
+      className={cn(
+        'h-dvh overflow-hidden md:grid md:grid-cols-[216px_minmax(0,1fr)] md:transition-[grid-template-columns] md:duration-200 lg:grid-cols-[240px_minmax(0,1fr)]',
+        collapsed && 'md:grid-cols-[76px_minmax(0,1fr)] lg:grid-cols-[76px_minmax(0,1fr)]',
+      )}
+      data-collapsed={collapsed}
+    >
+      {!isMobile ? (
+        <aside className="flex min-h-0 flex-col border-r bg-card px-4 pt-6 pb-[18px]">
+          <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} />
+        </aside>
+      ) : (
+        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+          <SheetContent side="left" className="w-64 p-4">
+            <SheetTitle className="sr-only">{t('nav.menu')}</SheetTitle>
+            <SheetDescription className="sr-only">{t('nav.primary')}</SheetDescription>
+            <Sidebar
+              collapsed={false}
+              showCollapse={false}
+              onToggle={() => {}}
+              onNavigate={() => setMobileSidebarOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+      <div className="flex h-dvh min-h-0 min-w-0 flex-col md:h-auto">
+        <Header showMenuButton={isMobile} onMenuClick={() => setMobileSidebarOpen(true)} />
+        <main className={`min-h-0 flex-1 overflow-auto ${isMobile ? 'pb-20' : ''}`}>
+          {children}
+        </main>
       </div>
       {isMobile ? (
         <nav
