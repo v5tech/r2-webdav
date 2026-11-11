@@ -132,21 +132,39 @@
 @layer components {
   .login-page {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
-    background-image:
-      radial-gradient(
-        ellipse at 50% 35%,
-        color-mix(in oklab, var(--primary) 10%, transparent),
-        transparent 62%
-      ),
-      radial-gradient(
-        color-mix(in oklab, var(--border) 75%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 100% 100%, 24px 24px;
+  }
+
+  .login-page::before,
+  .login-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .login-page::before {
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--border) 75%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+    opacity: 0.42;
+  }
+
+  .login-page::after {
+    background: radial-gradient(
+      ellipse at 50% 35%,
+      color-mix(in oklab, var(--primary) 10%, transparent),
+      transparent 62%
+    );
   }
 
   .login-card {
+    position: relative;
+    z-index: 1;
     box-shadow: 0 18px 50px color-mix(in oklab, var(--foreground) 9%, transparent);
   }
 }

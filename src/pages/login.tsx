@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ShieldCheckIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -6,14 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
@@ -62,81 +55,107 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="login-page flex min-h-full items-center justify-center p-4">
-      <Card className="login-card w-full max-w-sm border shadow-xl">
-        <CardHeader>
-          <div className="mb-4 flex items-center gap-3">
+    <main className="login-page flex min-h-full items-center justify-center p-6">
+      <section
+        aria-labelledby="login-title"
+        className="login-card w-full max-w-[420px] rounded-[14px] border bg-card p-7 text-sm text-card-foreground sm:p-8"
+      >
+        <div>
+          <div className="mb-8 flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10">
               <img src="/logo144.png" alt="R2 WebDAV" className="size-6" />
             </span>
             <span>
-              <span className="block text-sm font-semibold tracking-tight">{t('nav.brand')}</span>
-              <span className="block text-[11px] text-muted-foreground">
+              <span className="block text-sm leading-normal font-semibold tracking-tight">
+                {t('nav.brand')}
+              </span>
+              <span className="block text-[11px] leading-normal text-muted-foreground">
                 {t('nav.personalSpace')}
               </span>
             </span>
           </div>
-          <CardTitle className="text-2xl tracking-tight">{t('login.title')}</CardTitle>
-          <CardDescription>{t('login.description')}</CardDescription>
-        </CardHeader>
+          <h1
+            id="login-title"
+            className="text-[28px] leading-[42px] font-bold tracking-[-0.04em]"
+          >
+            {t('login.title')}
+          </h1>
+          <p className="mt-2 mb-[30px] text-[13px] leading-normal text-muted-foreground">
+            {t('login.description')}
+          </p>
+        </div>
+        {submitError ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {submitError}
+          </div>
+        ) : null}
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <CardContent>
-            <FieldGroup>
-              <Controller
-                control={control}
-                name="username"
-                render={({ field: { ref: _ref, ...field }, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor="username">{t('login.username')}</FieldLabel>
-                    <Input
-                      {...field}
-                      id="username"
-                      type="text"
-                      autoComplete="username"
-                      aria-invalid={fieldState.invalid || undefined}
-                    />
-                    {fieldState.error?.message ? (
-                      <FieldError>{fieldState.error.message}</FieldError>
-                    ) : null}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { ref: _ref, ...field }, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid || undefined}>
-                    <FieldLabel htmlFor="password">{t('login.password')}</FieldLabel>
-                    <Input
-                      {...field}
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      aria-invalid={fieldState.invalid || undefined}
-                    />
-                    {fieldState.error?.message ? (
-                      <FieldError>{fieldState.error.message}</FieldError>
-                    ) : null}
-                  </Field>
-                )}
-              />
-              {submitError ? (
-                <div
-                  role="alert"
-                  className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-                >
-                  {submitError}
-                </div>
-              ) : null}
-            </FieldGroup>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? t('login.submitting') : t('login.submit')}
-            </Button>
-          </CardFooter>
+          <FieldGroup className="gap-[18px]">
+            <Controller
+              control={control}
+              name="username"
+              render={({ field: { ref: _ref, ...field }, fieldState }) => (
+                <Field className="gap-[7px]" data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel className="text-xs leading-normal font-medium" htmlFor="username">
+                    {t('login.username')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    placeholder={t('login.usernamePlaceholder')}
+                    required
+                    className="h-[42px] rounded-md px-3 py-2.5 text-sm leading-normal"
+                    aria-invalid={fieldState.invalid || undefined}
+                  />
+                  {fieldState.error?.message ? (
+                    <FieldError>{fieldState.error.message}</FieldError>
+                  ) : null}
+                </Field>
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { ref: _ref, ...field }, fieldState }) => (
+                <Field className="gap-[7px]" data-invalid={fieldState.invalid || undefined}>
+                  <FieldLabel className="text-xs leading-normal font-medium" htmlFor="password">
+                    {t('login.password')}
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder={t('login.passwordPlaceholder')}
+                    required
+                    className="h-[42px] rounded-md px-3 py-2.5 text-sm leading-normal"
+                    aria-invalid={fieldState.invalid || undefined}
+                  />
+                  {fieldState.error?.message ? (
+                    <FieldError>{fieldState.error.message}</FieldError>
+                  ) : null}
+                </Field>
+              )}
+            />
+          </FieldGroup>
+          <Button
+            type="submit"
+            className="mt-6 h-10 w-full rounded-md px-3.5 text-[13px] leading-normal font-semibold"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? t('login.submitting') : t('login.submit')}
+          </Button>
         </form>
-      </Card>
+        <div className="mt-5 flex items-start gap-2 text-[11px] leading-[1.6] text-muted-foreground">
+          <ShieldCheckIcon className="mt-px size-[15px] shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span>{t('login.security')}</span>
+        </div>
+      </section>
     </main>
   )
 }

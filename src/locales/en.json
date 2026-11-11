@@ -212,6 +212,8 @@
     "security": "Credentials are verified only by this deployment. Successful sign-in uses an HttpOnly session cookie.",
     "username": "Username",
     "password": "Password",
+    "usernamePlaceholder": "Enter owner username",
+    "passwordPlaceholder": "Enter owner password",
     "submit": "Sign in",
     "submitting": "Signing in...",
     "validation": {

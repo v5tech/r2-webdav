@@ -212,6 +212,8 @@
     "security": "凭据仅由当前部署验证。登录成功后使用 HttpOnly 会话 Cookie。",
     "username": "用户名",
     "password": "密码",
+    "usernamePlaceholder": "输入所有者用户名",
+    "passwordPlaceholder": "输入所有者密码",
     "submit": "登录",
     "submitting": "登录中…",
     "validation": {

@@ -33,6 +33,19 @@ describe('LoginPage', () => {
     vi.unstubAllGlobals()
   })
 
+  it('renders the prototype content and accessible login semantics', () => {
+    renderLogin()
+    expect(screen.getByRole('heading', { level: 1, name: /登录|sign in/i })).toBeInTheDocument()
+
+    const username = screen.getByLabelText(/用户名|username/i)
+    const password = screen.getByLabelText(/密码|password/i)
+    expect(username.getAttribute('placeholder')).toMatch(/输入所有者用户名|enter owner username/i)
+    expect(password.getAttribute('placeholder')).toMatch(/输入所有者密码|enter owner password/i)
+    expect(username).toBeRequired()
+    expect(password).toBeRequired()
+    expect(screen.getByText(/HttpOnly/)).toBeInTheDocument()
+  })
+
   it('shows validation errors on empty submit', async () => {
     renderLogin()
     fireEvent.click(screen.getByRole('button', { name: /登录|sign in|log in/i }))
