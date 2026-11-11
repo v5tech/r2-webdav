@@ -70,13 +70,20 @@ export function TextPadDrawer({ open, onOpenChange, cwd, onSave }: TextPadDrawer
   return (
     <>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent side="right" className="flex w-full flex-col gap-4 sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>{t('textpad.title')}</SheetTitle>
-            <SheetDescription>{t('textpad.description')}</SheetDescription>
+        <SheetContent
+          side="right"
+          className="flex w-full flex-col gap-0 p-6 sm:max-w-[440px] data-[side=right]:sm:max-w-[440px]"
+        >
+          <SheetHeader className="mb-6 p-0">
+            <SheetTitle className="text-[21px] leading-normal font-semibold">
+              {t('textpad.title')}
+            </SheetTitle>
+            <SheetDescription className="mt-1.5 text-xs">
+              {t('textpad.description')}
+            </SheetDescription>
           </SheetHeader>
-          <FieldGroup className="flex flex-1 flex-col gap-4 px-4">
-            <Field>
+          <FieldGroup className="flex flex-1 flex-col gap-[18px] px-0">
+            <Field className="gap-[7px]">
               <FieldLabel htmlFor="textpad-name">{t('textpad.name')}</FieldLabel>
               <Input
                 id="textpad-name"
@@ -84,9 +91,10 @@ export function TextPadDrawer({ open, onOpenChange, cwd, onSave }: TextPadDrawer
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoComplete="off"
+                className="h-[42px] rounded-md px-3 py-2.5 text-sm leading-normal"
               />
             </Field>
-            <Field className="flex flex-1 flex-col">
+            <Field className="flex flex-1 flex-col gap-[7px]">
               <FieldLabel htmlFor="textpad-body">{t('textpad.body')}</FieldLabel>
               <textarea
                 id="textpad-body"
@@ -96,13 +104,13 @@ export function TextPadDrawer({ open, onOpenChange, cwd, onSave }: TextPadDrawer
                 rows={18}
                 placeholder={t('textpad.placeholder')}
                 className={cn(
-                  'flex-1 resize-none rounded-lg border border-input bg-transparent px-3 py-2 font-mono text-xs outline-none transition-colors',
+                  'min-h-[260px] flex-1 resize-none rounded-md border border-input bg-muted/50 px-3 py-2.5 font-mono text-xs leading-normal outline-none transition-colors',
                   'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50',
                   'dark:bg-input/30',
                 )}
               />
             </Field>
-            <div className="flex justify-between text-[11px] text-muted-foreground">
+            <div className="-mt-2.5 flex justify-between text-[11px] text-muted-foreground">
               <span>
                 {t('textpad.bytes', {
                   value: new TextEncoder().encode(body).length.toLocaleString(),
@@ -113,9 +121,18 @@ export function TextPadDrawer({ open, onOpenChange, cwd, onSave }: TextPadDrawer
               </span>
             </div>
           </FieldGroup>
-          <SheetFooter>
+          <SheetFooter className="mt-auto flex-row justify-end gap-2.5 p-0 pt-5">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
+              onClick={() => handleOpenChange(false)}
+            >
+              {t('textpad.cancel')}
+            </Button>
             <Button
               data-testid="textpad-save"
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
               onClick={handleSave}
               disabled={!body.trim() || !name.trim()}
             >
@@ -125,16 +142,25 @@ export function TextPadDrawer({ open, onOpenChange, cwd, onSave }: TextPadDrawer
         </SheetContent>
       </Sheet>
       <AlertDialog open={unsavedOpen} onOpenChange={setUnsavedOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('textpad.unsavedTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('textpad.unsavedDescription')}</AlertDialogDescription>
+        <AlertDialogContent className="w-[min(480px,calc(100vw-32px))] max-w-none gap-0 rounded-2xl p-0 data-[size=default]:max-w-[calc(100vw-32px)] sm:max-w-[480px] data-[size=default]:sm:max-w-[480px]">
+          <AlertDialogHeader className="place-items-start border-b px-4 py-3.5 text-left">
+            <AlertDialogTitle className="text-[13px] font-semibold">
+              {t('textpad.unsavedTitle')}
+            </AlertDialogTitle>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setUnsavedOpen(false)}>
+          <AlertDialogDescription className="p-6 text-[13px] leading-[1.7]">
+            {t('textpad.unsavedDescription')}
+          </AlertDialogDescription>
+          <AlertDialogFooter className="m-0 flex-row justify-end gap-2.5 px-[18px] py-3.5">
+            <AlertDialogCancel
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+              onClick={() => setUnsavedOpen(false)}
+            >
               {t('textpad.continue')}
             </AlertDialogCancel>
             <AlertDialogAction
+              variant="destructive"
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
               onClick={() => {
                 setUnsavedOpen(false)
                 reset()

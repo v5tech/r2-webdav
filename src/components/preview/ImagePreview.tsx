@@ -7,7 +7,7 @@ interface ImagePreviewProps {
 
 export function ImagePreview({ fileKey, name }: ImagePreviewProps) {
   return (
-    <div className="flex items-center justify-center p-2">
+    <div className="flex w-full items-center justify-center p-6">
       <img
         src={`/webdav/${encodeKey(fileKey)}`}
         alt={name}

@@ -78,13 +78,13 @@ export function NewFolderDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="w-[min(480px,calc(100vw-32px))] max-w-none gap-0 rounded-2xl p-0 sm:max-w-[480px]">
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <DialogHeader>
+          <DialogHeader className="border-b px-4 py-3.5">
             <DialogTitle>{t('files.newFolder.title')}</DialogTitle>
             <DialogDescription>{t('files.newFolder.description')}</DialogDescription>
           </DialogHeader>
-          <FieldGroup>
+          <FieldGroup className="p-6">
             <Controller
               control={control}
               name="name"
@@ -96,6 +96,7 @@ export function NewFolderDialog({
                     id="folder-name"
                     type="text"
                     autoComplete="off"
+                    className="h-[42px] rounded-md px-3 py-2.5 text-sm leading-normal"
                     aria-invalid={fieldState.invalid || undefined}
                   />
                   {fieldState.error?.message ? (
@@ -113,16 +114,21 @@ export function NewFolderDialog({
               </div>
             ) : null}
           </FieldGroup>
-          <DialogFooter>
+          <DialogFooter className="m-0 flex-row flex-wrap justify-end px-[18px] py-3.5">
             <Button
               type="button"
               variant="outline"
+              className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
               onClick={() => handleClose(false)}
               disabled={isSubmitting}
             >
               {t('files.newFolder.cancel')}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+              disabled={isSubmitting}
+            >
               {t('files.newFolder.create')}
             </Button>
           </DialogFooter>

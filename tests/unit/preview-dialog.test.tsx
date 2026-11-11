@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { act } from '@testing-library/react'
 
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: { workerSrc: '' },
   getDocument: () => ({ promise: new Promise(() => {}) }),
 }))
+
+import i18n from '@/lib/i18n'
 
 import { PreviewDialog } from '../../src/components/preview/PreviewDialog'
 import type { FileItem } from '../../src/lib/types'
@@ -58,6 +61,37 @@ describe('PreviewDialog type dispatch', () => {
     )
     renderPreview(makeFile('text/plain', 'readme.txt'))
     expect(document.querySelector('[data-testid^="text-preview"]')).not.toBeNull()
+    vi.unstubAllGlobals()
+  })
+
+  it('uses the prototype dialog frame and read-only toolbar', () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})))
+    renderPreview(makeFile('text/plain', 'readme.txt'))
+    expect(screen.getByRole('dialog')).toHaveClass(
+      'sm:max-w-[760px]',
+      'rounded-2xl',
+      'p-0',
+    )
+    expect(screen.getByText(/Plain text · UTF-8/)).toBeInTheDocument()
+    expect(screen.getByText('Read-only preview')).toBeInTheDocument()
+    vi.unstubAllGlobals()
+  })
+
+  it('updates the read-only toolbar when the interface language changes', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockReturnValue(new Promise(() => {})))
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+    renderPreview(makeFile('text/plain', 'readme.txt'))
+    expect(screen.getByText(/Plain text · UTF-8/)).toBeInTheDocument()
+    await act(async () => {
+      await i18n.changeLanguage('zh')
+    })
+    expect(screen.getByText(/纯文本 · UTF-8/)).toBeInTheDocument()
+    expect(screen.getByText('只读预览')).toBeInTheDocument()
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
     vi.unstubAllGlobals()
   })
 

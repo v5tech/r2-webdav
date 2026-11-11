@@ -1,14 +1,18 @@
+import { XIcon } from 'lucide-react'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { MimeIcon, fileTypeClass } from '@/components/files/MimeIcon'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { formatFileSize, formatFileTime } from '@/lib/format'
+import { formatFileSize, formatFileTime, getFileTypeLabel } from '@/lib/format'
 import type { FileItem } from '@/lib/types'
 
 import { AudioPreview } from './AudioPreview'
@@ -194,12 +198,14 @@ function dispatchBody(file: FileItem) {
 }
 
 export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const returnFocusRef = useRef<HTMLElement | null>(null)
+  const kind = file ? pickPreviewKind(file) : null
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-3xl"
+        className="w-[min(760px,calc(100vw-32px))] max-w-none gap-0 rounded-2xl p-0 sm:max-w-[760px]"
+        showCloseButton={false}
         onOpenAutoFocus={() => {
           returnFocusRef.current =
             document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -213,35 +219,62 @@ export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) 
           }
         }}
       >
-        <DialogHeader>
-          <DialogTitle className="truncate">{file ? extractFilename(file.key) : ''}</DialogTitle>
+        <DialogHeader className="flex-row items-center justify-between gap-3 border-b px-4 py-3.5">
+          <DialogTitle className="flex min-w-0 items-center gap-2.5 text-[13px] font-semibold">
+            {file ? (
+              <span
+                className={`flex size-9 shrink-0 items-center justify-center rounded-[9px] ${fileTypeClass(file, false)}`}
+              >
+                <MimeIcon contentType={file.httpMetadata.contentType} className="size-[18px]" />
+              </span>
+            ) : null}
+            <span className="truncate">{file ? extractFilename(file.key) : ''}</span>
+          </DialogTitle>
           <DialogDescription className="sr-only">{file?.key ?? ''}</DialogDescription>
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9 shrink-0 rounded-md"
+              aria-label={t('preview.close')}
+            >
+              <XIcon />
+            </Button>
+          </DialogClose>
         </DialogHeader>
-        <div className="max-h-[80vh] overflow-auto">{file ? dispatchBody(file) : null}</div>
+        <div className="max-h-[70vh] overflow-auto bg-muted/40">
+          {file && (kind === 'code' || kind === 'text') ? (
+            <div className="flex items-center justify-between border-b px-3.5 py-2.5 text-[11px] text-muted-foreground">
+              <span>{t('preview.encoding', { type: getFileTypeLabel(file, false, i18n.language) })}</span>
+              <span>{t('preview.readOnly')}</span>
+            </div>
+          ) : null}
+          <div className="min-h-[340px]">{file ? dispatchBody(file) : null}</div>
+        </div>
         {file ? (
-          <div className="flex flex-wrap gap-x-6 gap-y-3 border-t px-4 py-3 text-[11px] text-muted-foreground">
+          <div className="flex flex-wrap gap-x-6 gap-y-3 border-t px-[18px] py-3.5 text-[11px] text-muted-foreground">
             <span>
               {t('preview.fileSize')}
-              <strong className="ml-2 font-medium text-foreground">
+              <strong className="mt-0.5 block text-xs font-medium text-foreground">
                 {formatFileSize(file.size)}
               </strong>
-              <small className="mt-1 block">
+              <small className="mt-[3px] block text-[10px]">
                 {t('files.bytes', { value: file.size.toLocaleString() })}
               </small>
             </span>
             <span>
               {t('preview.modified')}
-              <strong className="ml-2 font-medium text-foreground tabular-nums">
+              <strong className="mt-0.5 block text-xs font-medium text-foreground tabular-nums">
                 {formatFileTime(file.uploaded)}
               </strong>
-              <small className="mt-1 block">
+              <small className="mt-[3px] block text-[10px]">
                 {t('preview.utcTime', { time: formatFileTime(file.uploaded, undefined, 'UTC') })}
               </small>
             </span>
             <span>
               {t('preview.location')}
               <strong
-                className="ml-2 block max-w-64 truncate font-medium text-foreground"
+                className="mt-0.5 block max-w-64 truncate text-xs font-medium text-foreground"
                 title={file.key}
               >
                 /{file.key}

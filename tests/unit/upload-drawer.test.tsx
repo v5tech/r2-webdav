@@ -68,6 +68,21 @@ describe('UploadDrawer', () => {
     expect(bar.getAttribute('aria-valuemax')).toBe('100')
   })
 
+  it('uses the prototype panel and completed progress treatment', () => {
+    const { container } = render(
+      <UploadDrawer tasks={[task({ status: 'completed' })]} onClearCompleted={() => {}} />,
+    )
+    expect(container.firstChild).toHaveClass(
+      'w-[380px]',
+      'rounded-[14px]',
+      'bottom-[82px]',
+      'right-4',
+      'md:bottom-6',
+      'md:right-6',
+    )
+    expect(container.querySelector('.bg-emerald-500')).not.toBeNull()
+  })
+
   it('Clear completed button calls onClearCompleted', () => {
     const onClearCompleted = vi.fn()
     render(

@@ -22,6 +22,12 @@ describe('TextPadDrawer', () => {
     expect(screen.getByTestId('textpad-body')).toBeInTheDocument()
   })
 
+  it('uses the prototype drawer width and provides a cancel action', () => {
+    render(<TextPadDrawer open onOpenChange={vi.fn()} cwd="" onSave={vi.fn()} />)
+    expect(screen.getByRole('dialog')).toHaveClass('sm:max-w-[440px]')
+    expect(screen.getByRole('button', { name: /^cancel$/i })).toHaveClass('h-10')
+  })
+
   it('defaults filename to note.txt', () => {
     render(<TextPadDrawer open onOpenChange={vi.fn()} cwd="" onSave={vi.fn()} />)
     expect(screen.getByTestId('textpad-name')).toHaveValue('note.txt')
@@ -84,6 +90,16 @@ describe('TextPadDrawer', () => {
       await i18n.changeLanguage('zh')
     })
     expect(screen.getByText('文本', { exact: true })).toBeInTheDocument()
+  })
+
+  it('keeps the unsaved confirmation within the mobile viewport', () => {
+    render(<TextPadDrawer open onOpenChange={vi.fn()} cwd="" onSave={vi.fn()} />)
+    fireEvent.change(screen.getByTestId('textpad-body'), { target: { value: 'draft' } })
+    fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+    expect(screen.getByRole('alertdialog')).toHaveClass(
+      'w-[min(480px,calc(100vw-32px))]',
+      'data-[size=default]:max-w-[calc(100vw-32px)]',
+    )
   })
 
   it('asks before discarding unsaved changes', () => {

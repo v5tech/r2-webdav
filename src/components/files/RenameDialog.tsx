@@ -76,11 +76,11 @@ function RenameForm({ file, onRenamed, onClose }: RenameFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <DialogHeader>
+      <DialogHeader className="border-b px-4 py-3.5">
         <DialogTitle>{t('files.rename.title')}</DialogTitle>
         <DialogDescription>{t('files.rename.description')}</DialogDescription>
       </DialogHeader>
-      <FieldGroup>
+      <FieldGroup className="p-6">
         <Controller
           control={control}
           name="name"
@@ -94,6 +94,7 @@ function RenameForm({ file, onRenamed, onClose }: RenameFormProps) {
                 id="rename-name"
                 type="text"
                 autoComplete="off"
+                className="h-[42px] rounded-md px-3 py-2.5 text-sm leading-normal"
                 aria-invalid={fieldState.invalid || undefined}
               />
               {fieldState.error?.message ? (
@@ -111,16 +112,21 @@ function RenameForm({ file, onRenamed, onClose }: RenameFormProps) {
           </div>
         ) : null}
       </FieldGroup>
-      <DialogFooter>
+      <DialogFooter className="m-0 flex-row flex-wrap justify-end px-[18px] py-3.5">
         <Button
           type="button"
           variant="outline"
+          className="h-10 rounded-md bg-card px-3.5 text-[13px] font-semibold"
           onClick={onClose}
           disabled={isSubmitting}
         >
           {t('files.rename.cancel')}
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="h-10 rounded-md px-3.5 text-[13px] font-semibold"
+          disabled={isSubmitting}
+        >
           {t('files.rename.confirm')}
         </Button>
       </DialogFooter>
@@ -131,7 +137,7 @@ function RenameForm({ file, onRenamed, onClose }: RenameFormProps) {
 export function RenameDialog({ open, onOpenChange, file, onRenamed }: RenameDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[min(480px,calc(100vw-32px))] max-w-none gap-0 rounded-2xl p-0 sm:max-w-[480px]">
         {file ? (
           <RenameForm
             key={file.key}
