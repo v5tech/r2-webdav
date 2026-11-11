@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { useState } from 'react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('pdfjs-dist', () => ({
@@ -63,5 +64,34 @@ describe('PreviewDialog type dispatch', () => {
   it('renders UnsupportedPreview for unknown contentType', () => {
     renderPreview(makeFile('application/octet-stream', 'blob.bin'))
     expect(screen.getByTestId('unsupported-preview')).toBeInTheDocument()
+  })
+
+  it('restores focus to the control that opened the preview after Escape', async () => {
+    function Harness() {
+      const [file, setFile] = useState<FileItem | null>(null)
+      return (
+        <>
+          <button onClick={() => setFile(makeFile('application/octet-stream', 'blob.bin'))}>
+            Open preview
+          </button>
+          <PreviewDialog
+            file={file}
+            open={file !== null}
+            onOpenChange={(open) => {
+              if (!open) setFile(null)
+            }}
+          />
+        </>
+      )
+    }
+
+    render(<Harness />)
+    const trigger = screen.getByRole('button', { name: 'Open preview' })
+    trigger.focus()
+    fireEvent.click(trigger)
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.keyDown(dialog, { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(trigger).toHaveFocus())
   })
 })

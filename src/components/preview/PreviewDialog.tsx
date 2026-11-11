@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -194,9 +195,24 @@ function dispatchBody(file: FileItem) {
 
 export function PreviewDialog({ file, open, onOpenChange }: PreviewDialogProps) {
   const { t } = useTranslation()
+  const returnFocusRef = useRef<HTMLElement | null>(null)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent
+        className="max-w-3xl"
+        onOpenAutoFocus={() => {
+          returnFocusRef.current =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null
+        }}
+        onCloseAutoFocus={(event) => {
+          const returnFocus = returnFocusRef.current
+          returnFocusRef.current = null
+          if (returnFocus?.isConnected) {
+            event.preventDefault()
+            returnFocus.focus()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="truncate">{file ? extractFilename(file.key) : ''}</DialogTitle>
           <DialogDescription className="sr-only">{file?.key ?? ''}</DialogDescription>

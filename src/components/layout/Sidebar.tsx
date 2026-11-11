@@ -66,6 +66,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
             <PanelLeftOpenIcon className="absolute -right-1 -bottom-1 size-4 rounded-md border bg-card p-0.5 text-muted-foreground group-hover:text-primary group-focus-visible:text-primary" />
             <span
               role="tooltip"
+              aria-hidden="true"
               className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 rounded-md bg-foreground px-2 py-1 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
             >
               {t('nav.expand')}
@@ -123,6 +124,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
             {collapsed ? (
               <span
                 role="tooltip"
+                aria-hidden="true"
                 className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 rounded-md bg-foreground px-2 py-1 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
               >
                 {label}
@@ -137,7 +139,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`group flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 ${
+              className={`group relative flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 ${
                 collapsed ? 'justify-center px-0' : ''
               }`}
               aria-label={t('nav.account')}
@@ -159,6 +161,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, showCollapse = true }
               {collapsed ? (
                 <span
                   role="tooltip"
+                  aria-hidden="true"
                   className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 rounded-md bg-foreground px-2 py-1 text-xs font-medium whitespace-nowrap text-background opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
                 >
                   {t('nav.account')}

@@ -53,13 +53,16 @@ describe('Sidebar navigation', () => {
   it('keeps the logo as the expand action and exposes icon tooltips when collapsed', () => {
     renderSidebar(true)
     expect(screen.getByRole('button', { name: /expand navigation|展开导航/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /all files|全部文件/i })).toHaveAttribute(
-      'data-tooltip',
-    )
+    expect(screen.getByRole('link', { name: 'All files' })).toHaveAttribute('data-tooltip')
   })
 })
 
 describe('Sidebar account', () => {
+  it('positions the collapsed account tooltip relative to its trigger', () => {
+    renderSidebar(true)
+    expect(screen.getByRole('button', { name: 'Account' })).toHaveClass('relative')
+  })
+
   it('shows the authenticated username and account actions', async () => {
     renderSidebar()
     expect(await screen.findByText('admin')).toBeInTheDocument()
