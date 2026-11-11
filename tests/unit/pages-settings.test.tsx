@@ -47,6 +47,20 @@ describe('SettingsPage theme section', () => {
     expect(screen.getByRole('radio', { name: /^system$/i })).toBeInTheDocument()
   })
 
+  it('uses the prototype panel and control sizing', () => {
+    renderPage()
+    const themeGroup = screen.getByRole('group', { name: /theme/i })
+    expect(themeGroup).toHaveClass('gap-[7px]', 'md:gap-3')
+    expect(themeGroup.closest('section[aria-label]')).toHaveClass(
+      'max-w-[900px]',
+      'rounded-[14px]',
+    )
+    expect(screen.getByRole('radio', { name: 'English' })).toHaveClass(
+      'min-w-[110px]',
+      'rounded-md',
+    )
+  })
+
   it('selecting Dark calls applyTheme + setStoredTheme', async () => {
     renderPage()
     fireEvent.click(screen.getByRole('radio', { name: /^dark$/i }))

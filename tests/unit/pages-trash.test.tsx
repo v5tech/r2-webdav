@@ -55,6 +55,17 @@ describe('TrashPage', () => {
     expect(screen.getByText(/^3$/)).toBeInTheDocument()
   })
 
+  it('uses prototype row sizing and exposes the existing item count as a subtitle', async () => {
+    fetchTrashMock.mockResolvedValue([
+      { deletedAt: 1716499000000, rootEntries: ['docs'], totalCount: 3 },
+    ])
+    renderPage()
+    const entry = await screen.findByText('docs')
+    expect(entry.closest('tr')).toHaveClass('h-[58px]')
+    expect(screen.getByText(/3 items|3 个项目/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /restore|恢复/i })).toHaveClass('h-[34px]')
+  })
+
   it('shows error state when fetch rejects', async () => {
     fetchTrashMock.mockRejectedValue(new Error('boom'))
     renderPage()
