@@ -7,6 +7,20 @@ import {
   VideoIcon,
 } from 'lucide-react'
 
+import type { FileItem } from '@/lib/types'
+
+export function fileTypeClass(file: FileItem, directory: boolean): string {
+  const type = file.httpMetadata.contentType
+  if (directory) return 'bg-primary/10 text-primary'
+  if (type.startsWith('image/')) return 'bg-sky-500/10 text-sky-600'
+  if (type === 'application/pdf') return 'bg-rose-500/10 text-rose-600'
+  if (type.startsWith('video/') || type.startsWith('audio/')) {
+    return 'bg-violet-500/10 text-violet-600'
+  }
+  if (type.startsWith('text/')) return 'bg-emerald-500/10 text-emerald-600'
+  return 'bg-muted text-muted-foreground'
+}
+
 interface MimeIconProps {
   contentType: string
   className?: string

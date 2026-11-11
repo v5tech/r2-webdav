@@ -12,7 +12,7 @@ import { formatFileSize, splitFilename } from '@/lib/format'
 import type { FileItem } from '@/lib/types'
 import { encodeKey, isDirectory } from '@/lib/webdav'
 
-import { MimeIcon } from './MimeIcon'
+import { fileTypeClass, MimeIcon } from './MimeIcon'
 
 interface FileCardProps {
   file: FileItem
@@ -26,17 +26,6 @@ interface FileCardProps {
 
 function extractFilename(key: string) {
   return key.replace(/\/$/, '').split('/').pop() ?? key
-}
-
-function typeClass(file: FileItem, dir: boolean) {
-  const type = file.httpMetadata.contentType
-  if (dir) return 'bg-primary/10 text-primary'
-  if (type.startsWith('image/')) return 'bg-sky-500/10 text-sky-600'
-  if (type === 'application/pdf') return 'bg-rose-500/10 text-rose-600'
-  if (type.startsWith('video/') || type.startsWith('audio/'))
-    return 'bg-violet-500/10 text-violet-600'
-  if (type.startsWith('text/')) return 'bg-emerald-500/10 text-emerald-600'
-  return 'bg-muted text-muted-foreground'
 }
 
 export function FileCard({
@@ -83,7 +72,7 @@ export function FileCard({
           />
         ) : (
           <span
-            className={`flex size-9 items-center justify-center rounded-lg ${typeClass(file, dir)}`}
+            className={`flex size-[38px] items-center justify-center rounded-[9px] ${fileTypeClass(file, dir)}`}
           >
             <MimeIcon contentType={file.httpMetadata.contentType} className="size-5" />
           </span>
@@ -95,7 +84,7 @@ export function FileCard({
           checked={selected}
           onChange={(event) => onSelect(file.key, event.target.checked)}
           aria-label={t('files.select', { name })}
-          className="absolute left-2 top-2 size-7 accent-primary md:size-4"
+          className="absolute left-2.5 top-2.5 size-7 accent-primary md:size-4"
         />
       ) : null}
       <DropdownMenu>
@@ -104,7 +93,7 @@ export function FileCard({
             variant="ghost"
             size="icon-sm"
             aria-label={t('files.moreActions')}
-            className="absolute right-1 top-1"
+            className="absolute right-[7px] top-[7px] size-9 rounded-md"
           >
             <MoreHorizontalIcon />
           </Button>
@@ -125,12 +114,12 @@ export function FileCard({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="p-3">
+      <div className="px-3 pt-[11px] pb-[13px]">
         <div className="flex min-w-0 text-sm font-medium" title={name} dir="auto">
           <span className="min-w-0 truncate">{stem}</span>
           <span className="shrink-0">{extension}</span>
         </div>
-        <div className="mt-1 text-[11px] text-muted-foreground">
+        <div className="mt-[5px] text-[11px] text-muted-foreground">
           {dir ? t('files.folder') : formatFileSize(file.size)}
         </div>
       </div>

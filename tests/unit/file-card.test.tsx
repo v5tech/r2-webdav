@@ -117,6 +117,10 @@ describe('FileCard', () => {
       />,
     )
     expect(container.querySelector('.lucide-image')).not.toBeNull()
+    expect(container.querySelector('.lucide-image')?.parentElement).toHaveClass(
+      'size-[38px]',
+      'rounded-[9px]',
+    )
   })
 
   it('opens menu and shows Rename/Delete/Download for files', () => {

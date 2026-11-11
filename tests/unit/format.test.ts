@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatFileSize, formatFileTime, splitFilename } from '../../src/lib/format'
+import { formatFileSize, formatFileTime, getFileTypeLabel, splitFilename } from '../../src/lib/format'
+import type { FileItem } from '../../src/lib/types'
 
 describe('formatFileTime', () => {
   it('uses the browser locale and includes seconds', () => {
@@ -28,6 +29,24 @@ describe('formatFileSize', () => {
 
   it('keeps bytes for small files', () => {
     expect(formatFileSize(640, 'en-US')).toBe('640 B')
+  })
+})
+
+describe('getFileTypeLabel', () => {
+  function file(key: string, contentType: string): FileItem {
+    return { key, size: 0, uploaded: 'Fri, 22 May 2026 10:00:00 GMT', httpMetadata: { contentType } }
+  }
+
+  it('uses friendly labels for folders, Markdown, PDF, text and images', () => {
+    expect(getFileTypeLabel(file('docs/', 'application/x-directory'), true, 'zh-CN')).toBe('文件夹')
+    expect(getFileTypeLabel(file('roadmap.md', 'text/markdown'), false, 'en-US')).toBe('Markdown')
+    expect(getFileTypeLabel(file('guide.pdf', 'application/pdf'), false, 'zh-CN')).toBe('PDF 文档')
+    expect(getFileTypeLabel(file('notes.txt', 'text/plain'), false, 'zh-CN')).toBe('纯文本')
+    expect(getFileTypeLabel(file('photo.png', 'image/png'), false, 'en-US')).toBe('Image')
+  })
+
+  it('does not expose an unknown MIME type as the fallback', () => {
+    expect(getFileTypeLabel(file('blob.bin', 'application/octet-stream'), false, 'en-US')).toBe('File')
   })
 })
 

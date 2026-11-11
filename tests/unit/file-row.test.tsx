@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+
+import i18n from '@/lib/i18n'
 
 import { FileRow } from '../../src/components/files/FileRow'
 import type { FileItem } from '../../src/lib/types'
@@ -88,6 +90,41 @@ describe('FileRow', () => {
     expect(onPreview).toHaveBeenCalledWith(file)
     expect(openSpy).not.toHaveBeenCalled()
     openSpy.mockRestore()
+  })
+
+  it('uses the prototype row height and friendly file type', () => {
+    const { container } = render(
+      <FileRow
+        file={makeFile({ key: 'guide.pdf', httpMetadata: { contentType: 'application/pdf' } })}
+        onCwdChange={() => {}}
+        onRename={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    expect(container.querySelector('tr')).toHaveClass('h-[58px]')
+    expect(screen.getByText('PDF document')).toBeInTheDocument()
+  })
+
+  it('updates the friendly file type when the interface language changes', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+    render(
+      <FileRow
+        file={makeFile({ key: 'guide.pdf', httpMetadata: { contentType: 'application/pdf' } })}
+        onCwdChange={() => {}}
+        onRename={() => {}}
+        onDelete={() => {}}
+      />,
+    )
+    expect(screen.getByText('PDF document')).toBeInTheDocument()
+    await act(async () => {
+      await i18n.changeLanguage('zh')
+    })
+    expect(screen.getByText('PDF 文档')).toBeInTheDocument()
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
   })
 
   it('renders MimeIcon (no large thumbnail)', () => {

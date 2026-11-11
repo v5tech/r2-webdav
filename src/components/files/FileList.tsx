@@ -18,7 +18,7 @@ export function FileList({ items, renderItem, onSelectAll, allSelected = false }
         <thead>
           <tr className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
             {onSelectAll ? (
-              <th className="w-11 px-3">
+              <th className="h-[38px] w-[46px] px-3.5 font-medium">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -28,10 +28,14 @@ export function FileList({ items, renderItem, onSelectAll, allSelected = false }
                 />
               </th>
             ) : null}
-            <th className="font-medium">{t('files.sort.name')}</th>
-            <th className="hidden w-24 font-medium sm:table-cell">{t('files.sort.size')}</th>
-            <th className="hidden w-52 font-medium md:table-cell">{t('files.sort.modified')}</th>
-            <th className="w-12">
+            <th className="h-[38px] px-3.5 font-medium">{t('files.sort.name')}</th>
+            <th className="hidden h-[38px] w-[120px] px-3.5 font-medium sm:table-cell">
+              {t('files.sort.size')}
+            </th>
+            <th className="hidden h-[38px] w-[204px] px-3.5 font-medium md:table-cell">
+              {t('files.sort.modified')}
+            </th>
+            <th className="h-[38px] w-[58px] px-3.5">
               <span className="sr-only">{t('trash.actions')}</span>
             </th>
           </tr>

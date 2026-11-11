@@ -8,11 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { formatFileSize, formatFileTime, splitFilename } from '@/lib/format'
+import { formatFileSize, formatFileTime, getFileTypeLabel, splitFilename } from '@/lib/format'
 import type { FileItem } from '@/lib/types'
 import { encodeKey, isDirectory } from '@/lib/webdav'
 
-import { MimeIcon } from './MimeIcon'
+import { fileTypeClass, MimeIcon } from './MimeIcon'
 
 interface FileRowProps {
   file: FileItem
@@ -28,17 +28,6 @@ function extractFilename(key: string) {
   return key.replace(/\/$/, '').split('/').pop() ?? key
 }
 
-function typeClass(file: FileItem, dir: boolean) {
-  const type = file.httpMetadata.contentType
-  if (dir) return 'bg-primary/10 text-primary'
-  if (type.startsWith('image/')) return 'bg-sky-500/10 text-sky-600'
-  if (type === 'application/pdf') return 'bg-rose-500/10 text-rose-600'
-  if (type.startsWith('video/') || type.startsWith('audio/'))
-    return 'bg-violet-500/10 text-violet-600'
-  if (type.startsWith('text/')) return 'bg-emerald-500/10 text-emerald-600'
-  return 'bg-muted text-muted-foreground'
-}
-
 export function FileRow({
   file,
   onCwdChange,
@@ -48,7 +37,7 @@ export function FileRow({
   selected = false,
   onSelect,
 }: FileRowProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const dir = isDirectory(file)
   const name = extractFilename(file.key)
   const { stem, extension } = splitFilename(name)
@@ -65,10 +54,10 @@ export function FileRow({
 
   return (
     <tr
-      className={`border-b transition-colors last:border-b-0 hover:bg-muted/50 ${selected ? 'bg-primary/5' : ''}`}
+      className={`h-[58px] border-b transition-colors last:border-b-0 hover:bg-muted/50 ${selected ? 'bg-primary/5' : ''}`}
     >
       {onSelect ? (
-        <td className="w-11 px-3">
+        <td className="w-[46px] px-3.5">
           <input
             type="checkbox"
             checked={selected}
@@ -78,15 +67,15 @@ export function FileRow({
           />
         </td>
       ) : null}
-      <td>
+      <td className="px-3.5">
         <button
           type="button"
           onClick={handleOpen}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          className="flex w-full min-w-0 items-center gap-3 text-left"
           aria-label={t('files.open', { name })}
         >
           <span
-            className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${typeClass(file, dir)}`}
+            className={`flex size-9 shrink-0 items-center justify-center rounded-[9px] ${fileTypeClass(file, dir)}`}
           >
             <MimeIcon contentType={file.httpMetadata.contentType} className="size-[18px]" />
           </span>
@@ -96,18 +85,18 @@ export function FileRow({
               <span className="shrink-0">{extension}</span>
             </span>
             <span className="mt-0.5 block text-[11px] text-muted-foreground">
-              {dir ? t('files.folder') : file.httpMetadata.contentType || t('files.unknownType')}
+              {getFileTypeLabel(file, dir, i18n.language)}
             </span>
           </span>
         </button>
       </td>
       <td
-        className="hidden w-24 text-xs text-muted-foreground tabular-nums sm:table-cell"
+        className="hidden w-[120px] px-3.5 text-xs text-muted-foreground tabular-nums sm:table-cell"
         title={dir ? undefined : t('files.bytes', { value: file.size.toLocaleString() })}
       >
         {dir ? '—' : formatFileSize(file.size)}
       </td>
-      <td className="hidden w-52 text-xs text-muted-foreground tabular-nums md:table-cell">
+      <td className="hidden w-[204px] px-3.5 text-xs text-muted-foreground tabular-nums md:table-cell">
         <time
           dateTime={file.uploaded}
           title={`${formatFileTime(file.uploaded, undefined, 'UTC')} · UTC`}
@@ -115,10 +104,15 @@ export function FileRow({
           {formatFileTime(file.uploaded)}
         </time>
       </td>
-      <td className="w-12 px-2">
+      <td className="w-[58px] px-3.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label={t('files.moreActions')}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-9 rounded-md"
+              aria-label={t('files.moreActions')}
+            >
               <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
